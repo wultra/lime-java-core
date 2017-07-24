@@ -46,6 +46,14 @@ public class Error {
     private String message;
 
     /**
+     * Default public no parameter constructor.
+     */
+    public Error() {
+        this.code = Code.ERROR_GENERIC;
+        this.message = Message.UNKNOWN_ERROR;
+    }
+
+    /**
      * Constructor accepting code and message.
      *
      * @param code    Error code.
@@ -61,7 +69,7 @@ public class Error {
      * @return Generic error object with unknown cause of error.
      */
     public static Error genericError() {
-        return new Error(Code.ERROR_GENERIC, Message.UNKNOWN_ERROR);
+        return new Error();
     }
 
     /**

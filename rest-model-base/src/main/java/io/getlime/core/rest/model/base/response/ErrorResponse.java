@@ -29,7 +29,7 @@ public class ErrorResponse extends ObjectResponse<Error> {
      */
     public ErrorResponse() {
         this.status = Status.ERROR;
-        this.setResponseObject(Error.genericError());
+        this.setResponseObject(new Error());
     }
 
     public ErrorResponse(Error responseObject) {

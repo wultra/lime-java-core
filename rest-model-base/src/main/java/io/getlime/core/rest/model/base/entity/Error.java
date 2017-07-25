@@ -65,14 +65,6 @@ public class Error {
     }
 
     /**
-     * Return new default generic error object.
-     * @return Generic error object with unknown cause of error.
-     */
-    public static Error genericError() {
-        return new Error();
-    }
-
-    /**
      * Get error code.
      *
      * @return Error code.

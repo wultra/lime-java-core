@@ -28,12 +28,38 @@ public class ErrorResponse extends ObjectResponse<Error> {
      * Default constructor.
      */
     public ErrorResponse() {
-        this.status = Status.ERROR;
-        this.setResponseObject(new Error());
+        super(Status.ERROR, new Error());
     }
 
-    public ErrorResponse(Error responseObject) {
-        super(Status.ERROR, responseObject);
+    /**
+     * Create a new error response with response object with provided code
+     * and error message.
+     *
+     * @param code Error code.
+     * @param message Error message.
+     */
+    public ErrorResponse(String code, String message) {
+        super(Status.ERROR, new Error(code, message));
+    }
+
+    /**
+     * Create a new error response with response object with provided code
+     * and throwable, that is a source for the error message (t.getMessage()).
+     *
+     * @param code Error code.
+     * @param t Throwable, whose message is used as an error message.
+     */
+    public ErrorResponse(String code, Throwable t) {
+        super(Status.ERROR, new Error(code, t != null ? t.getMessage() : null));
+    }
+
+    /**
+     * Create an error response with provided error as a response object.
+     *
+     * @param error Error response object.
+     */
+    public ErrorResponse(Error error) {
+        super(Status.ERROR, error);
     }
 
 }

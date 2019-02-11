@@ -13,7 +13,7 @@
 	<artifactId>rest-model-base</artifactId>
 	<version>1.1.0</version>
 	<name>rest-model-base</name>
-	<description>Model classes for Lime back-end Java project</description>
+	<description>Model classes for Wultra back-end Java projects</description>
 	<packaging>jar</packaging>
 
 	<dependencies>

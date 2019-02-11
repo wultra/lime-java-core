@@ -5,18 +5,18 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>lime-java-core-parent</name>
-	<description>Lime - Core Java Libraries</description>
+	<description>Wultra - Core Java Libraries</description>
 	<groupId>io.getlime.core</groupId>
 	<artifactId>lime-java-core-parent</artifactId>
 	<version>1.1.0</version>
 	<packaging>pom</packaging>
 
 	<inceptionYear>2017</inceptionYear>
-	<url>http://getlime.io/</url>
+	<url>https://wultra.com/</url>
 
 	<organization>
-		<name>Lime - HighTech Solutions Inc.</name>
-		<url>http://getlime.io/</url>
+		<name>Wultra s.r.o.</name>
+		<url>https://wultra.com/</url>
 	</organization>
 
 	<licenses>
@@ -27,15 +27,15 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:https://github.com/lime-company/lime-java-core.git</connection>
-		<developerConnection>scm:git:https://github.com/lime-company/lime-java-core.git</developerConnection>
-		<url>https://github.com/lime-company/lime-java-core</url>
+		<connection>scm:git:https://github.com/wultra/lime-java-core.git</connection>
+		<developerConnection>scm:git:https://github.com/wultra/lime-java-core.git</developerConnection>
+		<url>https://github.com/wultra/lime-java-core</url>
 	</scm>
 
 	<developers>
 		<developer>
 			<name>Petr Dvorak</name>
-			<email>petr@lime-company.eu</email>
+			<email>petr@wultra.com</email>
 			<roles>
 				<role>developer</role>
 			</roles>

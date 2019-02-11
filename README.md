@@ -1,10 +1,10 @@
-# Lime Java Core Libraries
+# Wultra Java Core Libraries
 
-This project contains Lime Java Core classes that are shared across our projects.
+This project contains Wultra Java Core classes that are shared across our projects.
 
 ## RESTful Model
 
-All Lime projects that use RESTful API to publish their services use common model structure. The core philosophy is following:
+All Wultra projects that use RESTful API to publish their services use common model structure. The core philosophy is following:
 
 1) We use JSON format to transfer the data.
 2) We always transfer an `object` as a request and response. Never an `array`, `string`, `decimal`, `boolean` or `null`.

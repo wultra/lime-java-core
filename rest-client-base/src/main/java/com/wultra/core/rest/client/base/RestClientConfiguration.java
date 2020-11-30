@@ -34,7 +34,7 @@ public class RestClientConfiguration {
     private MediaType acceptType = MediaType.APPLICATION_JSON;
 
     // HTTP proxy settings
-    private boolean proxyEnabled;
+    private boolean proxyEnabled = false;
     private String proxyHost;
     private int proxyPort;
     private String proxyUsername;

@@ -449,6 +449,11 @@ public class DefaultRestClient implements RestClient {
             return this;
         }
 
+        public Builder setAcceptType(MediaType acceptType) {
+            config.setAcceptType(acceptType);
+            return this;
+        }
+
         public Builder setProxyEnabled(boolean proxyEnabled) {
             config.setProxyEnabled(proxyEnabled);
             return this;

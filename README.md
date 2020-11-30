@@ -94,3 +94,7 @@ To prepare an error response with an error details in Java, use:
 ```java
 new ErrorResponse("SOME_ERROR_CODE", "Some message, for debugging purposes");
 ```
+
+## Base implementation of REST client
+
+TODO

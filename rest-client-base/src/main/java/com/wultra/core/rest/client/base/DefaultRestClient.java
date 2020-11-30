@@ -444,62 +444,64 @@ public class DefaultRestClient implements RestClient {
             return new DefaultRestClient(this);
         }
 
-        public Builder setContentType(MediaType contentType) {
+        public Builder contentType(MediaType contentType) {
             config.setContentType(contentType);
             return this;
         }
 
-        public Builder setAcceptType(MediaType acceptType) {
+        public Builder acceptType(MediaType acceptType) {
             config.setAcceptType(acceptType);
             return this;
         }
 
-        public Builder setProxyEnabled(boolean proxyEnabled) {
+        // TODO - proxy() builder
+        public Builder proxyEnabled(boolean proxyEnabled) {
             config.setProxyEnabled(proxyEnabled);
             return this;
         }
 
-        public Builder setProxyHost(String proxyHost) {
+        public Builder proxyHost(String proxyHost) {
             config.setProxyHost(proxyHost);
             return this;
         }
 
-        public Builder setProxyPort(int proxyPort) {
+        public Builder proxyPort(int proxyPort) {
             config.setProxyPort(proxyPort);
             return this;
         }
 
-        public Builder setProxyUsername(String proxyUsername) {
+        public Builder proxyUsername(String proxyUsername) {
             config.setProxyUsername(proxyUsername);
             return this;
         }
 
-        public Builder setProxyPassword(String proxyPassword) {
+        public Builder proxyPassword(String proxyPassword) {
             config.setProxyPassword(proxyPassword);
             return this;
         }
 
-        public Builder setConnectionTimeout(Integer connectionTimeout) {
+        public Builder connectionTimeout(Integer connectionTimeout) {
             config.setConnectionTimeout(connectionTimeout);
             return this;
         }
 
-        public Builder setAcceptInvalidCertificate(boolean acceptInvalidSslCertificate) {
+        public Builder acceptInvalidCertificate(boolean acceptInvalidSslCertificate) {
             config.setAcceptInvalidSslCertificate(acceptInvalidSslCertificate);
             return this;
         }
 
-        public Builder setMaxInMemorySize(Integer maxInMemorySize) {
+        public Builder maxInMemorySize(Integer maxInMemorySize) {
             config.setMaxInMemorySize(maxInMemorySize);
             return this;
         }
 
-        public Builder setBasicAuthUsername(String basicAuthUsername) {
+        // TODO - httpBasicAuth() builder
+        public Builder basicAuthUsername(String basicAuthUsername) {
             config.setBasicAuthUsername(basicAuthUsername);
             return this;
         }
 
-        public Builder setBasicAuthPassword(String basicAuthPassword) {
+        public Builder basicAuthPassword(String basicAuthPassword) {
             config.setBasicAuthPassword(basicAuthPassword);
             return this;
         }

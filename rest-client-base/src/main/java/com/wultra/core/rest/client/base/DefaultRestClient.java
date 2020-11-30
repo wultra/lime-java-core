@@ -148,10 +148,10 @@ public class DefaultRestClient implements RestClient {
                     .block();
             validateResponse(response, responseType);
             return response.toEntity(responseType).block();
+        } catch (RestClientException ex) {
+            // Rethrow validation errors
+            throw ex;
         } catch (Exception ex) {
-            if (ex instanceof RestClientException) {
-                throw ex;
-            }
             throw new RestClientException("HTTP GET request failed", ex);
         }
     }
@@ -219,10 +219,10 @@ public class DefaultRestClient implements RestClient {
             response = responseMono.block();
             validateResponse(response, responseType);
             return response.toEntity(responseType).block();
+        } catch (RestClientException ex) {
+            // Rethrow validation errors
+            throw ex;
         } catch (Exception ex) {
-            if (ex instanceof RestClientException) {
-                throw ex;
-            }
             throw new RestClientException("HTTP POST request failed", ex);
         }
     }
@@ -296,10 +296,10 @@ public class DefaultRestClient implements RestClient {
             response = responseMono.block();
             validateResponse(response, responseType);
             return response.toEntity(responseType).block();
+        } catch (RestClientException ex) {
+            // Rethrow validation errors
+            throw ex;
         } catch (Exception ex) {
-            if (ex instanceof RestClientException) {
-                throw ex;
-            }
             throw new RestClientException("HTTP PUT request failed", ex);
         }
     }
@@ -367,10 +367,10 @@ public class DefaultRestClient implements RestClient {
                     .block();
             validateResponse(response, responseType);
             return response.toEntity(responseType).block();
+        } catch (RestClientException ex) {
+            // Rethrow validation errors
+            throw ex;
         } catch (Exception ex) {
-            if (ex instanceof RestClientException) {
-                throw ex;
-            }
             throw new RestClientException("HTTP DELETE request failed", ex);
         }
     }

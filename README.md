@@ -110,7 +110,7 @@ The example below shows very basic initialization and usage of the REST client w
 In order to configure the REST client, you can use the builder interface:
 
 ```java
-DefaultRestClient webClient = new DefaultRestClient.Builder("http://localhost").build();
+DefaultRestClient restClient = new DefaultRestClient.Builder("http://localhost").build();
 ```
 
 The `baseUrl` parameter is mandatory and needs to be provided in the builder constructor. The following options are available for the builder:

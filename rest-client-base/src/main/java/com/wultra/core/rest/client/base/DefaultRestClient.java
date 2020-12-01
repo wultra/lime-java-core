@@ -125,9 +125,9 @@ public class DefaultRestClient implements RestClient {
                         .maxInMemorySize(config.getMaxInMemorySize()))
                 .build());
 
-        if (config.getBasicAuthUsername() != null) {
+        if (config.getHttpBasicAuthUsername() != null) {
             builder.filter(ExchangeFilterFunctions
-                    .basicAuthentication(config.getBasicAuthUsername(), config.getBasicAuthPassword()))
+                    .basicAuthentication(config.getHttpBasicAuthUsername(), config.getHttpBasicAuthPassword()))
                     .build();
         }
 
@@ -496,56 +496,13 @@ public class DefaultRestClient implements RestClient {
             return this;
         }
 
-        // TODO - proxy() builder
-
         /**
-         * Configure whether proxy is enabled.
-         * @param proxyEnabled Whether proxy is enabled.
-         * @return Builder.
+         * Configure proxy.
+         * @return ProxyBuilder.
          */
-        public Builder proxyEnabled(boolean proxyEnabled) {
-            config.setProxyEnabled(proxyEnabled);
-            return this;
-        }
-
-        /**
-         * Configure proxy host.
-         * @param proxyHost Proxy host.
-         * @return Builder.
-         */
-        public Builder proxyHost(String proxyHost) {
-            config.setProxyHost(proxyHost);
-            return this;
-        }
-
-        /**
-         * Configure proxy port.
-         * @param proxyPort Proxy port.
-         * @return Builder.
-         */
-        public Builder proxyPort(int proxyPort) {
-            config.setProxyPort(proxyPort);
-            return this;
-        }
-
-        /**
-         * Configure proxy username.
-         * @param proxyUsername Proxy username.
-         * @return Builder.
-         */
-        public Builder proxyUsername(String proxyUsername) {
-            config.setProxyUsername(proxyUsername);
-            return this;
-        }
-
-        /**
-         * Configure proxy password.
-         * @param proxyPassword Proxy password.
-         * @return Builder.
-         */
-        public Builder proxyPassword(String proxyPassword) {
-            config.setProxyPassword(proxyPassword);
-            return this;
+        public ProxyBuilder proxy() {
+            config.setProxyEnabled(true);
+            return new ProxyBuilder(this);
         }
 
         /**
@@ -578,15 +535,104 @@ public class DefaultRestClient implements RestClient {
             return this;
         }
 
-        // TODO - httpBasicAuth() builder
+        /**
+         * Configure HTTP basic authentication.
+         * @return Builder.
+         */
+        public HttpBasicAuthBuilder httpBasicAuth() {
+            config.setHttpBasicAuthEnabled(true);
+            return new HttpBasicAuthBuilder(this);
+        }
+
+    }
+
+    /**
+     * Proxy builder.
+     */
+    public static class ProxyBuilder {
+
+        private final Builder mainBuilder;
+
+        /**
+         * Proxy builder constructor.
+         * @param mainBuilder Parent builder.
+         */
+        private ProxyBuilder(Builder mainBuilder) {
+            this.mainBuilder = mainBuilder;
+        }
+
+        /**
+         * Configure proxy host.
+         * @param proxyHost Proxy host.
+         * @return ProxyBuilder.
+         */
+        public ProxyBuilder host(String proxyHost) {
+            mainBuilder.config.setProxyHost(proxyHost);
+            return this;
+        }
+
+        /**
+         * Configure proxy port.
+         * @param proxyPort Proxy port.
+         * @return ProxyBuilder.
+         */
+        public ProxyBuilder port(int proxyPort) {
+            mainBuilder.config.setProxyPort(proxyPort);
+            return this;
+        }
+
+        /**
+         * Configure proxy username.
+         * @param proxyUsername Proxy username.
+         * @return ProxyBuilder.
+         */
+        public ProxyBuilder username(String proxyUsername) {
+            mainBuilder.config.setProxyUsername(proxyUsername);
+            return this;
+        }
+
+        /**
+         * Configure proxy password.
+         * @param proxyPassword Proxy password.
+         * @return ProxyBuilder.
+         */
+        public ProxyBuilder password(String proxyPassword) {
+            mainBuilder.config.setProxyPassword(proxyPassword);
+            return this;
+        }
+
+        /**
+         * Build the builder.
+         * @return Builder.
+         */
+        public Builder build() {
+            return mainBuilder;
+        }
+    }
+
+    /**
+     * HTTP basic authentication builder.
+     */
+    public static class HttpBasicAuthBuilder {
+
+        private final Builder mainBuilder;
+
+        /**
+         * HTTP basic authentication builder constructor.
+         *
+         * @param mainBuilder Parent builder.
+         */
+        private HttpBasicAuthBuilder(Builder mainBuilder) {
+            this.mainBuilder = mainBuilder;
+        }
 
         /**
          * Configure HTTP basic authentication username.
          * @param basicAuthUsername HTTP basic authentication username.
          * @return Builder.
          */
-        public Builder basicAuthUsername(String basicAuthUsername) {
-            config.setBasicAuthUsername(basicAuthUsername);
+        public HttpBasicAuthBuilder username(String basicAuthUsername) {
+            mainBuilder.config.setHttpBasicAuthUsername(basicAuthUsername);
             return this;
         }
 
@@ -595,9 +641,18 @@ public class DefaultRestClient implements RestClient {
          * @param basicAuthPassword HTTP basic authentication password.
          * @return Builder.
          */
-        public Builder basicAuthPassword(String basicAuthPassword) {
-            config.setBasicAuthPassword(basicAuthPassword);
+        public HttpBasicAuthBuilder password(String basicAuthPassword) {
+            mainBuilder.config.setHttpBasicAuthPassword(basicAuthPassword);
             return this;
+        }
+
+        /**
+         * Build the builder.
+         *
+         * @return Builder.
+         */
+        public Builder build() {
+            return mainBuilder;
         }
     }
 }

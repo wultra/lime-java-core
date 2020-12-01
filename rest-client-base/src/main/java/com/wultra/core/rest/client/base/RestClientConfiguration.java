@@ -50,8 +50,9 @@ public class RestClientConfiguration {
     private Integer maxInMemorySize = 1024 * 1024;
 
     // HTTP basic authentication
-    private String basicAuthUsername;
-    private String basicAuthPassword;
+    private boolean httpBasicAuthEnabled = false;
+    private String httpBasicAuthUsername;
+    private String httpBasicAuthPassword;
 
     public String getBaseUrl() {
         return baseUrl;
@@ -137,19 +138,27 @@ public class RestClientConfiguration {
         this.maxInMemorySize = maxInMemorySize;
     }
 
-    public String getBasicAuthUsername() {
-        return basicAuthUsername;
+    public boolean isHttpBasicAuthEnabled() {
+        return httpBasicAuthEnabled;
     }
 
-    public void setBasicAuthUsername(String basicAuthUsername) {
-        this.basicAuthUsername = basicAuthUsername;
+    public void setHttpBasicAuthEnabled(boolean httpBasicAuthEnabled) {
+        this.httpBasicAuthEnabled = httpBasicAuthEnabled;
     }
 
-    public String getBasicAuthPassword() {
-        return basicAuthPassword;
+    public String getHttpBasicAuthUsername() {
+        return httpBasicAuthUsername;
     }
 
-    public void setBasicAuthPassword(String basicAuthPassword) {
-        this.basicAuthPassword = basicAuthPassword;
+    public void setHttpBasicAuthUsername(String httpBasicAuthUsername) {
+        this.httpBasicAuthUsername = httpBasicAuthUsername;
+    }
+
+    public String getHttpBasicAuthPassword() {
+        return httpBasicAuthPassword;
+    }
+
+    public void setHttpBasicAuthPassword(String httpBasicAuthPassword) {
+        this.httpBasicAuthPassword = httpBasicAuthPassword;
     }
 }

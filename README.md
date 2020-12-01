@@ -102,8 +102,8 @@ Class `DefaultRestClient` provides a base implementation of a REST client. The c
 The example below shows very basic initialization and usage of the REST client without any configuration:
 
 ```java
-        DefaultRestClient webClient = new DefaultRestClient("http://localhost");
-        ResponseEntity<String> response = webClient.get("/api/status", new ParameterizedTypeReference<String>() {});
+        DefaultRestClient restClient = new DefaultRestClient("http://localhost");
+        ResponseEntity<String> response = restClient.get("/api/status", new ParameterizedTypeReference<String>() {});
 ```
 
 ### REST Client Configuration

@@ -95,7 +95,7 @@ To prepare an error response with an error details in Java, use:
 new ErrorResponse("SOME_ERROR_CODE", "Some message, for debugging purposes");
 ```
 
-## Base implementation of REST client
+## Base Implementation of REST client
 
 Class `DefaultRestClient` provides a base implementation of a REST client. The client provides an interface for calling HTTP methods: `GET`, `POST`, `PUT`, and `DELETE`.
 
@@ -121,9 +121,9 @@ The `baseUrl` parameter is mandatory and needs to be provided in the builder con
   - `port` - proxy port
   - `username` - proxy username
   - `password` - proxy password
-- `connectionTimeout` - connection timeout in milliseconds (default: 5000ms)
+- `connectionTimeout` - connection timeout in milliseconds (default: 5000 ms)
 - `acceptInvalidSslCertificate` - whether invalid SSL certificate is accepted (default: false)
-- `maxInMemorySize` - maximum in memory request size (default: 1048576)
+- `maxInMemorySize` - maximum in memory request size (default: 1048576 bytes)
 - `httpBasicAuth` - HTTP basic authentication (default: disabled)
   - `username` - username for HTTP basic authentication
   - `password` - password for HTTP basic authentication

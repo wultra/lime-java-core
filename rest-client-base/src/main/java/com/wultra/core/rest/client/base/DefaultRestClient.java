@@ -49,13 +49,22 @@ public class DefaultRestClient implements RestClient {
     private WebClient webClient;
     private final RestClientConfiguration config;
 
-
+    /**
+     * Construct default REST client without any additional configuration.
+     * @param baseUrl Base URL.
+     * @throws RestClientException Thrown in case client initialization fails.
+     */
     public DefaultRestClient(String baseUrl) throws RestClientException {
         this.config = new RestClientConfiguration(baseUrl);
         // Use default WebClient settings
         initializeWebClient();
     }
 
+    /**
+     * Private constructor for builder.
+     * @param builder REST client builder.
+     * @throws RestClientException Thrown in case client initialization fails.
+     */
     private DefaultRestClient(Builder builder) throws RestClientException {
         this.config = builder.config;
         // Use WebClient settings from the builder
@@ -125,7 +134,6 @@ public class DefaultRestClient implements RestClient {
         ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
     }
-
 
     @Override
     public <T> ResponseEntity<T> get(String path, ParameterizedTypeReference<T> responseType) throws RestClientException {
@@ -411,6 +419,12 @@ public class DefaultRestClient implements RestClient {
         return responseEntity.getBody();
     }
 
+    /**
+     * Convert response type to parameterized type reference of ObjectResponse.
+     * @param responseType Object response type.
+     * @param <T> Response type.
+     * @return Parameterized type reference of ObjectResponse.
+     */
     private <T> ParameterizedTypeReference<ObjectResponse<T>> getTypeReference(Class<T> responseType) {
         return new ParameterizedTypeReference<ObjectResponse<T>>(){
             @Override
@@ -420,6 +434,12 @@ public class DefaultRestClient implements RestClient {
         };
     }
 
+    /**
+     * Validate response and response type.
+     * @param response Client response.
+     * @param responseType Response type.
+     * @throws RestClientException Thrown in case validation fails.
+     */
     private void validateResponse(ClientResponse response, ParameterizedTypeReference<?> responseType) throws RestClientException {
         if (response == null) {
             throw new RestClientException("Missing response");
@@ -432,75 +452,149 @@ public class DefaultRestClient implements RestClient {
         }
     }
 
+    /**
+     * Builder used for configuration of the default rest client.
+     */
     public static class Builder {
 
         private final RestClientConfiguration config;
 
+        /**
+         * Construct new builder with given base URL.
+         * @param baseUrl Base URL.
+         */
         public Builder(String baseUrl) {
             config = new RestClientConfiguration(baseUrl);
         }
 
+        /**
+         * Get the built default rest client instance.
+         * @return Default rest client instance.
+         * @throws RestClientException Thrown in case rest client initialization fails.
+         */
         public DefaultRestClient build() throws RestClientException {
             return new DefaultRestClient(this);
         }
 
+        /**
+         * Configure content type.
+         * @param contentType Content type.
+         * @return Builder.
+         */
         public Builder contentType(MediaType contentType) {
             config.setContentType(contentType);
             return this;
         }
 
+        /**
+         * Configure the accept type.
+         * @param acceptType Accept type.
+         * @return Builder.
+         */
         public Builder acceptType(MediaType acceptType) {
             config.setAcceptType(acceptType);
             return this;
         }
 
         // TODO - proxy() builder
+
+        /**
+         * Configure whether proxy is enabled.
+         * @param proxyEnabled Whether proxy is enabled.
+         * @return Builder.
+         */
         public Builder proxyEnabled(boolean proxyEnabled) {
             config.setProxyEnabled(proxyEnabled);
             return this;
         }
 
+        /**
+         * Configure proxy host.
+         * @param proxyHost Proxy host.
+         * @return Builder.
+         */
         public Builder proxyHost(String proxyHost) {
             config.setProxyHost(proxyHost);
             return this;
         }
 
+        /**
+         * Configure proxy port.
+         * @param proxyPort Proxy port.
+         * @return Builder.
+         */
         public Builder proxyPort(int proxyPort) {
             config.setProxyPort(proxyPort);
             return this;
         }
 
+        /**
+         * Configure proxy username.
+         * @param proxyUsername Proxy username.
+         * @return Builder.
+         */
         public Builder proxyUsername(String proxyUsername) {
             config.setProxyUsername(proxyUsername);
             return this;
         }
 
+        /**
+         * Configure proxy password.
+         * @param proxyPassword Proxy password.
+         * @return Builder.
+         */
         public Builder proxyPassword(String proxyPassword) {
             config.setProxyPassword(proxyPassword);
             return this;
         }
 
+        /**
+         * Configure connection timeout.
+         * @param connectionTimeout Connection timeout.
+         * @return Builder.
+         */
         public Builder connectionTimeout(Integer connectionTimeout) {
             config.setConnectionTimeout(connectionTimeout);
             return this;
         }
 
+        /**
+         * Configure whether invalid SSL certificate is accepted.
+         * @param acceptInvalidSslCertificate Whether invalid SSL certificate is accepted.
+         * @return Builder.
+         */
         public Builder acceptInvalidCertificate(boolean acceptInvalidSslCertificate) {
             config.setAcceptInvalidSslCertificate(acceptInvalidSslCertificate);
             return this;
         }
 
+        /**
+         * Configure maximum in memory request size.
+         * @param maxInMemorySize Maximum in memory request size.
+         * @return Builder.
+         */
         public Builder maxInMemorySize(Integer maxInMemorySize) {
             config.setMaxInMemorySize(maxInMemorySize);
             return this;
         }
 
         // TODO - httpBasicAuth() builder
+
+        /**
+         * Configure HTTP basic authentication username.
+         * @param basicAuthUsername HTTP basic authentication username.
+         * @return Builder.
+         */
         public Builder basicAuthUsername(String basicAuthUsername) {
             config.setBasicAuthUsername(basicAuthUsername);
             return this;
         }
 
+        /**
+         * Configure HTTP basic authentication password.
+         * @param basicAuthPassword HTTP basic authentication password.
+         * @return Builder.
+         */
         public Builder basicAuthPassword(String basicAuthPassword) {
             config.setBasicAuthPassword(basicAuthPassword);
             return this;

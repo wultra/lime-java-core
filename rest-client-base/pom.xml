@@ -12,7 +12,7 @@
 
 	<artifactId>rest-client-base</artifactId>
 	<version>1.1.0</version>
-	<name>webclient-base</name>
+	<name>rest-client-base</name>
 	<description>Default implementation of REST client</description>
 	<packaging>jar</packaging>
 

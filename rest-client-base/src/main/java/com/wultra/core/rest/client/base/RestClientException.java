@@ -26,19 +26,37 @@ public class RestClientException extends Exception {
 
     private HttpStatus statusCode;
 
+    /**
+     * Constructor with message.
+     * @param message Exception message.
+     */
     public RestClientException(String message) {
         super(message);
     }
 
+    /**
+     * Constructor with message and cause.
+     * @param message Exception message.
+     * @param cause Original cause.
+     */
     public RestClientException(String message, Throwable cause) {
         super(message, cause);
     }
 
+    /**
+     * Constructor with message and HTTP status code.
+     * @param message Exception message.
+     * @param statusCode HTTP status code.
+     */
     public RestClientException(String message, HttpStatus statusCode) {
         super(message);
         this.statusCode = statusCode;
     }
 
+    /**
+     * Get HTTP status code.
+     * @return HTTP status code.
+     */
     public HttpStatus getStatusCode() {
         return statusCode;
     }

@@ -15,14 +15,17 @@
  */
 package com.wultra.core.rest.client.base;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import io.getlime.core.rest.model.base.request.ObjectRequest;
+import io.getlime.core.rest.model.base.response.ErrorResponse;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -34,6 +37,7 @@ import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.ProxyProvider;
 
 import javax.net.ssl.SSLException;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -55,7 +59,8 @@ public class DefaultRestClient implements RestClient {
      * @throws RestClientException Thrown in case client initialization fails.
      */
     public DefaultRestClient(String baseUrl) throws RestClientException {
-        this.config = new RestClientConfiguration(baseUrl);
+        this.config = new RestClientConfiguration();
+        this.config.setBaseUrl(baseUrl);
         // Use default WebClient settings
         initializeWebClient();
     }
@@ -75,13 +80,12 @@ public class DefaultRestClient implements RestClient {
      * Initialize WebClient instance and configure it based on client configuration.
      */
     private void initializeWebClient() throws RestClientException {
-        if (config.getBaseUrl() == null) {
-            throw new RestClientException("Missing parameter baseUrl");
-        }
-        try {
-            new URI(config.getBaseUrl());
-        } catch (URISyntaxException ex) {
-            throw new RestClientException("Invalid parameter baseUrl");
+        if (config.getBaseUrl() != null) {
+            try {
+                new URI(config.getBaseUrl());
+            } catch (URISyntaxException ex) {
+                throw new RestClientException("Invalid parameter baseUrl");
+            }
         }
         WebClient.Builder builder = WebClient.builder();
         HttpClient httpClient = HttpClient.create();
@@ -144,9 +148,7 @@ public class DefaultRestClient implements RestClient {
     public <T> ResponseEntity<T> get(String path, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
         ClientResponse response;
         try {
-            response = webClient
-                    .get()
-                    .uri(uriBuilder -> uriBuilder.path(path).build())
+            response = buildUri(webClient.get(), path)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -172,9 +174,7 @@ public class DefaultRestClient implements RestClient {
     @Override
     public void getNonBlocking(String path, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
-            webClient
-                    .get()
-                    .uri(uriBuilder -> uriBuilder.path(path).build())
+            buildUri(webClient.get(), path)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -209,8 +209,7 @@ public class DefaultRestClient implements RestClient {
     public <T> ResponseEntity<T> post(String path, Object request, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
         ClientResponse response;
         try {
-            WebClient.RequestBodySpec spec = webClient.post()
-                    .uri(uriBuilder -> uriBuilder.path(path).build())
+            WebClient.RequestBodySpec spec = buildUri(webClient.post(), path)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -218,13 +217,7 @@ public class DefaultRestClient implements RestClient {
                     })
                     .contentType(config.getContentType())
                     .accept(config.getAcceptType());
-            Mono<ClientResponse> responseMono;
-            if (request != null) {
-                responseMono = spec.body(BodyInserters.fromValue(request)).exchange();
-            } else {
-                responseMono = spec.exchange();
-            }
-            response = responseMono.block();
+            response = buildResponseMono(spec, request).block();
             validateResponse(response, responseType);
             return response.toEntity(responseType).block();
         } catch (RestClientException ex) {
@@ -243,9 +236,7 @@ public class DefaultRestClient implements RestClient {
     @Override
     public void postNonBlocking(String path, Object request, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
-            WebClient.RequestBodySpec spec = webClient
-                    .post()
-                    .uri(uriBuilder -> uriBuilder.path(path).build())
+            WebClient.RequestBodySpec spec = buildUri(webClient.post(), path)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -253,12 +244,7 @@ public class DefaultRestClient implements RestClient {
                     })
                     .contentType(config.getContentType())
                     .accept(config.getAcceptType());
-            Mono<ClientResponse> responseMono;
-            if (request != null) {
-                responseMono = spec.body(BodyInserters.fromValue(request)).exchange();
-            } else {
-                responseMono = spec.exchange();
-            }
+            Mono<ClientResponse> responseMono = buildResponseMono(spec, request);
             responseMono.subscribe(onSuccess, onError);
         } catch (Exception ex) {
             throw new RestClientException("HTTP POST request failed", ex);
@@ -286,8 +272,7 @@ public class DefaultRestClient implements RestClient {
     public <T> ResponseEntity<T> put(String path, Object request, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
         ClientResponse response;
         try {
-            WebClient.RequestBodySpec spec = webClient.put()
-                    .uri(uriBuilder -> uriBuilder.path(path).build())
+            WebClient.RequestBodySpec spec = buildUri(webClient.put(), path)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -295,13 +280,7 @@ public class DefaultRestClient implements RestClient {
                     })
                     .contentType(config.getContentType())
                     .accept(config.getAcceptType());
-            Mono<ClientResponse> responseMono;
-            if (request != null) {
-                responseMono = spec.body(BodyInserters.fromValue(request)).exchange();
-            } else {
-                responseMono = spec.exchange();
-            }
-            response = responseMono.block();
+            response = buildResponseMono(spec, request).block();
             validateResponse(response, responseType);
             return response.toEntity(responseType).block();
         } catch (RestClientException ex) {
@@ -320,9 +299,7 @@ public class DefaultRestClient implements RestClient {
     @Override
     public void putNonBlocking(String path, Object request, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
-            WebClient.RequestBodySpec spec = webClient
-                    .put()
-                    .uri(uriBuilder -> uriBuilder.path(path).build())
+            WebClient.RequestBodySpec spec = buildUri(webClient.put(), path)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -330,12 +307,7 @@ public class DefaultRestClient implements RestClient {
                     })
                     .contentType(config.getContentType())
                     .accept(config.getAcceptType());
-            Mono<ClientResponse> responseMono;
-            if (request != null) {
-                responseMono = spec.body(BodyInserters.fromValue(request)).exchange();
-            } else {
-                responseMono = spec.exchange();
-            }
+            Mono<ClientResponse> responseMono = buildResponseMono(spec, request);
             responseMono.subscribe(onSuccess, onError);
         } catch (Exception ex) {
             throw new RestClientException("HTTP PUT request failed", ex);
@@ -363,9 +335,7 @@ public class DefaultRestClient implements RestClient {
     public <T> ResponseEntity<T> delete(String path, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
         ClientResponse response;
         try {
-            response = webClient
-                    .delete()
-                    .uri(uriBuilder -> uriBuilder.path(path).build())
+            response = buildUri(webClient.delete(), path)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -391,15 +361,12 @@ public class DefaultRestClient implements RestClient {
     @Override
     public void deleteNonBlocking(String path, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
-            webClient
-                    .put()
-                    .uri(uriBuilder -> uriBuilder.path(path).build())
+            buildUri(webClient.delete(), path)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
                         }
                     })
-                    .contentType(config.getContentType())
                     .accept(config.getAcceptType())
                     .exchange()
                     .subscribe(onSuccess, onError);
@@ -448,8 +415,79 @@ public class DefaultRestClient implements RestClient {
             throw new RestClientException("Missing response type");
         }
         if (response.statusCode().isError()) {
-            throw new RestClientException("HTTP error occurred: " + response.statusCode(), response.statusCode());
+            ResponseEntity<String> rawResponseEntity = response.toEntity(String.class).block();
+            String rawResponse = null;
+            HttpHeaders rawResponseHeaders = null;
+            if (rawResponseEntity != null) {
+                rawResponse = rawResponseEntity.getBody();
+                rawResponseHeaders = rawResponseEntity.getHeaders();
+            }
+            // Try to parse ErrorResponse in case expected response type is ObjectResponse
+            Class<?> clazz = TypeFactory.rawClass(responseType.getType());
+            if (clazz.isAssignableFrom(ObjectResponse.class)) {
+                try {
+                    // Use an ObjectMapper to deserialize the error response
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    ErrorResponse errorResponse = objectMapper.readValue(rawResponse, ErrorResponse.class);
+                    if (errorResponse != null) {
+                        throw new RestClientException("HTTP error occurred: " + response.statusCode(), response.statusCode(), rawResponse, rawResponseHeaders, errorResponse);
+                    }
+                } catch (IOException ex) {
+                    // Exception is handled silently, ErrorResponse is not available, use a regular error with raw response
+                }
+            }
+            throw new RestClientException("HTTP error occurred: " + response.statusCode(), response.statusCode(), rawResponse, rawResponseHeaders);
         }
+    }
+
+    /**
+     * Build URI based on configuration of base URL and path.
+     * @param uriSpec Request headers URI specification.
+     * @param path URI path.
+     * @return Request header specification.
+     */
+    private WebClient.RequestHeadersSpec<?> buildUri(WebClient.RequestHeadersUriSpec<?> uriSpec, String path) {
+        if (config.getBaseUrl() == null) {
+            return uriSpec.uri(path);
+        } else {
+            return uriSpec.uri(uriBuilder -> uriBuilder.path(path).build());
+        }
+    }
+
+    /**
+     * Build URI based on configuration of base URL and path.
+     * @param uriSpec Request headers URI specification.
+     * @param path URI path.
+     * @return Request header specification.
+     */
+    private WebClient.RequestBodySpec buildUri(WebClient.RequestBodyUriSpec uriSpec, String path) {
+        if (config.getBaseUrl() == null) {
+            return uriSpec.uri(path);
+        } else {
+            return uriSpec.uri(uriBuilder -> uriBuilder.path(path).build());
+        }
+    }
+
+    /**
+     * Build response Mono for given request specification.
+     * @param requestSpec Request specification.
+     * @param request Request data.
+     * @return Mono with ClientResponse.
+     */
+    private Mono<ClientResponse> buildResponseMono(WebClient.RequestBodySpec requestSpec, Object request) {
+        if (request != null) {
+            return requestSpec.body(BodyInserters.fromValue(request)).exchange();
+        } else {
+            return requestSpec.exchange();
+        }
+    }
+
+    /**
+     * Construct a new rest client builder.
+     * @return Builder.
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     /**
@@ -461,10 +499,9 @@ public class DefaultRestClient implements RestClient {
 
         /**
          * Construct new builder with given base URL.
-         * @param baseUrl Base URL.
          */
-        public Builder(String baseUrl) {
-            config = new RestClientConfiguration(baseUrl);
+        public Builder() {
+            config = new RestClientConfiguration();
         }
 
         /**
@@ -474,6 +511,11 @@ public class DefaultRestClient implements RestClient {
          */
         public DefaultRestClient build() throws RestClientException {
             return new DefaultRestClient(this);
+        }
+
+        public Builder baseUrl(String baseUrl) {
+            config.setBaseUrl(baseUrl);
+            return this;
         }
 
         /**

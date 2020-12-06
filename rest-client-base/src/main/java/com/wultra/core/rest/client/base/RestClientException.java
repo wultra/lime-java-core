@@ -15,6 +15,8 @@
  */
 package com.wultra.core.rest.client.base;
 
+import io.getlime.core.rest.model.base.response.ErrorResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -25,6 +27,9 @@ import org.springframework.http.HttpStatus;
 public class RestClientException extends Exception {
 
     private HttpStatus statusCode;
+    private String response;
+    private HttpHeaders responseHeaders;
+    private ErrorResponse errorResponse;
 
     /**
      * Constructor with message.
@@ -47,10 +52,30 @@ public class RestClientException extends Exception {
      * Constructor with message and HTTP status code.
      * @param message Exception message.
      * @param statusCode HTTP status code.
+     * @param response Raw response.
+     * @param responseHeaders Response HTTP headers.
      */
-    public RestClientException(String message, HttpStatus statusCode) {
+    public RestClientException(String message, HttpStatus statusCode, String response, HttpHeaders responseHeaders) {
         super(message);
         this.statusCode = statusCode;
+        this.response = response;
+        this.responseHeaders = responseHeaders;
+    }
+
+    /**
+     * Constructor with message, HTTP status code, and error response.
+     * @param message Exception message.
+     * @param statusCode HTTP status code.
+     * @param response Raw response.
+     * @param responseHeaders Response HTTP headers.
+     * @param errorResponse Error response.
+     */
+    public RestClientException(String message, HttpStatus statusCode, String response, HttpHeaders responseHeaders, ErrorResponse errorResponse) {
+        super(message);
+        this.statusCode = statusCode;
+        this.response = response;
+        this.responseHeaders = responseHeaders;
+        this.errorResponse = errorResponse;
     }
 
     /**
@@ -59,5 +84,29 @@ public class RestClientException extends Exception {
      */
     public HttpStatus getStatusCode() {
         return statusCode;
+    }
+
+    /**
+     * Get raw response.
+     * @return Raw response.
+     */
+    public String getResponse() {
+        return response;
+    }
+
+    /**
+     * Get response HTTP headers.
+     * @return Response HTTP headers.
+     */
+    public HttpHeaders getResponseHeaders() {
+        return responseHeaders;
+    }
+
+    /**
+     * Get the error response.
+     * @return Error response.
+     */
+    public ErrorResponse getErrorResponse() {
+        return errorResponse;
     }
 }

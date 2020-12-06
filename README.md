@@ -110,10 +110,12 @@ The example below shows very basic initialization and usage of the REST client w
 In order to configure the REST client, you can use the builder interface:
 
 ```java
-DefaultRestClient restClient = new DefaultRestClient.Builder("http://localhost").build();
+RestClient restClient = DefaultRestClient.builder().baseUrl("http://localhost").build();
 ```
 
-The `baseUrl` parameter is mandatory and needs to be provided in the builder constructor. The following options are available for the builder:
+The following options are available for the builder:
+
+- `baseUrl` - base URL for all requests, full URL is expected in request path if baseUrl is not specified
 - `contentType` - content type used for requests (default: `APPLICATION_JSON`)
 - `acceptType` - accept type used for signalling the response type (default: `APPLICATION_JSON`)
 - `proxy` - proxy settings (default: proxy is disabled)
@@ -130,7 +132,8 @@ The `baseUrl` parameter is mandatory and needs to be provided in the builder con
 
 ### Calling HTTP Methods Using REST Client
 
-Once the rest client is initialized, you can use the following methods. Each method has two variants so that HTTP headers can be specified, if necessary.
+Once the rest client is initialized, you can use the following methods. Each method has two variants so that HTTP headers can be specified, if necessary. The following methods are available:
+
 - `get` - a blocking GET call with a generic response
 - `getNonBlocking` - a non-blocking GET call with a generic response with `onSuccess` and `onError` consumers
 - `getObject` - a blocking GET call with `ObjectResponse`
@@ -143,3 +146,20 @@ Once the rest client is initialized, you can use the following methods. Each met
 - `delete` - a blocking DELETE call with a generic response
 - `deleteNonBlocking` - a non-blocking DELETE call with a generic response with `onSuccess` and `onError` consumers
 - `deleteObject` - a blocking DELETE call with `ObjectResponse`
+
+The `path` parameter specified in requests can be either:
+
+- a partial request path, in this case the `baseUrl` parameter must be configured during initialization
+- a full URL, in this case the `baseUrl` parameter must not be configured during initialization
+
+
+### Error Handling
+
+In case any HTTP error occurs during a blocking HTTP request execution, a `RestClientException` is thrown with following details:
+
+- `statusCode` - an HTTP status code
+- `response` - a raw error response
+- `responseHeaders` - response HTTP headers
+- `errorResponse` - a parsed `ErrorResponse`, only used for the `ObjectResponse` response type
+
+Non-blocking methods provide an `onError` consumer for custom error handling.

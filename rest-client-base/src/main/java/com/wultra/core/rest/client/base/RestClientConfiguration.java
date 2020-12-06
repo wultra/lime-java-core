@@ -26,14 +26,12 @@ public class RestClientConfiguration {
 
     /**
      * Constructor of REST client configuration.
-     * @param baseUrl Base URL for all requests.
      */
-    public RestClientConfiguration(String baseUrl) {
-        this.baseUrl = baseUrl;
+    public RestClientConfiguration() {
     }
 
     // Basic settings
-    private final String baseUrl;
+    private String baseUrl;
     private MediaType contentType = MediaType.APPLICATION_JSON;
     private MediaType acceptType = MediaType.APPLICATION_JSON;
 
@@ -64,6 +62,14 @@ public class RestClientConfiguration {
      */
     public String getBaseUrl() {
         return baseUrl;
+    }
+
+    /**
+     * Set base URL.
+     * @param baseUrl Base URL.
+     */
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 
     /**

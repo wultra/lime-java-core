@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
-public class DefaultWebClientTest {
+public class DefaultRestClientTest {
 
     @Test
     public void testSimpleGet() throws RestClientException {

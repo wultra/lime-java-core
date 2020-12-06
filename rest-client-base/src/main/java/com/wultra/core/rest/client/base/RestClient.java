@@ -25,7 +25,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import java.util.function.Consumer;
 
 /**
- * REST client interface for both generic requests and response as well as for ObjectRequest/ObjectResponse types.
+ * REST client interface for both generic requests / responses as well as for the ObjectRequest / ObjectResponse types.
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */

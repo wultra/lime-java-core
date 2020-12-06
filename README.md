@@ -103,7 +103,9 @@ The example below shows very basic initialization and usage of the REST client w
 
 ```java
         RestClient restClient = new DefaultRestClient("http://localhost");
-        ResponseEntity<String> response = restClient.get("/api/status", new ParameterizedTypeReference<String>() {});
+        ResponseEntity<String> responseEntity = restClient.get("/api/status", new ParameterizedTypeReference<String>() {});
+        String response = responseEntity.getBody();
+        HttpHeaders headers = responseEntity.getHeaders();
 ```
 
 ### REST Client Configuration
@@ -152,6 +154,29 @@ The `path` parameter specified in requests can be either:
 - a partial request path, in this case the `baseUrl` parameter must be configured during initialization
 - a full URL, in this case the `baseUrl` parameter must not be configured during initialization
 
+### Sample Usage
+
+The example below shows how to use the Rest Client with `ObjectRequest` / `ObjectResponse` classes.
+
+```java
+        RestClient restClient = DefaultRestClient.builder()
+            .baseUrl("http://localhost:8080/my-app")
+            .build();
+
+        // The requestData object contains data object which is serialized and sent to the server
+        RequestData requestData = new RequestData(...);
+        ObjectRequest<RequestData> objectRequest = new ObjectRequest<RequestData>(requestData);
+        try {
+            ObjectResponse<ResponseData> objectResponse = restClient.postObject("/api/endpoint", objectRequest, ResponseData.class);
+            // The responseData object contains deserialized response received from the server
+            ResponseData responseData = objectResponse.getResponseObject();
+        } catch (RestClientException ex) {
+            if (ex.getStatusCode() == HttpStatus.BAD_REQUEST) {
+                // handle BAD_REQUEST error
+            }
+            ...
+        }
+```
 
 ### Error Handling
 

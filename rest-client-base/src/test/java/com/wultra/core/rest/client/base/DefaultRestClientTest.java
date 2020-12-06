@@ -30,7 +30,7 @@ public class DefaultRestClientTest {
 
     @Test
     public void testSimpleGet() throws RestClientException {
-        DefaultRestClient restClient = new DefaultRestClient("https://www.wultra.com");
+        RestClient restClient = new DefaultRestClient("https://www.wultra.com");
         ResponseEntity<String> response = restClient.get("/", new ParameterizedTypeReference<String>() {});
         assertTrue(response.toString().contains("<title>Secure Digital Finance - Authentication, Compliance, Mobile Security</title>"));
     }

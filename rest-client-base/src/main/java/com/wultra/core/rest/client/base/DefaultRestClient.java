@@ -66,13 +66,24 @@ public class DefaultRestClient implements RestClient {
     }
 
     /**
+     * Construct default REST client with specified configuration.
+     * @param config REST client configuration.
+     * @throws RestClientException Thrown in case client initialization fails.
+     */
+    public DefaultRestClient(RestClientConfiguration config) throws RestClientException {
+        // Use WebClient configuration from the config constructor parameter
+        this.config = config;
+        initializeWebClient();
+    }
+
+    /**
      * Private constructor for builder.
      * @param builder REST client builder.
      * @throws RestClientException Thrown in case client initialization fails.
      */
     private DefaultRestClient(Builder builder) throws RestClientException {
-        this.config = builder.config;
         // Use WebClient settings from the builder
+        this.config = builder.config;
         initializeWebClient();
     }
 
@@ -123,16 +134,17 @@ public class DefaultRestClient implements RestClient {
                             return tcpClient;
                         }
                 );
-        builder.exchangeStrategies(ExchangeStrategies.builder()
+
+        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
                 .codecs(configurer -> configurer
                         .defaultCodecs()
                         .maxInMemorySize(config.getMaxInMemorySize()))
-                .build());
+                .build();
+        builder.exchangeStrategies(exchangeStrategies);
 
         if (config.getHttpBasicAuthUsername() != null) {
             builder.filter(ExchangeFilterFunctions
-                    .basicAuthentication(config.getHttpBasicAuthUsername(), config.getHttpBasicAuthPassword()))
-                    .build();
+                    .basicAuthentication(config.getHttpBasicAuthUsername(), config.getHttpBasicAuthPassword()));
         }
 
         ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
@@ -146,9 +158,8 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public <T> ResponseEntity<T> get(String path, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
-        ClientResponse response;
         try {
-            response = buildUri(webClient.get(), path)
+            ClientResponse response = buildUri(webClient.get(), path)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -207,7 +218,6 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public <T> ResponseEntity<T> post(String path, Object request, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
-        ClientResponse response;
         try {
             WebClient.RequestBodySpec spec = buildUri(webClient.post(), path)
                     .headers(h -> {
@@ -217,7 +227,7 @@ public class DefaultRestClient implements RestClient {
                     })
                     .contentType(config.getContentType())
                     .accept(config.getAcceptType());
-            response = buildResponseMono(spec, request).block();
+            ClientResponse response = buildResponseMono(spec, request).block();
             validateResponse(response, responseType);
             return response.toEntity(responseType).block();
         } catch (RestClientException ex) {
@@ -270,7 +280,6 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public <T> ResponseEntity<T> put(String path, Object request, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
-        ClientResponse response;
         try {
             WebClient.RequestBodySpec spec = buildUri(webClient.put(), path)
                     .headers(h -> {
@@ -280,7 +289,7 @@ public class DefaultRestClient implements RestClient {
                     })
                     .contentType(config.getContentType())
                     .accept(config.getAcceptType());
-            response = buildResponseMono(spec, request).block();
+            ClientResponse response = buildResponseMono(spec, request).block();
             validateResponse(response, responseType);
             return response.toEntity(responseType).block();
         } catch (RestClientException ex) {
@@ -333,9 +342,8 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public <T> ResponseEntity<T> delete(String path, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
-        ClientResponse response;
         try {
-            response = buildUri(webClient.delete(), path)
+            ClientResponse response = buildUri(webClient.delete(), path)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -441,7 +449,7 @@ public class DefaultRestClient implements RestClient {
     }
 
     /**
-     * Build URI based on configuration of base URL and path.
+     * In case base URL is specified, append the path to complete the URL. Otherwise use the path as the URL specification.
      * @param uriSpec Request headers URI specification.
      * @param path URI path.
      * @return Request header specification.
@@ -455,7 +463,7 @@ public class DefaultRestClient implements RestClient {
     }
 
     /**
-     * Build URI based on configuration of base URL and path.
+     * In case base URL is specified, append the path to complete the URL. Otherwise use the path as the URL specification.
      * @param uriSpec Request headers URI specification.
      * @param path URI path.
      * @return Request header specification.

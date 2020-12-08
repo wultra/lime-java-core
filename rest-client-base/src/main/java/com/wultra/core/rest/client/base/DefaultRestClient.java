@@ -29,6 +29,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.*;
@@ -456,10 +457,14 @@ public class DefaultRestClient implements RestClient {
      * @return Request header specification.
      */
     private WebClient.RequestHeadersSpec<?> buildUri(WebClient.RequestHeadersUriSpec<?> uriSpec, String path, MultiValueMap<String, String> queryParams) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        if (queryParams != null) {
+            params.addAll(queryParams);
+        }
         if (config.getBaseUrl() == null) {
-            return uriSpec.uri(path, queryParams);
+            return uriSpec.uri(path, params);
         } else {
-            return uriSpec.uri(uriBuilder -> uriBuilder.path(path).queryParams(queryParams).build());
+            return uriSpec.uri(uriBuilder -> uriBuilder.path(path).queryParams(params).build());
         }
     }
 
@@ -471,10 +476,14 @@ public class DefaultRestClient implements RestClient {
      * @return Request header specification.
      */
     private WebClient.RequestBodySpec buildUri(WebClient.RequestBodyUriSpec uriSpec, String path, MultiValueMap<String, String> queryParams) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        if (queryParams != null) {
+            params.addAll(queryParams);
+        }
         if (config.getBaseUrl() == null) {
-            return uriSpec.uri(path, queryParams);
+            return uriSpec.uri(path, params);
         } else {
-            return uriSpec.uri(uriBuilder -> uriBuilder.path(path).queryParams(queryParams).build());
+            return uriSpec.uri(uriBuilder -> uriBuilder.path(path).queryParams(params).build());
         }
     }
 

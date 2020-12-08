@@ -153,13 +153,13 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public <T> ResponseEntity<T> get(String path, ParameterizedTypeReference<T> responseType) throws RestClientException {
-        return get(path, null, responseType);
+        return get(path, null, null, responseType);
     }
 
     @Override
-    public <T> ResponseEntity<T> get(String path, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
+    public <T> ResponseEntity<T> get(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
         try {
-            ClientResponse response = buildUri(webClient.get(), path)
+            ClientResponse response = buildUri(webClient.get(), path, queryParams)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -179,13 +179,13 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public void getNonBlocking(String path, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
-        getNonBlocking(path, null, onSuccess, onError);
+        getNonBlocking(path, null, null, onSuccess, onError);
     }
 
     @Override
-    public void getNonBlocking(String path, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+    public void getNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
-            buildUri(webClient.get(), path)
+            buildUri(webClient.get(), path, queryParams)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -201,25 +201,25 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public <T> ObjectResponse<T> getObject(String path, Class<T> responseType) throws RestClientException {
-        return getObject(path, null, responseType);
+        return getObject(path, null, null, responseType);
     }
 
     @Override
-    public <T> ObjectResponse<T> getObject(String path, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException {
+    public <T> ObjectResponse<T> getObject(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException {
         ParameterizedTypeReference<ObjectResponse<T>> typeReference = getTypeReference(responseType);
-        ResponseEntity<ObjectResponse<T>> responseEntity = get(path, headers, typeReference);
+        ResponseEntity<ObjectResponse<T>> responseEntity = get(path, queryParams, headers, typeReference);
         return responseEntity.getBody();
     }
 
     @Override
     public <T> ResponseEntity<T> post(String path, Object request, ParameterizedTypeReference<T> responseType) throws RestClientException {
-        return post(path, request, null, responseType);
+        return post(path, request, null, null, responseType);
     }
 
     @Override
-    public <T> ResponseEntity<T> post(String path, Object request, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
+    public <T> ResponseEntity<T> post(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
         try {
-            WebClient.RequestBodySpec spec = buildUri(webClient.post(), path)
+            WebClient.RequestBodySpec spec = buildUri(webClient.post(), path, queryParams)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -240,13 +240,13 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public void postNonBlocking(String path, Object request, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
-        postNonBlocking(path, request, null, onSuccess, onError);
+        postNonBlocking(path, request, null, null, onSuccess, onError);
     }
 
     @Override
-    public void postNonBlocking(String path, Object request, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+    public void postNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
-            WebClient.RequestBodySpec spec = buildUri(webClient.post(), path)
+            WebClient.RequestBodySpec spec = buildUri(webClient.post(), path, queryParams)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -263,25 +263,25 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public <T> ObjectResponse<T> postObject(String path, ObjectRequest<?> objectRequest, Class<T> responseType) throws RestClientException {
-        return postObject(path, objectRequest, null, responseType);
+        return postObject(path, objectRequest, null, null, responseType);
     }
 
     @Override
-    public <T> ObjectResponse<T> postObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException {
+    public <T> ObjectResponse<T> postObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException {
         ParameterizedTypeReference<ObjectResponse<T>> typeReference = getTypeReference(responseType);
-        ResponseEntity<ObjectResponse<T>> responseEntity = post(path, objectRequest, headers, typeReference);
+        ResponseEntity<ObjectResponse<T>> responseEntity = post(path, objectRequest, queryParams, headers, typeReference);
         return responseEntity.getBody();
     }
 
     @Override
     public <T> ResponseEntity<T> put(String path, Object request, ParameterizedTypeReference<T> responseType) throws RestClientException {
-        return put(path, request, null, responseType);
+        return put(path, request, null, null, responseType);
     }
 
     @Override
-    public <T> ResponseEntity<T> put(String path, Object request, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
+    public <T> ResponseEntity<T> put(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
         try {
-            WebClient.RequestBodySpec spec = buildUri(webClient.put(), path)
+            WebClient.RequestBodySpec spec = buildUri(webClient.put(), path, queryParams)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -302,13 +302,13 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public void putNonBlocking(String path, Object request, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
-        putNonBlocking(path, request, null, onSuccess, onError);
+        putNonBlocking(path, request, null, null, onSuccess, onError);
     }
 
     @Override
-    public void putNonBlocking(String path, Object request, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+    public void putNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
-            WebClient.RequestBodySpec spec = buildUri(webClient.put(), path)
+            WebClient.RequestBodySpec spec = buildUri(webClient.put(), path, queryParams)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -325,25 +325,25 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public <T> ObjectResponse<T> putObject(String path, ObjectRequest<?> objectRequest, Class<T> responseType) throws RestClientException {
-        return putObject(path, objectRequest, null ,responseType);
+        return putObject(path, objectRequest, null, null ,responseType);
     }
 
     @Override
-    public <T> ObjectResponse<T> putObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException {
+    public <T> ObjectResponse<T> putObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException {
         ParameterizedTypeReference<ObjectResponse<T>> typeReference = getTypeReference(responseType);
-        ResponseEntity<ObjectResponse<T>> responseEntity = put(path, objectRequest, headers, typeReference);
+        ResponseEntity<ObjectResponse<T>> responseEntity = put(path, objectRequest, queryParams, headers, typeReference);
         return responseEntity.getBody();
     }
 
     @Override
     public <T> ResponseEntity<T> delete(String path, ParameterizedTypeReference<T> responseType) throws RestClientException {
-        return delete(path, null, responseType);
+        return delete(path, null, null, responseType);
     }
 
     @Override
-    public <T> ResponseEntity<T> delete(String path, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
+    public <T> ResponseEntity<T> delete(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
         try {
-            ClientResponse response = buildUri(webClient.delete(), path)
+            ClientResponse response = buildUri(webClient.delete(), path, queryParams)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -363,13 +363,13 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public void deleteNonBlocking(String path, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
-        deleteNonBlocking(path, null, onSuccess, onError);
+        deleteNonBlocking(path, null, null, onSuccess, onError);
     }
 
     @Override
-    public void deleteNonBlocking(String path, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+    public void deleteNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
-            buildUri(webClient.delete(), path)
+            buildUri(webClient.delete(), path, queryParams)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
@@ -385,12 +385,12 @@ public class DefaultRestClient implements RestClient {
 
     @Override
     public <T> ObjectResponse<T> deleteObject(String path, Class<T> responseType) throws RestClientException {
-        return deleteObject(path, null, responseType);
+        return deleteObject(path, null, null, responseType);
     }
 
     @Override
-    public <T> ObjectResponse<T> deleteObject(String path, MultiValueMap<String, String> headers,Class<T> responseType) throws RestClientException {
-        ResponseEntity<ObjectResponse<T>> responseEntity = delete(path, headers, getTypeReference(responseType));
+    public <T> ObjectResponse<T> deleteObject(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException {
+        ResponseEntity<ObjectResponse<T>> responseEntity = delete(path, queryParams, headers, getTypeReference(responseType));
         return responseEntity.getBody();
     }
 
@@ -452,13 +452,14 @@ public class DefaultRestClient implements RestClient {
      * In case base URL is specified, append the path to complete the URL. Otherwise use the path as the URL specification.
      * @param uriSpec Request headers URI specification.
      * @param path URI path.
+     * @param queryParams Query parameters.
      * @return Request header specification.
      */
-    private WebClient.RequestHeadersSpec<?> buildUri(WebClient.RequestHeadersUriSpec<?> uriSpec, String path) {
+    private WebClient.RequestHeadersSpec<?> buildUri(WebClient.RequestHeadersUriSpec<?> uriSpec, String path, MultiValueMap<String, String> queryParams) {
         if (config.getBaseUrl() == null) {
-            return uriSpec.uri(path);
+            return uriSpec.uri(path, queryParams);
         } else {
-            return uriSpec.uri(uriBuilder -> uriBuilder.path(path).build());
+            return uriSpec.uri(uriBuilder -> uriBuilder.path(path).queryParams(queryParams).build());
         }
     }
 
@@ -466,13 +467,14 @@ public class DefaultRestClient implements RestClient {
      * In case base URL is specified, append the path to complete the URL. Otherwise use the path as the URL specification.
      * @param uriSpec Request headers URI specification.
      * @param path URI path.
+     * @param queryParams Query parameters.
      * @return Request header specification.
      */
-    private WebClient.RequestBodySpec buildUri(WebClient.RequestBodyUriSpec uriSpec, String path) {
+    private WebClient.RequestBodySpec buildUri(WebClient.RequestBodyUriSpec uriSpec, String path, MultiValueMap<String, String> queryParams) {
         if (config.getBaseUrl() == null) {
-            return uriSpec.uri(path);
+            return uriSpec.uri(path, queryParams);
         } else {
-            return uriSpec.uri(uriBuilder -> uriBuilder.path(path).build());
+            return uriSpec.uri(uriBuilder -> uriBuilder.path(path).queryParams(queryParams).build());
         }
     }
 

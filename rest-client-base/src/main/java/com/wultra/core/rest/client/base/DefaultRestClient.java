@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ErrorResponse;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
+import io.getlime.core.rest.model.base.response.Response;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -201,6 +202,16 @@ public class DefaultRestClient implements RestClient {
     }
 
     @Override
+    public Response getObject(String path) throws RestClientException {
+        return get(path, new ParameterizedTypeReference<Response>(){}).getBody();
+    }
+
+    @Override
+    public Response getObject(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers) throws RestClientException {
+        return get(path, queryParams, headers, new ParameterizedTypeReference<Response>(){}).getBody();
+    }
+
+    @Override
     public <T> ObjectResponse<T> getObject(String path, Class<T> responseType) throws RestClientException {
         return getObject(path, null, null, responseType);
     }
@@ -260,6 +271,16 @@ public class DefaultRestClient implements RestClient {
         } catch (Exception ex) {
             throw new RestClientException("HTTP POST request failed", ex);
         }
+    }
+
+    @Override
+    public Response postObject(String path, ObjectRequest<?> objectRequest) throws RestClientException {
+        return post(path, objectRequest, new ParameterizedTypeReference<Response>(){}).getBody();
+    }
+
+    @Override
+    public Response postObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers) throws RestClientException {
+        return post(path, objectRequest, queryParams, headers, new ParameterizedTypeReference<Response>(){}).getBody();
     }
 
     @Override
@@ -325,6 +346,16 @@ public class DefaultRestClient implements RestClient {
     }
 
     @Override
+    public Response putObject(String path, ObjectRequest<?> objectRequest) throws RestClientException {
+        return put(path, objectRequest, new ParameterizedTypeReference<Response>(){}).getBody();
+    }
+
+    @Override
+    public Response putObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers) throws RestClientException {
+        return put(path, objectRequest, queryParams, headers, new ParameterizedTypeReference<Response>(){}).getBody();
+    }
+
+    @Override
     public <T> ObjectResponse<T> putObject(String path, ObjectRequest<?> objectRequest, Class<T> responseType) throws RestClientException {
         return putObject(path, objectRequest, null, null ,responseType);
     }
@@ -382,6 +413,16 @@ public class DefaultRestClient implements RestClient {
         } catch (Exception ex) {
             throw new RestClientException("HTTP DELETE request failed", ex);
         }
+    }
+
+    @Override
+    public Response deleteObject(String path) throws RestClientException {
+        return delete(path, new ParameterizedTypeReference<Response>(){}).getBody();
+    }
+
+    @Override
+    public Response deleteObject(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers) throws RestClientException {
+        return delete(path, queryParams, headers, new ParameterizedTypeReference<Response>(){}).getBody();
     }
 
     @Override

@@ -25,7 +25,9 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import org.reactivestreams.Publisher;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -534,8 +536,12 @@ public class DefaultRestClient implements RestClient {
      * @param request Request data.
      * @return Mono with ClientResponse.
      */
+    @SuppressWarnings("unchecked")
     private Mono<ClientResponse> buildResponseMono(WebClient.RequestBodySpec requestSpec, Object request) {
         if (request != null) {
+            if (request instanceof Publisher) {
+                return requestSpec.body(BodyInserters.fromDataBuffers((Publisher<DataBuffer>) request)).exchange();
+            }
             return requestSpec.body(BodyInserters.fromValue(request)).exchange();
         } else {
             return requestSpec.exchange();

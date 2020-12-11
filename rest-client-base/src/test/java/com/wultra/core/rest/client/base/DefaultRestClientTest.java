@@ -37,7 +37,6 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import reactor.core.publisher.Flux;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
@@ -79,10 +78,11 @@ public class DefaultRestClientTest {
     @Test
     public void testGetWithResponseNonBlocking() throws RestClientException {
         Consumer<ClientResponse> onSuccess = body -> {
-            ResponseEntity<Response> responseEntity = body.toEntity(Response.class).block();
-            assertNotNull(responseEntity);
-            assertNotNull(responseEntity.getBody());
-            assertEquals("OK", responseEntity.getBody().getStatus());
+            body.toEntity(Response.class).subscribe(responseEntity -> {
+                assertNotNull(responseEntity);
+                assertNotNull(responseEntity.getBody());
+                assertEquals("OK", responseEntity.getBody().getStatus());
+            });
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
         restClient.getNonBlocking("/response", onSuccess, onError);
@@ -127,10 +127,12 @@ public class DefaultRestClientTest {
     @Test
     public void testPostWithResponseNonBlocking() throws RestClientException {
         Consumer<ClientResponse> onSuccess = body -> {
-            ResponseEntity<Response> responseEntity = body.toEntity(Response.class).block();
-            assertNotNull(responseEntity);
-            assertNotNull(responseEntity.getBody());
-            assertEquals("OK", responseEntity.getBody().getStatus());
+            body.toEntity(Response.class).subscribe(responseEntity -> {
+                assertNotNull(responseEntity);
+                assertNotNull(responseEntity.getBody());
+                assertEquals("OK", responseEntity.getBody().getStatus());
+
+            });
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
         restClient.postNonBlocking("/response", null, onSuccess, onError);
@@ -184,11 +186,12 @@ public class DefaultRestClientTest {
         String requestData = String.valueOf(System.currentTimeMillis());
         ObjectRequest<TestRequest> request = new ObjectRequest<>(new TestRequest(requestData));
         Consumer<ClientResponse> onSuccess = body -> {
-            ResponseEntity<ObjectResponse<TestResponse>> responseEntity = body.toEntity(new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}).block();
-            assertNotNull(responseEntity);
-            assertNotNull(responseEntity.getBody());
-            assertNotNull(responseEntity.getBody().getResponseObject());
-            assertEquals("OK", responseEntity.getBody().getStatus());
+            body.toEntity(new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}).subscribe(responseEntity -> {
+                assertNotNull(responseEntity);
+                assertNotNull(responseEntity.getBody());
+                assertNotNull(responseEntity.getBody().getResponseObject());
+                assertEquals("OK", responseEntity.getBody().getStatus());
+            });
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
         restClient.postNonBlocking("/object-request-response", request, onSuccess, onError);
@@ -211,10 +214,11 @@ public class DefaultRestClientTest {
     @Test
     public void testPutWithResponseNonBlocking() throws RestClientException {
         Consumer<ClientResponse> onSuccess = body -> {
-            ResponseEntity<Response> responseEntity = body.toEntity(Response.class).block();
-            assertNotNull(responseEntity);
-            assertNotNull(responseEntity.getBody());
-            assertEquals("OK", responseEntity.getBody().getStatus());
+            body.toEntity(Response.class).subscribe(responseEntity -> {
+                assertNotNull(responseEntity);
+                assertNotNull(responseEntity.getBody());
+                assertEquals("OK", responseEntity.getBody().getStatus());
+            });
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
         restClient.putNonBlocking("/response", null, onSuccess, onError);
@@ -268,11 +272,12 @@ public class DefaultRestClientTest {
         String requestData = String.valueOf(System.currentTimeMillis());
         ObjectRequest<TestRequest> request = new ObjectRequest<>(new TestRequest(requestData));
         Consumer<ClientResponse> onSuccess = body -> {
-            ResponseEntity<ObjectResponse<TestResponse>> responseEntity = body.toEntity(new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}).block();
-            assertNotNull(responseEntity);
-            assertNotNull(responseEntity.getBody());
-            assertNotNull(responseEntity.getBody().getResponseObject());
-            assertEquals("OK", responseEntity.getBody().getStatus());
+            body.toEntity(new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}).subscribe(responseEntity -> {
+                assertNotNull(responseEntity);
+                assertNotNull(responseEntity.getBody());
+                assertNotNull(responseEntity.getBody().getResponseObject());
+                assertEquals("OK", responseEntity.getBody().getStatus());
+            });
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
         restClient.putNonBlocking("/object-request-response", request, onSuccess, onError);
@@ -295,10 +300,12 @@ public class DefaultRestClientTest {
     @Test
     public void testDeleteWithResponseNonBlocking() throws RestClientException {
         Consumer<ClientResponse> onSuccess = body -> {
-            ResponseEntity<Response> responseEntity = body.toEntity(Response.class).block();
-            assertNotNull(responseEntity);
-            assertNotNull(responseEntity.getBody());
-            assertEquals("OK", responseEntity.getBody().getStatus());
+            body.toEntity(Response.class).subscribe(responseEntity -> {
+                assertNotNull(responseEntity);
+                assertNotNull(responseEntity.getBody());
+                assertEquals("OK", responseEntity.getBody().getStatus());
+
+            });
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
         restClient.deleteNonBlocking("/response", onSuccess, onError);

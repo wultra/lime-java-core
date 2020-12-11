@@ -1,0 +1,116 @@
+/*
+ * Copyright 2020 Wultra s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.wultra.core.rest.client.base.controller;
+
+import com.wultra.core.rest.client.base.model.TestRequest;
+import com.wultra.core.rest.client.base.model.TestResponse;
+import com.wultra.core.rest.client.base.model.error.RestException;
+import io.getlime.core.rest.model.base.request.ObjectRequest;
+import io.getlime.core.rest.model.base.response.ObjectResponse;
+import io.getlime.core.rest.model.base.response.Response;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Rest controller for tests.
+ *
+ * @author Roman Strobl, roman.strobl@wultra.com
+ */
+@RestController
+@RequestMapping("/api/test")
+public class TestRestController {
+
+    @GetMapping("/response")
+    public Response testGetWithResponse() {
+        return new Response();
+    }
+
+    @GetMapping("/test-response")
+    public TestResponse testGetWithTestResponse() {
+        return new TestResponse("test response");
+    }
+
+    @GetMapping("/object-response")
+    public ObjectResponse<TestResponse> testGetWithObjectResponse() {
+        TestResponse testResponse = new TestResponse("object response");
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PostMapping("/response")
+    public Response testPostWithResponse() {
+        return new Response();
+    }
+
+    @PostMapping("/test-response")
+    public TestResponse testPostWithTestResponse() {
+        return new TestResponse("test response");
+    }
+
+    @PostMapping("/object-response")
+    public ObjectResponse<TestResponse> testPostWithObjectResponse() {
+        TestResponse testResponse = new TestResponse("object response");
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PostMapping("/object-request-response")
+    public ObjectResponse<TestResponse> testPostWithObjectRequestAndResponse(@RequestBody ObjectRequest<TestRequest> request) {
+        TestResponse testResponse = new TestResponse(request.getRequestObject().getRequest());
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PutMapping("/response")
+    public Response testPutWithResponse() {
+        return new Response();
+    }
+
+    @PutMapping("/test-response")
+    public TestResponse testPutWithTestResponse() {
+        return new TestResponse("test response");
+    }
+
+    @PutMapping("/object-response")
+    public ObjectResponse<TestResponse> testPutWithObjectResponse() {
+        TestResponse testResponse = new TestResponse("object response");
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PutMapping("/object-request-response")
+    public ObjectResponse<TestResponse> testPutWithObjectRequestAndResponse(@RequestBody ObjectRequest<TestRequest> request) {
+        TestResponse testResponse = new TestResponse(request.getRequestObject().getRequest());
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @DeleteMapping("/response")
+    public Response testDeleteWithResponse() {
+        return new Response();
+    }
+
+    @DeleteMapping("/test-response")
+    public TestResponse testDeleteWithTestResponse() {
+        return new TestResponse("test response");
+    }
+
+    @DeleteMapping("/object-response")
+    public ObjectResponse<TestResponse> testDeleteWithObjectResponse() {
+        TestResponse testResponse = new TestResponse("object response");
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PostMapping("/error-response")
+    public ObjectResponse<TestResponse> testErrorResponse() throws RestException {
+        throw new RestException();
+    }
+
+}

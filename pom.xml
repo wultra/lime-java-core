@@ -5,18 +5,18 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>lime-java-core-parent</name>
-	<description>Lime - Core Java Libraries</description>
+	<description>Wultra - Core Java Libraries</description>
 	<groupId>io.getlime.core</groupId>
 	<artifactId>lime-java-core-parent</artifactId>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<packaging>pom</packaging>
 
 	<inceptionYear>2017</inceptionYear>
-	<url>http://getlime.io/</url>
+	<url>https://wultra.com/</url>
 
 	<organization>
-		<name>Lime - HighTech Solutions Inc.</name>
-		<url>http://getlime.io/</url>
+		<name>Wultra s.r.o.</name>
+		<url>https://wultra.com/</url>
 	</organization>
 
 	<licenses>
@@ -27,15 +27,15 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:https://github.com/lime-company/lime-java-core.git</connection>
-		<developerConnection>scm:git:https://github.com/lime-company/lime-java-core.git</developerConnection>
-		<url>https://github.com/lime-company/lime-java-core</url>
+		<connection>scm:git:https://github.com/wultra/lime-java-core.git</connection>
+		<developerConnection>scm:git:https://github.com/wultra/lime-java-core.git</developerConnection>
+		<url>https://github.com/wultra/lime-java-core</url>
 	</scm>
 
 	<developers>
 		<developer>
 			<name>Petr Dvorak</name>
-			<email>petr@lime-company.eu</email>
+			<email>petr@wultra.com</email>
 			<roles>
 				<role>developer</role>
 			</roles>
@@ -44,12 +44,13 @@
 
 	<modules>
 		<module>rest-model-base</module>
+		<module>rest-client-base</module>
 	</modules>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>8</maven.compiler.source>
+		<maven.compiler.target>8</maven.compiler.target>
 	</properties>
 
 	<build>
@@ -57,7 +58,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>2.4</version>
+				<version>3.2.1</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -71,7 +72,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.1</version>
+				<version>3.2.0</version>
 				<configuration>
 					<failOnError>false</failOnError>
 				</configuration>

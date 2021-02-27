@@ -15,6 +15,7 @@
  */
 package com.wultra.core.rest.client.base;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
 
 /**
@@ -55,6 +56,9 @@ public class RestClientConfiguration {
     private boolean httpBasicAuthEnabled = false;
     private String httpBasicAuthUsername;
     private String httpBasicAuthPassword;
+
+    // Custom object mapper
+    private ObjectMapper objectMapper;
 
     /**
      * Get base URL.
@@ -278,5 +282,21 @@ public class RestClientConfiguration {
      */
     public void setHttpBasicAuthPassword(String httpBasicAuthPassword) {
         this.httpBasicAuthPassword = httpBasicAuthPassword;
+    }
+
+    /**
+     * Get the object mapper.
+     * @return Object mapper.
+     */
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    /**
+     * Set the object mapper.
+     * @param objectMapper Object mapper.
+     */
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 }

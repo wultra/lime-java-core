@@ -32,6 +32,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.http.codec.ClientCodecConfigurer;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -139,10 +142,16 @@ public class DefaultRestClient implements RestClient {
                         }
                 );
 
+        final ObjectMapper objectMapper = config.getObjectMapper();
         ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
-                .codecs(configurer -> configurer
-                        .defaultCodecs()
-                        .maxInMemorySize(config.getMaxInMemorySize()))
+                .codecs(configurer -> {
+                    ClientCodecConfigurer.ClientDefaultCodecs defaultCodecs = configurer.defaultCodecs();
+                    if (objectMapper != null) {
+                        defaultCodecs.jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON));
+                        defaultCodecs.jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON));
+                    }
+                    defaultCodecs.maxInMemorySize(config.getMaxInMemorySize());
+                })
                 .build();
         builder.exchangeStrategies(exchangeStrategies);
 

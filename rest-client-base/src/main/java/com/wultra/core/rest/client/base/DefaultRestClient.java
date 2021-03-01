@@ -142,7 +142,7 @@ public class DefaultRestClient implements RestClient {
                         }
                 );
 
-        ObjectMapper objectMapper = config.getObjectMapper();
+        final ObjectMapper objectMapper = config.getObjectMapper();
         ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
                 .codecs(configurer -> {
                     ClientCodecConfigurer.ClientDefaultCodecs defaultCodecs = configurer.defaultCodecs();

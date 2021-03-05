@@ -160,6 +160,10 @@ public class DefaultRestClient implements RestClient {
                     .basicAuthentication(config.getHttpBasicAuthUsername(), config.getHttpBasicAuthPassword()));
         }
 
+        if (config.getFilter() != null) {
+            builder.filter(config.getFilter());
+        }
+
         ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
     }

@@ -15,6 +15,8 @@
  */
 package io.getlime.core.rest.model.base.response;
 
+import javax.validation.Valid;
+
 /**
  * Generic response with status and object object of a custom class.
  *
@@ -24,6 +26,7 @@ package io.getlime.core.rest.model.base.response;
  */
 public class ObjectResponse<T> extends Response {
 
+    @Valid
     private T responseObject;
 
     /**

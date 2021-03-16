@@ -15,6 +15,8 @@
  */
 package io.getlime.core.rest.model.base.response;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * Simple status only response object.
  *
@@ -39,6 +41,7 @@ public class Response {
 
     }
 
+    @NotBlank
     protected String status;
 
     /**

@@ -17,6 +17,7 @@ package com.wultra.core.rest.client.base;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
 /**
  * REST client configuration.
@@ -59,6 +60,9 @@ public class RestClientConfiguration {
 
     // Custom object mapper
     private ObjectMapper objectMapper;
+
+    // Custom filter
+    private ExchangeFilterFunction filter;
 
     /**
      * Get base URL.
@@ -298,5 +302,21 @@ public class RestClientConfiguration {
      */
     public void setObjectMapper(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+    }
+
+    /**
+     * Get the exchange filter function.
+     * @return Exchange filter function.
+     */
+    public ExchangeFilterFunction getFilter() {
+        return filter;
+    }
+
+    /**
+     * Set the exchange filter function.
+     * @param filter Exchange filter function.
+     */
+    public void setFilter(ExchangeFilterFunction filter) {
+        this.filter = filter;
     }
 }

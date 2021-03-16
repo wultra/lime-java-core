@@ -16,6 +16,7 @@
 package io.getlime.core.rest.model.base.request;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
  * Simple class representing a request with an object.
@@ -27,6 +28,7 @@ import javax.validation.Valid;
 public class ObjectRequest<T> {
 
     @Valid
+    @NotNull
     private T requestObject;
 
     /**

@@ -16,6 +16,7 @@
 package io.getlime.core.rest.model.base.response;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
  * Generic response with status and object object of a custom class.
@@ -27,6 +28,7 @@ import javax.validation.Valid;
 public class ObjectResponse<T> extends Response {
 
     @Valid
+    @NotNull
     private T responseObject;
 
     /**

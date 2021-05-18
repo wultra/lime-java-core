@@ -27,7 +27,7 @@ public class Error {
     /**
      * List of defined error code constants.
      */
-    public class Code {
+    public static class Code {
         /**
          * Generic error occurred.
          */
@@ -37,7 +37,7 @@ public class Error {
     /**
      * List of defined message constants.
      */
-    public class Message {
+    public static class Message {
         /**
          * Unknown error.
          */

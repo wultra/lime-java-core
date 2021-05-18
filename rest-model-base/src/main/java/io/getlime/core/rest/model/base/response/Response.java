@@ -27,7 +27,7 @@ public class Response {
     /**
      * Response status string.
      */
-    public class Status {
+    public static class Status {
 
         /**
          * In case response was OK.

@@ -38,10 +38,13 @@ import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.*;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunctions;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.tcp.ProxyProvider;
+import reactor.netty.transport.ProxyProvider;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
@@ -119,28 +122,24 @@ public class DefaultRestClient implements RestClient {
         } catch (SSLException ex) {
             throw new RestClientException("SSL error occurred: " + ex.getMessage(), ex);
         }
-        httpClient = httpClient.tcpConfiguration(tcpClient -> {
-                            if (config.getConnectionTimeout() != null) {
-                                tcpClient = tcpClient.option(
-                                        ChannelOption.CONNECT_TIMEOUT_MILLIS,
-                                        config.getConnectionTimeout());
-                            }
-                            if (config.isProxyEnabled()) {
-                                tcpClient = tcpClient.proxy(proxySpec -> {
-                                    ProxyProvider.Builder proxyBuilder = proxySpec
-                                            .type(ProxyProvider.Proxy.HTTP)
-                                            .host(config.getProxyHost())
-                                            .port(config.getProxyPort());
-                                    if (config.getProxyUsername() != null && !config.getProxyUsername().isEmpty()) {
-                                        proxyBuilder.username(config.getProxyUsername());
-                                        proxyBuilder.password(s -> config.getProxyPassword());
-                                    }
-                                    proxyBuilder.build();
-                                });
-                            }
-                            return tcpClient;
-                        }
-                );
+        if (config.getConnectionTimeout() != null) {
+            httpClient.option(
+                    ChannelOption.CONNECT_TIMEOUT_MILLIS,
+                    config.getConnectionTimeout());
+        }
+        if (config.isProxyEnabled()) {
+            httpClient.proxy(proxySpec -> {
+                ProxyProvider.Builder proxyBuilder = proxySpec
+                        .type(ProxyProvider.Proxy.HTTP)
+                        .host(config.getProxyHost())
+                        .port(config.getProxyPort());
+                if (config.getProxyUsername() != null && !config.getProxyUsername().isEmpty()) {
+                    proxyBuilder.username(config.getProxyUsername());
+                    proxyBuilder.password(s -> config.getProxyPassword());
+                }
+                proxyBuilder.build();
+            });
+        }
 
         final ObjectMapper objectMapper = config.getObjectMapper();
         ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
@@ -176,31 +175,30 @@ public class DefaultRestClient implements RestClient {
     @Override
     public <T> ResponseEntity<T> get(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
         try {
-            ClientResponse response = buildUri(webClient.get(), path, queryParams)
+            return buildUri(webClient.get(), path, queryParams)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
                         }
                     })
-                    .exchange()
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
                     .block();
-            validateResponse(response, responseType);
-            return response.toEntity(responseType).block();
-        } catch (RestClientException ex) {
-            // Rethrow validation errors
-            throw ex;
         } catch (Exception ex) {
+            if (ex.getCause() instanceof RestClientException) {
+                // Throw exceptions created by REST client
+                throw (RestClientException) ex.getCause();
+            }
             throw new RestClientException("HTTP GET request failed", ex);
         }
     }
 
     @Override
-    public void getNonBlocking(String path, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
-        getNonBlocking(path, null, null, onSuccess, onError);
+    public <T> void getNonBlocking(String path, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+        getNonBlocking(path, null, null, responseType, onSuccess, onError);
     }
 
     @Override
-    public void getNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+    public <T> void getNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
             buildUri(webClient.get(), path, queryParams)
                     .headers(h -> {
@@ -209,7 +207,7 @@ public class DefaultRestClient implements RestClient {
                         }
                     })
                     .accept(config.getAcceptType())
-                    .exchange()
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
                     .subscribe(onSuccess, onError);
         } catch (Exception ex) {
             throw new RestClientException("HTTP GET request failed", ex);
@@ -254,24 +252,25 @@ public class DefaultRestClient implements RestClient {
                     })
                     .contentType(config.getContentType())
                     .accept(config.getAcceptType());
-            ClientResponse response = buildResponseMono(spec, request).block();
-            validateResponse(response, responseType);
-            return response.toEntity(responseType).block();
-        } catch (RestClientException ex) {
-            // Rethrow validation errors
-            throw ex;
+            return buildRequest(spec, request)
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
+                    .block();
         } catch (Exception ex) {
+            if (ex.getCause() instanceof RestClientException) {
+                // Throw exceptions created by REST client
+                throw (RestClientException) ex.getCause();
+            }
             throw new RestClientException("HTTP POST request failed", ex);
         }
     }
 
     @Override
-    public void postNonBlocking(String path, Object request, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
-        postNonBlocking(path, request, null, null, onSuccess, onError);
+    public <T> void postNonBlocking(String path, Object request,  ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+        postNonBlocking(path, request, null, null, responseType, onSuccess, onError);
     }
 
     @Override
-    public void postNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+    public <T> void postNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers,  ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
             WebClient.RequestBodySpec spec = buildUri(webClient.post(), path, queryParams)
                     .headers(h -> {
@@ -281,8 +280,9 @@ public class DefaultRestClient implements RestClient {
                     })
                     .contentType(config.getContentType())
                     .accept(config.getAcceptType());
-            Mono<ClientResponse> responseMono = buildResponseMono(spec, request);
-            responseMono.subscribe(onSuccess, onError);
+            buildRequest(spec, request)
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
+                    .subscribe(onSuccess, onError);
         } catch (Exception ex) {
             throw new RestClientException("HTTP POST request failed", ex);
         }
@@ -326,24 +326,25 @@ public class DefaultRestClient implements RestClient {
                     })
                     .contentType(config.getContentType())
                     .accept(config.getAcceptType());
-            ClientResponse response = buildResponseMono(spec, request).block();
-            validateResponse(response, responseType);
-            return response.toEntity(responseType).block();
-        } catch (RestClientException ex) {
-            // Rethrow validation errors
-            throw ex;
+            return buildRequest(spec, request)
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
+                    .block();
         } catch (Exception ex) {
+            if (ex.getCause() instanceof RestClientException) {
+                // Throw exceptions created by REST client
+                throw (RestClientException) ex.getCause();
+            }
             throw new RestClientException("HTTP PUT request failed", ex);
         }
     }
 
     @Override
-    public void putNonBlocking(String path, Object request, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
-        putNonBlocking(path, request, null, null, onSuccess, onError);
+    public <T> void putNonBlocking(String path, Object request,  ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+        putNonBlocking(path, request, null, null, responseType, onSuccess, onError);
     }
 
     @Override
-    public void putNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+    public <T> void putNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers,  ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
             WebClient.RequestBodySpec spec = buildUri(webClient.put(), path, queryParams)
                     .headers(h -> {
@@ -353,8 +354,9 @@ public class DefaultRestClient implements RestClient {
                     })
                     .contentType(config.getContentType())
                     .accept(config.getAcceptType());
-            Mono<ClientResponse> responseMono = buildResponseMono(spec, request);
-            responseMono.subscribe(onSuccess, onError);
+            buildRequest(spec, request)
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
+                    .subscribe(onSuccess, onError);
         } catch (Exception ex) {
             throw new RestClientException("HTTP PUT request failed", ex);
         }
@@ -390,31 +392,30 @@ public class DefaultRestClient implements RestClient {
     @Override
     public <T> ResponseEntity<T> delete(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
         try {
-            ClientResponse response = buildUri(webClient.delete(), path, queryParams)
+            return buildUri(webClient.delete(), path, queryParams)
                     .headers(h -> {
                         if (headers != null) {
                             h.addAll(headers);
                         }
                     })
-                    .exchange()
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
                     .block();
-            validateResponse(response, responseType);
-            return response.toEntity(responseType).block();
-        } catch (RestClientException ex) {
-            // Rethrow validation errors
-            throw ex;
         } catch (Exception ex) {
+            if (ex.getCause() instanceof RestClientException) {
+                // Throw exceptions created by REST client
+                throw (RestClientException) ex.getCause();
+            }
             throw new RestClientException("HTTP DELETE request failed", ex);
         }
     }
 
     @Override
-    public void deleteNonBlocking(String path, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
-        deleteNonBlocking(path, null, null, onSuccess, onError);
+    public <T> void deleteNonBlocking(String path,  ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+        deleteNonBlocking(path, null, null, responseType, onSuccess, onError);
     }
 
     @Override
-    public void deleteNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+    public <T> void deleteNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
         try {
             buildUri(webClient.delete(), path, queryParams)
                     .headers(h -> {
@@ -423,7 +424,7 @@ public class DefaultRestClient implements RestClient {
                         }
                     })
                     .accept(config.getAcceptType())
-                    .exchange()
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
                     .subscribe(onSuccess, onError);
         } catch (Exception ex) {
             throw new RestClientException("HTTP DELETE request failed", ex);
@@ -467,20 +468,18 @@ public class DefaultRestClient implements RestClient {
     }
 
     /**
-     * Validate response and response type.
+     * Handle error response for non-blocking calls.
      * @param response Client response.
-     * @param responseType Response type.
-     * @throws RestClientException Thrown in case validation fails.
+     * @param responseType Expected response type.
+     * @return Exception created for the error response.
      */
-    private void validateResponse(ClientResponse response, ParameterizedTypeReference<?> responseType) throws RestClientException {
-        if (response == null) {
-            throw new RestClientException("Missing response");
+    private <T> Mono<ResponseEntity<T>> handleResponse(ClientResponse response, ParameterizedTypeReference<T> responseType) {
+        if (!response.statusCode().isError()) {
+            // OK response
+            return response.toEntity(responseType);
         }
-        if (responseType == null) {
-            throw new RestClientException("Missing response type");
-        }
-        if (response.statusCode().isError()) {
-            ResponseEntity<String> rawResponseEntity = response.toEntity(String.class).block();
+        // Error handling
+        return response.toEntity(String.class).flatMap(rawResponseEntity -> {
             String rawResponse = null;
             HttpHeaders rawResponseHeaders = null;
             if (rawResponseEntity != null) {
@@ -495,14 +494,14 @@ public class DefaultRestClient implements RestClient {
                     ObjectMapper objectMapper = new ObjectMapper();
                     ErrorResponse errorResponse = objectMapper.readValue(rawResponse, ErrorResponse.class);
                     if (errorResponse != null) {
-                        throw new RestClientException("HTTP error occurred: " + response.statusCode(), response.statusCode(), rawResponse, rawResponseHeaders, errorResponse);
+                        return Mono.error(new RestClientException("HTTP error occurred: " + response.statusCode(), response.statusCode(), rawResponse, rawResponseHeaders, errorResponse));
                     }
                 } catch (IOException ex) {
                     // Exception is handled silently, ErrorResponse is not available, use a regular error with raw response
                 }
             }
-            throw new RestClientException("HTTP error occurred: " + response.statusCode(), response.statusCode(), rawResponse, rawResponseHeaders);
-        }
+            return Mono.error(new RestClientException("HTTP error occurred: " + response.statusCode(), response.statusCode(), rawResponse, rawResponseHeaders));
+        });
     }
 
     /**
@@ -544,20 +543,20 @@ public class DefaultRestClient implements RestClient {
     }
 
     /**
-     * Build response Mono for given request specification.
-     * @param requestSpec Request specification.
+     * Build request for various request types.
+     * @param requestSpec Request body specification.
      * @param request Request data.
-     * @return Mono with ClientResponse.
+     * @return Updated header specification.
      */
     @SuppressWarnings("unchecked")
-    private Mono<ClientResponse> buildResponseMono(WebClient.RequestBodySpec requestSpec, Object request) {
+    private WebClient.RequestHeadersSpec<?> buildRequest(WebClient.RequestBodySpec requestSpec, Object request) {
         if (request != null) {
             if (request instanceof Publisher) {
-                return requestSpec.body(BodyInserters.fromDataBuffers((Publisher<DataBuffer>) request)).exchange();
+                return requestSpec.body(BodyInserters.fromDataBuffers((Publisher<DataBuffer>) request));
             }
-            return requestSpec.body(BodyInserters.fromValue(request)).exchange();
+            return requestSpec.body(BodyInserters.fromValue(request));
         } else {
-            return requestSpec.exchange();
+            return requestSpec;
         }
     }
 

@@ -468,10 +468,10 @@ public class DefaultRestClient implements RestClient {
     }
 
     /**
-     * Handle error response for non-blocking calls.
+     * Handle response using non-blocking calls.
      * @param response Client response.
      * @param responseType Expected response type.
-     * @return Exception created for the error response.
+     * @return Mono with response entity or error.
      */
     private <T> Mono<ResponseEntity<T>> handleResponse(ClientResponse response, ParameterizedTypeReference<T> responseType) {
         if (!response.statusCode().isError()) {

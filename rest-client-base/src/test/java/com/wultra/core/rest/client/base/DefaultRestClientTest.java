@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wultra.core.rest.client.base.model.TestRequest;
 import com.wultra.core.rest.client.base.model.TestResponse;
 import io.getlime.core.rest.model.base.request.ObjectRequest;
-import io.getlime.core.rest.model.base.response.ErrorResponse;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
 import org.junit.Assert;
@@ -34,7 +33,6 @@ import org.springframework.core.io.buffer.DefaultDataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import reactor.core.publisher.Flux;
 
 import java.nio.ByteBuffer;
@@ -83,16 +81,14 @@ public class DefaultRestClientTest {
     @Test
     public void testGetWithResponseNonBlocking() throws RestClientException, InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        Consumer<ClientResponse> onSuccess = response -> {
-            response.toEntity(Response.class).subscribe(responseEntity -> {
-                assertNotNull(responseEntity);
-                assertNotNull(responseEntity.getBody());
-                assertEquals("OK", responseEntity.getBody().getStatus());
-                countDownLatch.countDown();
-            });
+        Consumer<ResponseEntity<Response>> onSuccess = responseEntity -> {
+            assertNotNull(responseEntity);
+            assertNotNull(responseEntity.getBody());
+            assertEquals("OK", responseEntity.getBody().getStatus());
+            countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
-        restClient.getNonBlocking("/response", onSuccess, onError);
+        restClient.getNonBlocking("/response", new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
@@ -135,16 +131,14 @@ public class DefaultRestClientTest {
     @Test
     public void testPostWithResponseNonBlocking() throws RestClientException, InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        Consumer<ClientResponse> onSuccess = response -> {
-            response.toEntity(Response.class).subscribe(responseEntity -> {
-                assertNotNull(responseEntity);
-                assertNotNull(responseEntity.getBody());
-                assertEquals("OK", responseEntity.getBody().getStatus());
-                countDownLatch.countDown();
-            });
+        Consumer<ResponseEntity<Response>> onSuccess = responseEntity -> {
+            assertNotNull(responseEntity);
+            assertNotNull(responseEntity.getBody());
+            assertEquals("OK", responseEntity.getBody().getStatus());
+            countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
-        restClient.postNonBlocking("/response", null, onSuccess, onError);
+        restClient.postNonBlocking("/response", null, new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
@@ -196,17 +190,15 @@ public class DefaultRestClientTest {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         String requestData = String.valueOf(System.currentTimeMillis());
         ObjectRequest<TestRequest> request = new ObjectRequest<>(new TestRequest(requestData));
-        Consumer<ClientResponse> onSuccess = response -> {
-            response.toEntity(new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}).subscribe(responseEntity -> {
-                assertNotNull(responseEntity);
-                assertNotNull(responseEntity.getBody());
-                assertNotNull(responseEntity.getBody().getResponseObject());
-                assertEquals("OK", responseEntity.getBody().getStatus());
-                countDownLatch.countDown();
-            });
+        Consumer<ResponseEntity<ObjectResponse<TestResponse>>> onSuccess = responseEntity -> {
+            assertNotNull(responseEntity);
+            assertNotNull(responseEntity.getBody());
+            assertNotNull(responseEntity.getBody().getResponseObject());
+            assertEquals("OK", responseEntity.getBody().getStatus());
+            countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
-        restClient.postNonBlocking("/object-request-response", request, onSuccess, onError);
+        restClient.postNonBlocking("/object-request-response", request, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
@@ -227,16 +219,14 @@ public class DefaultRestClientTest {
     @Test
     public void testPutWithResponseNonBlocking() throws RestClientException, InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        Consumer<ClientResponse> onSuccess = response -> {
-            response.toEntity(Response.class).subscribe(responseEntity -> {
-                assertNotNull(responseEntity);
-                assertNotNull(responseEntity.getBody());
-                assertEquals("OK", responseEntity.getBody().getStatus());
-                countDownLatch.countDown();
-            });
+        Consumer<ResponseEntity<Response>> onSuccess = responseEntity -> {
+            assertNotNull(responseEntity);
+            assertNotNull(responseEntity.getBody());
+            assertEquals("OK", responseEntity.getBody().getStatus());
+            countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
-        restClient.putNonBlocking("/response", null, onSuccess, onError);
+        restClient.putNonBlocking("/response", null, new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
@@ -288,17 +278,15 @@ public class DefaultRestClientTest {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         String requestData = String.valueOf(System.currentTimeMillis());
         ObjectRequest<TestRequest> request = new ObjectRequest<>(new TestRequest(requestData));
-        Consumer<ClientResponse> onSuccess = response -> {
-            response.toEntity(new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}).subscribe(responseEntity -> {
-                assertNotNull(responseEntity);
-                assertNotNull(responseEntity.getBody());
-                assertNotNull(responseEntity.getBody().getResponseObject());
-                assertEquals("OK", responseEntity.getBody().getStatus());
-                countDownLatch.countDown();
-            });
+        Consumer<ResponseEntity<ObjectResponse<TestResponse>>> onSuccess = responseEntity -> {
+            assertNotNull(responseEntity);
+            assertNotNull(responseEntity.getBody());
+            assertNotNull(responseEntity.getBody().getResponseObject());
+            assertEquals("OK", responseEntity.getBody().getStatus());
+            countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
-        restClient.putNonBlocking("/object-request-response", request, onSuccess, onError);
+        restClient.putNonBlocking("/object-request-response", request, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
@@ -319,16 +307,14 @@ public class DefaultRestClientTest {
     @Test
     public void testDeleteWithResponseNonBlocking() throws RestClientException, InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        Consumer<ClientResponse> onSuccess = response -> {
-            response.toEntity(Response.class).subscribe(responseEntity -> {
-                assertNotNull(responseEntity);
-                assertNotNull(responseEntity.getBody());
-                assertEquals("OK", responseEntity.getBody().getStatus());
-                countDownLatch.countDown();
-            });
+        Consumer<ResponseEntity<Response>> onSuccess = responseEntity -> {
+            assertNotNull(responseEntity);
+            assertNotNull(responseEntity.getBody());
+            assertEquals("OK", responseEntity.getBody().getStatus());
+            countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
-        restClient.deleteNonBlocking("/response", onSuccess, onError);
+        restClient.deleteNonBlocking("/response", new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
@@ -385,19 +371,18 @@ public class DefaultRestClientTest {
     @Test
     public void testPostWithErrorResponseNonBlocking() throws RestClientException, InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        Consumer<ClientResponse> onSuccess = response -> {
-            assertEquals(400, response.rawStatusCode());
-            response.toEntity(ErrorResponse.class).subscribe(errorResponse -> {
-                assertNotNull(errorResponse);
-                assertNotNull(errorResponse.getBody());
-                assertEquals("ERROR", errorResponse.getBody().getStatus());
-                assertEquals("TEST_CODE", errorResponse.getBody().getResponseObject().getCode());
-                assertEquals("Test message", errorResponse.getBody().getResponseObject().getMessage());
-                countDownLatch.countDown();
-            });
+        Consumer<ResponseEntity<ObjectResponse<TestResponse>>> onSuccess = okResponse -> Assert.fail();
+        Consumer<Throwable> onError = error -> {
+            RestClientException ex = (RestClientException) error;
+            assertEquals(400, ex.getStatusCode().value());
+            assertEquals("{\"status\":\"ERROR\",\"responseObject\":{\"code\":\"TEST_CODE\",\"message\":\"Test message\"}}", ex.getResponse());
+            assertNotNull(ex.getErrorResponse());
+            assertEquals("ERROR", ex.getErrorResponse().getStatus());
+            assertEquals("TEST_CODE", ex.getErrorResponse().getResponseObject().getCode());
+            assertEquals("Test message", ex.getErrorResponse().getResponseObject().getMessage());
+            countDownLatch.countDown();
         };
-        Consumer<Throwable> onError = error -> Assert.fail(error.getMessage());
-        restClient.postNonBlocking("/error-response", null, onSuccess, onError);
+        restClient.postNonBlocking("/error-response", null, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 

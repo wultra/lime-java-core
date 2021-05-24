@@ -61,7 +61,6 @@ public class DefaultRestClientTest {
 
     @BeforeEach
     public void initRestClient() throws RestClientException {
-        System.out.println("BEFORE");
         restClient = new DefaultRestClient("http://localhost:" + port + "/api/test");
     }
 

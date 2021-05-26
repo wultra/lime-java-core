@@ -69,6 +69,7 @@ public class DatabaseAuditWriter implements AuditWriter {
     private List<String> paramColumnNames;
     private String queryParam;
     private String queryPlaceholders;
+    private String insertQuery;
 
     private final JsonUtil jsonUtil = new JsonUtil();
 
@@ -118,6 +119,21 @@ public class DatabaseAuditWriter implements AuditWriter {
         }
     }
 
+    private void prepareSqlInsertQuery() {
+        final StringBuilder insertBuilder = new StringBuilder();
+        insertBuilder.append(SQL_INSERT_INTO);
+        insertBuilder.append(tableName);
+        insertBuilder.append("(");
+        insertBuilder.append(SQL_MANDATORY_COLUMNS);
+        insertBuilder.append(queryParam);
+        insertBuilder.append(")");
+        insertBuilder.append(SQL_VALUES);
+        insertBuilder.append("(");
+        insertBuilder.append(queryPlaceholders);
+        insertBuilder.append(")");
+        insertQuery = insertBuilder.toString();
+    }
+
     public void write(AuditRecord auditRecord) {
         auditRecord.setCallingClass(ClassUtil.getCallingClass(this.getClass().getPackage().getName()));
         auditRecord.setThreadName(Thread.currentThread().getName());
@@ -137,6 +153,7 @@ public class DatabaseAuditWriter implements AuditWriter {
         synchronized (FLUSH_LOCK) {
             if (paramColumnNames == null) {
                 analyzeDbTable();
+                prepareSqlInsertQuery();
             }
             while (!queue.isEmpty()) {
                 try {
@@ -147,17 +164,7 @@ public class DatabaseAuditWriter implements AuditWriter {
                             break;
                         }
                     }
-                    final int[] insertCounts = jdbcTemplate.batchUpdate(
-                            SQL_INSERT_INTO
-                                    + tableName
-                                    + "("
-                                    + SQL_MANDATORY_COLUMNS
-                                    + queryParam
-                                    + ")"
-                                    + SQL_VALUES
-                                    + "("
-                                    + queryPlaceholders
-                                    + ")",
+                    final int[] insertCounts = jdbcTemplate.batchUpdate(insertQuery,
                             new BatchPreparedStatementSetter() {
                                 public void setValues(PreparedStatement ps, int i) throws SQLException {
                                     AuditRecord record = recordsToPersist.get(i);

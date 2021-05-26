@@ -31,12 +31,21 @@ public class AuditFactory {
     private final AuditConfiguration configuration;
     private final Audit databaseAudit;
 
+    /**
+     * Audit factory constructor.
+     * @param configuration Audit configuration.
+     * @param databaseAudit Database audit.
+     */
     @Autowired
     public AuditFactory(AuditConfiguration configuration, DatabaseAudit databaseAudit) {
         this.configuration = configuration;
         this.databaseAudit = databaseAudit;
     }
 
+    /**
+     * Get audit interface.
+     * @return Audit interface.
+     */
     public Audit getAudit() {
         switch (configuration.getStorageType()) {
             case DATABASE:

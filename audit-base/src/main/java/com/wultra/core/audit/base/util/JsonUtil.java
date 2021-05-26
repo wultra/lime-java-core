@@ -43,6 +43,11 @@ public class JsonUtil {
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
+    /**
+     * Serialize an object into JSON.
+     * @param o Object.
+     * @return Serialized object.
+     */
     public String serializeObject(Object o) {
         try {
             return objectMapper.writeValueAsString(o);
@@ -52,6 +57,11 @@ public class JsonUtil {
         return "";
     }
 
+    /**
+     * Serialize a map into JSON.
+     * @param map Map.
+     * @return Serialized map.
+     */
     public String serializeMap(Map<String, Object> map) {
         try {
             return objectMapper.writeValueAsString(map);

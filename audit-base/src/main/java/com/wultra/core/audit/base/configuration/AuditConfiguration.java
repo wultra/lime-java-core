@@ -25,6 +25,9 @@ import org.springframework.context.annotation.Configuration;
 
 import java.time.Instant;
 
+/**
+ * Configuration of auditing with default values.
+ */
 @Configuration
 @ConfigurationProperties("ext")
 public class AuditConfiguration {
@@ -64,10 +67,18 @@ public class AuditConfiguration {
         this.buildProperties = buildProperties;
     }
 
+    /**
+     * Get application name.
+     * @return Application name.
+     */
     public String getApplicationName() {
         return applicationName;
     }
 
+    /**
+     * Get version.
+     * @return Version.
+     */
     public String getVersion() {
         if (buildProperties == null) {
             return null;
@@ -75,6 +86,10 @@ public class AuditConfiguration {
         return buildProperties.getVersion();
     }
 
+    /**
+     * Get build time.
+     * @return Build time.
+     */
     public Instant getBuildTime() {
         if (buildProperties == null) {
             return null;
@@ -82,30 +97,58 @@ public class AuditConfiguration {
         return buildProperties.getTime();
     }
 
+    /**
+     * Get minimum audit level.
+     * @return Minimum audit level.
+     */
     public AuditLevel getMinimumLevel() {
         return minimumLevel;
     }
 
+    /**
+     * Get event queue size.
+     * @return Event queue size.
+     */
     public int getEventQueueSize() {
         return eventQueueSize;
     }
 
+    /**
+     * Get storage type.
+     * @return Storage type.
+     */
     public AuditStorageType getStorageType() {
         return storageType;
     }
 
+    /**
+     * Get database insert batch size.
+     * @return Database insert batch size.
+     */
     public int getBatchSize() {
         return batchSize;
     }
 
+    /**
+     * Get number of days for retention of audit records in database.
+     * @return Number of days for retention of audit records in database.
+     */
     public Integer getDbCleanupDays() {
         return dbCleanupDays;
     }
 
+    /**
+     * Get database table name for audit log.
+     * @return Database table name for audit log.
+     */
     public String getDbTableNameAudit() {
         return dbTableNameAudit;
     }
 
+    /**
+     * Get database table name for audit parameters.
+     * @return Database table name for audit parameters.
+     */
     public String getDbTableNameParam() {
         return dbTableNameParam;
     }

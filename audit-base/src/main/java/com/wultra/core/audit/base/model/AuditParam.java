@@ -15,6 +15,8 @@
  */
 package com.wultra.core.audit.base.model;
 
+import org.springframework.lang.NonNull;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -30,7 +32,14 @@ public class AuditParam {
     private final String key;
     private final Object value;
 
-    public AuditParam(String auditLogId, Date timestamp, String key, Object value) {
+    /**
+     * Audit parameter constructor.
+     * @param auditLogId Audit log identifier.
+     * @param timestamp Timestamp when audit record was created.
+     * @param key Parameter key.
+     * @param value Parameter value.
+     */
+    public AuditParam(@NonNull String auditLogId, @NonNull Date timestamp, @NonNull String key, Object value) {
         this.auditLogId = auditLogId;
         this.timestamp = timestamp;
         this.key = key;

@@ -10,6 +10,7 @@ CREATE TABLE audit_log (
     message            CLOB NOT NULL,
     exception_message  CLOB,
     stack_trace        CLOB,
+    param              TEXT,
     calling_class      VARCHAR2(256 CHAR) NOT NULL,
     thread_name        VARCHAR2(256 CHAR) NOT NULL,
     version            VARCHAR2(256 CHAR),

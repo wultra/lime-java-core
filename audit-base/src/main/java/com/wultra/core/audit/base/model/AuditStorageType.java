@@ -16,12 +16,15 @@
 package com.wultra.core.audit.base.model;
 
 /**
- * Audit storage type enumeration
+ * Audit storage type enumeration.
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 public enum AuditStorageType {
 
+    /**
+     * Audit records are stored in a relational database.
+     */
     DATABASE
 
 }

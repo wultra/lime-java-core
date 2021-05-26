@@ -19,7 +19,10 @@ import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.lang.NonNull;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Audit record model class.
@@ -37,15 +40,18 @@ public class AuditRecord {
     private Class<?> callingClass;
     private String threadName;
 
-    public AuditRecord(@NonNull String message, @NonNull AuditLevel level, Map<String, Object> param, Object[] args) {
+    /**
+     * Audit record constructor.
+     * @param message Audit message or message pattern in case message arguments are present.
+     * @param level Audit level.
+     * @param param Audit parameters.
+     * @param args Message arguments.
+     */
+    public AuditRecord(@NonNull String message, @NonNull AuditLevel level, @NonNull Map<String, Object> param, Object[] args) {
         this.id = UUID.randomUUID().toString();
         this.timestamp = new Date();
         this.level = level;
-        if (param == null) {
-            this.param = new LinkedHashMap<>();
-        } else {
-            this.param = param;
-        }
+        this.param = param;
         if (args != null) {
             parseArgs(message, args);
         } else {
@@ -59,42 +65,82 @@ public class AuditRecord {
         this.throwable = formattingTuple.getThrowable();
     }
 
+    /**
+     * Get audit record identifier.
+     * @return Audit record identifier.
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Get timestamp when audit record was created.
+     * @return Timestamp when audit record was created.
+     */
     public Date getTimestamp() {
         return timestamp;
     }
 
+    /**
+     * Get audit message.
+     * @return Audit message.
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Get audit level.
+     * @return Audit level.
+     */
     public AuditLevel getLevel() {
         return level;
     }
 
+    /**
+     * Get throwable.
+     * @return Throwable.
+     */
     public Throwable getThrowable() {
         return throwable;
     }
 
+    /**
+     * Get audit parameters.
+     * @return Audit parameters.
+     */
     public Map<String, Object> getParam() {
         return param;
     }
 
+    /**
+     * Get calling class.
+     * @return Calling class.
+     */
     public Class<?> getCallingClass() {
         return callingClass;
     }
 
+    /**
+     * Set calling class.
+     * @param callingClass Calling class.
+     */
     public void setCallingClass(Class<?> callingClass) {
         this.callingClass = callingClass;
     }
 
+    /**
+     * Get thread name.
+     * @return Thread name.
+     */
     public String getThreadName() {
         return threadName;
     }
 
+    /**
+     * Set thread name.
+     * @param threadName Thread name.
+     */
     public void setThreadName(String threadName) {
         this.threadName = threadName;
     }

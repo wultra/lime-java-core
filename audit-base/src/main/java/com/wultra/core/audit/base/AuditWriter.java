@@ -24,10 +24,20 @@ import com.wultra.core.audit.base.model.AuditRecord;
  */
 public interface AuditWriter {
 
+    /**
+     * Write an audit record.
+     * @param auditRecord Audit record.
+     */
     void write(AuditRecord auditRecord);
 
+    /**
+     * Flush the audit record queue.
+     */
     void flush();
 
+    /**
+     * Perform audit record cleanup.
+     */
     void cleanup();
 
 }

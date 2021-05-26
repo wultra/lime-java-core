@@ -60,7 +60,7 @@ public class AuditRecord {
     }
 
     private void parseArgs(String messagePattern, Object[] args) {
-        FormattingTuple formattingTuple = MessageFormatter.arrayFormat(messagePattern, args);
+        final FormattingTuple formattingTuple = MessageFormatter.arrayFormat(messagePattern, args);
         this.message = formattingTuple.getMessage();
         this.throwable = formattingTuple.getThrowable();
     }
@@ -105,7 +105,7 @@ public class AuditRecord {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AuditRecord that = (AuditRecord) o;
+        final AuditRecord that = (AuditRecord) o;
         return timestamp.equals(that.timestamp) && message.equals(that.message) && level == that.level && Objects.equals(throwable, that.throwable) && param.equals(that.param);
     }
 

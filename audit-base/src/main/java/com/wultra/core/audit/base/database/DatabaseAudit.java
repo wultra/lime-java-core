@@ -77,7 +77,7 @@ public class DatabaseAudit implements Audit {
         if (!isErrorEnabled()) {
             return;
         }
-        AuditRecord auditRecord = new AuditRecord(message, AuditLevel.ERROR, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.ERROR, param, args);
         writer.write(auditRecord);
     }
 
@@ -110,7 +110,7 @@ public class DatabaseAudit implements Audit {
         if (!isWarnEnabled()) {
             return;
         }
-        AuditRecord auditRecord = new AuditRecord(message, AuditLevel.WARN, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.WARN, param, args);
         writer.write(auditRecord);
     }
 
@@ -143,7 +143,7 @@ public class DatabaseAudit implements Audit {
         if (!isInfoEnabled()) {
             return;
         }
-        AuditRecord auditRecord = new AuditRecord(message, AuditLevel.INFO, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.INFO, param, args);
         writer.write(auditRecord);
     }
 
@@ -176,7 +176,7 @@ public class DatabaseAudit implements Audit {
         if (!isDebugEnabled()) {
             return;
         }
-        AuditRecord auditRecord = new AuditRecord(message, AuditLevel.DEBUG, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.DEBUG, param, args);
         writer.write(auditRecord);
     }
 
@@ -209,7 +209,7 @@ public class DatabaseAudit implements Audit {
         if (!isTraceEnabled()) {
             return;
         }
-        AuditRecord auditRecord = new AuditRecord(message, AuditLevel.TRACE, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.TRACE, param, args);
         writer.write(auditRecord);
     }
 
@@ -245,7 +245,7 @@ public class DatabaseAudit implements Audit {
         if (!isLevelEnabled(level)) {
             return;
         }
-        AuditRecord auditRecord = new AuditRecord(message, level, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, level, param, args);
         writer.write(auditRecord);
     }
 

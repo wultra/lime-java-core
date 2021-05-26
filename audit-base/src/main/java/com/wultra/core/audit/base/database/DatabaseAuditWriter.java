@@ -94,12 +94,12 @@ public class DatabaseAuditWriter implements AuditWriter {
         }
         try {
             paramColumnNames = new ArrayList<>();
-            DatabaseMetaData metaData = jdbcTemplate.getDataSource().getConnection().getMetaData();
-            ResultSet rs = metaData.getColumns(null, null, tableName.toUpperCase(), null);
-            StringBuilder paramBuilder = new StringBuilder();
-            StringBuilder placeHolderBuilder = new StringBuilder();
+            final DatabaseMetaData metaData = jdbcTemplate.getDataSource().getConnection().getMetaData();
+            final ResultSet rs = metaData.getColumns(null, null, tableName.toUpperCase(), null);
+            final StringBuilder paramBuilder = new StringBuilder();
+            final StringBuilder placeHolderBuilder = new StringBuilder();
             while (rs.next()) {
-                String columnName = rs.getString("column_name").toLowerCase();
+                final String columnName = rs.getString("column_name").toLowerCase();
                 if (placeHolderBuilder.length() == 0) {
                     placeHolderBuilder.append("?");
                 } else {
@@ -140,14 +140,14 @@ public class DatabaseAuditWriter implements AuditWriter {
             }
             while (!queue.isEmpty()) {
                 try {
-                    List<AuditRecord> recordsToPersist = new ArrayList<>(batchSize);
+                    final List<AuditRecord> recordsToPersist = new ArrayList<>(batchSize);
                     for (int i = 0; i < batchSize; i++) {
                         recordsToPersist.add(queue.take());
                         if (queue.isEmpty()) {
                             break;
                         }
                     }
-                    int[] insertCounts = jdbcTemplate.batchUpdate(
+                    final int[] insertCounts = jdbcTemplate.batchUpdate(
                             SQL_INSERT_INTO
                                     + tableName
                                     + "("
@@ -214,7 +214,7 @@ public class DatabaseAuditWriter implements AuditWriter {
             logger.error("Data source is not available");
             return;
         }
-        LocalDateTime cleanupLimit = LocalDateTime.now().minusDays(cleanupDays);
+        final LocalDateTime cleanupLimit = LocalDateTime.now().minusDays(cleanupDays);
         synchronized (CLEANUP_LOCK) {
             jdbcTemplate.execute( SQL_DELETE_FROM + tableName + SQL_CLEANUP_CONDITION, (PreparedStatementCallback<Boolean>) ps -> {
                 ps.setTimestamp(1, Timestamp.valueOf(cleanupLimit));

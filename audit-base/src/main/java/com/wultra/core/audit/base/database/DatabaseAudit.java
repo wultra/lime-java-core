@@ -21,6 +21,7 @@ import com.wultra.core.audit.base.configuration.AuditConfiguration;
 import com.wultra.core.audit.base.model.AuditLevel;
 import com.wultra.core.audit.base.model.AuditRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -214,10 +215,7 @@ public class DatabaseAudit implements Audit {
     }
 
     @Override
-    public boolean isLevelEnabled(AuditLevel level) {
-        if (level == null) {
-            return false;
-        }
+    public boolean isLevelEnabled(@NonNull AuditLevel level) {
         return configuration.getMinimumLevel().intValue() >= level.intValue();
     }
 

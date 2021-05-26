@@ -17,6 +17,7 @@ package com.wultra.core.audit.base.model;
 
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
+import org.springframework.lang.NonNull;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -38,13 +39,7 @@ public class AuditRecord {
     private Class<?> callingClass;
     private String threadName;
 
-    public AuditRecord(String message, AuditLevel level, Map<String, Object> param, Object[] args) {
-        if (message == null) {
-            throw new IllegalArgumentException("Audit message is null");
-        }
-        if (level == null) {
-            throw new IllegalArgumentException("Audit level is null");
-        }
+    public AuditRecord(@NonNull String message, @NonNull AuditLevel level, Map<String, Object> param, Object[] args) {
         this.timestamp = new Date();
         this.level = level;
         if (param == null) {

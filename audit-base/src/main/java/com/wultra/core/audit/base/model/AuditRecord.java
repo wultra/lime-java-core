@@ -19,10 +19,7 @@ import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.lang.NonNull;
 
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Audit record model class.
@@ -31,6 +28,7 @@ import java.util.Objects;
  */
 public class AuditRecord {
 
+    private final String id;
     private final Date timestamp;
     private final AuditLevel level;
     private final Map<String, Object> param;
@@ -40,6 +38,7 @@ public class AuditRecord {
     private String threadName;
 
     public AuditRecord(@NonNull String message, @NonNull AuditLevel level, Map<String, Object> param, Object[] args) {
+        this.id = UUID.randomUUID().toString();
         this.timestamp = new Date();
         this.level = level;
         if (param == null) {
@@ -58,6 +57,10 @@ public class AuditRecord {
         final FormattingTuple formattingTuple = MessageFormatter.arrayFormat(messagePattern, args);
         this.message = formattingTuple.getMessage();
         this.throwable = formattingTuple.getThrowable();
+    }
+
+    public String getId() {
+        return id;
     }
 
     public Date getTimestamp() {
@@ -100,13 +103,13 @@ public class AuditRecord {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final AuditRecord that = (AuditRecord) o;
-        return timestamp.equals(that.timestamp) && message.equals(that.message) && level == that.level && Objects.equals(throwable, that.throwable) && param.equals(that.param);
+        AuditRecord that = (AuditRecord) o;
+        return id.equals(that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(timestamp, message, level, throwable, param);
+        return Objects.hash(id);
     }
 
     @Override

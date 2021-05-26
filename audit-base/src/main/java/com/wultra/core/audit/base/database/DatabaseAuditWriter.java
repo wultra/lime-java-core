@@ -17,6 +17,7 @@ package com.wultra.core.audit.base.database;
 
 import com.wultra.core.audit.base.AuditWriter;
 import com.wultra.core.audit.base.configuration.AuditConfiguration;
+import com.wultra.core.audit.base.model.AuditParam;
 import com.wultra.core.audit.base.model.AuditRecord;
 import com.wultra.core.audit.base.util.ClassUtil;
 import com.wultra.core.audit.base.util.JsonUtil;
@@ -32,11 +33,15 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -50,26 +55,19 @@ public class DatabaseAuditWriter implements AuditWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseAuditWriter.class);
 
-    private static final String SQL_INSERT_INTO = "INSERT INTO ";
-    private static final String SQL_MANDATORY_COLUMNS = "application_name, audit_level, timestamp_created, message, exception_message, stack_trace, param, calling_class, thread_name, version, build_time";
-    private static final String SQL_VALUES = " VALUES ";
-    private static final String SQL_DELETE_FROM = "DELETE FROM ";
-    private static final String SQL_CLEANUP_CONDITION = " WHERE timestamp_created < ?";
-
     private final BlockingQueue<AuditRecord> queue;
     private final JdbcTemplate jdbcTemplate;
 
-    private final String tableName;
+    private final String tableNameAudit;
+    private final String tableNameParam;
     private final int batchSize;
     private final int cleanupDays;
     private final String applicationName;
     private final String version;
     private final Instant buildTime;
 
-    private List<String> paramColumnNames;
-    private String queryParam;
-    private String queryPlaceholders;
-    private String insertQuery;
+    private String insertAuditLog;
+    private String insertAuditParam;
 
     private final JsonUtil jsonUtil = new JsonUtil();
 
@@ -80,58 +78,25 @@ public class DatabaseAuditWriter implements AuditWriter {
     public DatabaseAuditWriter(AuditConfiguration configuration, JdbcTemplate jdbcTemplate) {
         this.queue = new LinkedBlockingDeque<>(configuration.getEventQueueSize());
         this.jdbcTemplate = jdbcTemplate;
-        this.tableName = configuration.getDbTableName();
+        this.tableNameAudit = configuration.getDbTableNameAudit();
+        this.tableNameParam = configuration.getDbTableNameParam();
         this.batchSize = configuration.getBatchSize();
         this.cleanupDays = configuration.getDbCleanupDays();
         this.applicationName = configuration.getApplicationName();
         this.version = configuration.getVersion();
         this.buildTime = configuration.getBuildTime();
+        prepareSqlInsertQueries();
     }
 
-    private void analyzeDbTable() {
-        if (jdbcTemplate.getDataSource() == null) {
-            logger.error("Data source is not available");
-            return;
-        }
-        try {
-            paramColumnNames = new ArrayList<>();
-            final DatabaseMetaData metaData = jdbcTemplate.getDataSource().getConnection().getMetaData();
-            final ResultSet rs = metaData.getColumns(null, null, tableName.toUpperCase(), null);
-            final StringBuilder paramBuilder = new StringBuilder();
-            final StringBuilder placeHolderBuilder = new StringBuilder();
-            while (rs.next()) {
-                final String columnName = rs.getString("column_name").toLowerCase();
-                if (placeHolderBuilder.length() == 0) {
-                    placeHolderBuilder.append("?");
-                } else {
-                    placeHolderBuilder.append(", ?");
-                }
-                if (columnName.matches("param_.*")) {
-                    paramColumnNames.add(columnName);
-                    paramBuilder.append(", ");
-                    paramBuilder.append(columnName);
-                }
-            }
-            queryParam = paramBuilder.toString();
-            queryPlaceholders = placeHolderBuilder.toString();
-        } catch (SQLException ex) {
-            logger.warn(ex.getMessage(), ex);
-        }
-    }
-
-    private void prepareSqlInsertQuery() {
-        final StringBuilder insertBuilder = new StringBuilder();
-        insertBuilder.append(SQL_INSERT_INTO);
-        insertBuilder.append(tableName);
-        insertBuilder.append("(");
-        insertBuilder.append(SQL_MANDATORY_COLUMNS);
-        insertBuilder.append(queryParam);
-        insertBuilder.append(")");
-        insertBuilder.append(SQL_VALUES);
-        insertBuilder.append("(");
-        insertBuilder.append(queryPlaceholders);
-        insertBuilder.append(")");
-        insertQuery = insertBuilder.toString();
+    private void prepareSqlInsertQueries() {
+        insertAuditLog = "INSERT INTO " +
+                tableNameAudit +
+                "(audit_log_id, application_name, audit_level, timestamp_created, message, exception_message, stack_trace, param, calling_class, thread_name, version, build_time) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        insertAuditParam = "INSERT INTO " +
+                tableNameParam +
+                "(audit_log_id, timestamp_created, param_key, param_value) " +
+                "VALUES (?, ?, ?, ?)";
     }
 
     public void write(AuditRecord auditRecord) {
@@ -151,64 +116,72 @@ public class DatabaseAuditWriter implements AuditWriter {
         }
 
         synchronized (FLUSH_LOCK) {
-            if (paramColumnNames == null) {
-                analyzeDbTable();
-                prepareSqlInsertQuery();
-            }
             while (!queue.isEmpty()) {
                 try {
-                    final List<AuditRecord> recordsToPersist = new ArrayList<>(batchSize);
+                    final List<AuditRecord> auditsToPersist = new ArrayList<>(batchSize);
+                    final List<AuditParam> paramsToPersist = new ArrayList<>();
                     for (int i = 0; i < batchSize; i++) {
-                        recordsToPersist.add(queue.take());
+                        AuditRecord record = queue.take();
+                        auditsToPersist.add(record);
+                        for (Map.Entry<String, Object> entry : record.getParam().entrySet()) {
+                            paramsToPersist.add(new AuditParam(record.getId(), record.getTimestamp(), entry.getKey(), entry.getValue()));
+                        }
                         if (queue.isEmpty()) {
                             break;
                         }
                     }
-                    final int[] insertCounts = jdbcTemplate.batchUpdate(insertQuery,
+                    final int[] insertCountsLog = jdbcTemplate.batchUpdate(insertAuditLog,
                             new BatchPreparedStatementSetter() {
                                 public void setValues(PreparedStatement ps, int i) throws SQLException {
-                                    AuditRecord record = recordsToPersist.get(i);
-                                    ps.setString(1, applicationName);
-                                    ps.setString(2, record.getLevel().toString());
-                                    ps.setTimestamp(3, new Timestamp(record.getTimestamp().getTime()));
-                                    ps.setString(4, record.getMessage());
+                                    AuditRecord record = auditsToPersist.get(i);
+                                    ps.setString(1, record.getId());
+                                    ps.setString(2, applicationName);
+                                    ps.setString(3, record.getLevel().toString());
+                                    ps.setTimestamp(4, new Timestamp(record.getTimestamp().getTime()));
+                                    ps.setString(5, record.getMessage());
                                     Throwable throwable = record.getThrowable();
                                     if (throwable == null) {
-                                        ps.setNull(5, Types.VARCHAR);
                                         ps.setNull(6, Types.VARCHAR);
+                                        ps.setNull(7, Types.VARCHAR);
                                     } else {
                                         StringWriter sw = new StringWriter();
                                         PrintWriter pw = new PrintWriter(sw);
                                         throwable.printStackTrace(pw);
-                                        ps.setString(5, throwable.getMessage());
-                                        ps.setString(6, sw.toString());
+                                        ps.setString(6, throwable.getMessage());
+                                        ps.setString(7, sw.toString());
                                     }
-                                    ps.setString(7, jsonUtil.serializeMap(record.getParam()));
-                                    ps.setString(8, record.getCallingClass().getName());
-                                    ps.setString(9, record.getThreadName());
-                                    ps.setString(10, version);
-                                    ps.setTimestamp(11, new Timestamp(buildTime.toEpochMilli()));
-                                    for (int j = 0; j < paramColumnNames.size(); j++) {
-                                        int index = 12 + j;
-                                        String paramName = paramColumnNames.get(j).replace("param_", "");
-                                        Object paramValue = record.getParam().get(paramName);
-                                        if (paramValue == null) {
-                                            ps.setNull(index, Types.VARCHAR);
-                                        } else {
-                                            if (paramValue instanceof CharSequence) {
-                                                ps.setString(index, paramValue.toString());
-                                            } else {
-                                                ps.setString(index, jsonUtil.serializeObject(paramValue));
-                                            }
-                                        }
-                                    }
+                                    ps.setString(8, jsonUtil.serializeMap(record.getParam()));
+                                    ps.setString(9, record.getCallingClass().getName());
+                                    ps.setString(10, record.getThreadName());
+                                    ps.setString(11, version);
+                                    ps.setTimestamp(12, new Timestamp(buildTime.toEpochMilli()));
                                 }
 
                                 public int getBatchSize() {
-                                    return recordsToPersist.size();
+                                    return auditsToPersist.size();
                                 }
                             });
-                    logger.debug("Audit log batch insert succeeded, record count: {}", insertCounts.length);
+                    final int[] insertCountsParam = jdbcTemplate.batchUpdate(insertAuditParam,
+                            new BatchPreparedStatementSetter() {
+                                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                                    AuditParam record = paramsToPersist.get(i);
+                                    ps.setString(1, record.getAuditLogId());
+                                    ps.setTimestamp(2, new Timestamp(record.getTimestamp().getTime()));
+                                    ps.setString(3, record.getKey());
+                                    Object value = record.getValue();
+                                    if (value == null) {
+                                        ps.setNull(4, Types.VARCHAR);
+                                    } else if (value instanceof CharSequence) {
+                                        ps.setString(4, value.toString());
+                                    } else {
+                                        ps.setString(4, jsonUtil.serializeObject(value));
+                                    }
+                                }
+                                public int getBatchSize() {
+                                    return paramsToPersist.size();
+                                }
+                            });
+                    logger.debug("Audit log batch insert succeeded, audit record count: {}, audit param count: {}", insertCountsLog.length, insertCountsParam.length);
                 } catch (InterruptedException ex) {
                     logger.warn(ex.getMessage(), ex);
                 }
@@ -223,7 +196,11 @@ public class DatabaseAuditWriter implements AuditWriter {
         }
         final LocalDateTime cleanupLimit = LocalDateTime.now().minusDays(cleanupDays);
         synchronized (CLEANUP_LOCK) {
-            jdbcTemplate.execute( SQL_DELETE_FROM + tableName + SQL_CLEANUP_CONDITION, (PreparedStatementCallback<Boolean>) ps -> {
+            jdbcTemplate.execute("DELETE FROM " + tableNameAudit + "WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
+                ps.setTimestamp(1, Timestamp.valueOf(cleanupLimit));
+                return ps.execute();
+            });
+            jdbcTemplate.execute("DELETE FROM " + tableNameParam + "WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
                 ps.setTimestamp(1, Timestamp.valueOf(cleanupLimit));
                 return ps.execute();
             });

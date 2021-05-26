@@ -47,7 +47,10 @@ public class AuditConfiguration {
     private Integer dbCleanupDays;
 
     @Value("${audit.db.table.name:audit_log}")
-    private String dbTableName;
+    private String dbTableNameAudit;
+
+    @Value("${audit.db.table.name:audit_param}")
+    private String dbTableNameParam;
 
     @Value("${audit.db.batch.size:1000}")
     private int batchSize;
@@ -99,8 +102,11 @@ public class AuditConfiguration {
         return dbCleanupDays;
     }
 
-    public String getDbTableName() {
-        return dbTableName;
+    public String getDbTableNameAudit() {
+        return dbTableNameAudit;
     }
 
+    public String getDbTableNameParam() {
+        return dbTableNameParam;
+    }
 }

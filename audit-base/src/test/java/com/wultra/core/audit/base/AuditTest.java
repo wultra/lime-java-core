@@ -49,6 +49,7 @@ public class AuditTest {
     @BeforeEach
     public void cleanTestDb() {
         jdbcTemplate.execute("DELETE FROM audit_log");
+        jdbcTemplate.execute("DELETE FROM audit_param");
     }
 
     @Test
@@ -124,19 +125,23 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditGenericParam() {
+    public void testAuditOneParam() {
+        Timestamp timestampBeforeAudit = new Timestamp(System.currentTimeMillis() - 1);
         Audit audit = auditFactory.getAudit();
         Map<String, Object> param = new LinkedHashMap<>();
         param.put("my_id", "test_id");
         audit.info("test message", param);
         audit.flush();
-        jdbcTemplate.query("SELECT * FROM audit_log", rs -> {
-            assertEquals("{\"my_id\":\"test_id\"}", rs.getString("param"));
+        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id=ap.audit_log_id", rs -> {
+            assertNotNull(rs.getString("audit_log_id"));
+            assertTrue(rs.getTimestamp("timestamp_created").after(timestampBeforeAudit));
+            assertEquals("my_id", rs.getString("param_key"));
+            assertEquals("test_id", rs.getString("param_value"));
         });
     }
 
     @Test
-    public void testAuditKnownParam() {
+    public void testAuditTwoParams() {
         Audit audit = auditFactory.getAudit();
         Map<String, Object> param = new LinkedHashMap<>();
         String operationId = UUID.randomUUID().toString();
@@ -144,10 +149,15 @@ public class AuditTest {
         param.put("operation_id", operationId);
         audit.info("test message", param);
         audit.flush();
-        jdbcTemplate.query("SELECT * FROM audit_log", rs -> {
-            assertEquals("{\"user_id\":\"test_id\",\"operation_id\":\"" + operationId + "\"}", rs.getString("param"));
-            assertEquals("test_id", rs.getString("param_user_id"));
-            assertEquals(operationId, rs.getString("param_operation_id"));
+        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'user_id' AND ap.param_value = 'test_id'", rs -> {
+            assertNotNull(rs.getString("audit_log_id"));
+            assertEquals("user_id", rs.getString("param_key"));
+            assertEquals("test_id", rs.getString("param_value"));
+        });
+        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'operation_id'", rs -> {
+            assertNotNull(rs.getString("audit_log_id"));
+            assertEquals("operation_id", rs.getString("param_key"));
+            assertEquals(operationId, rs.getString("param_value"));
         });
     }
 

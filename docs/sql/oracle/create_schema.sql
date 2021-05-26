@@ -25,6 +25,8 @@ CREATE TABLE audit_param (
 );
 
 CREATE INDEX audit_log_timestamp ON audit_log (timestamp_created);
+CREATE INDEX audit_log_application ON audit_log (application_name);
+CREATE INDEX audit_log_level ON audit_log (audit_level);
 CREATE INDEX audit_param_log ON audit_param (audit_log_id);
 CREATE INDEX audit_param_timestamp ON audit_param (timestamp_created);
 CREATE INDEX audit_param_key ON audit_param (param_key);

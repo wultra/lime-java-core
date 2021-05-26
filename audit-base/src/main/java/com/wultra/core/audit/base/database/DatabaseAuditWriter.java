@@ -196,11 +196,11 @@ public class DatabaseAuditWriter implements AuditWriter {
         }
         final LocalDateTime cleanupLimit = LocalDateTime.now().minusDays(cleanupDays);
         synchronized (CLEANUP_LOCK) {
-            jdbcTemplate.execute("DELETE FROM " + tableNameAudit + "WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
+            jdbcTemplate.execute("DELETE FROM " + tableNameAudit + " WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
                 ps.setTimestamp(1, Timestamp.valueOf(cleanupLimit));
                 return ps.execute();
             });
-            jdbcTemplate.execute("DELETE FROM " + tableNameParam + "WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
+            jdbcTemplate.execute("DELETE FROM " + tableNameParam + " WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
                 ps.setTimestamp(1, Timestamp.valueOf(cleanupLimit));
                 return ps.execute();
             });

@@ -1,10 +1,12 @@
 --
--- Create audit table
+-- Drop existing tables if they exist.
 --
-
 DROP TABLE IF EXISTS audit_log;
 DROP TABLE IF EXISTS audit_param;
 
+--
+-- Create audit log table.
+--
 CREATE TABLE audit_log (
     audit_log_id       VARCHAR(36) PRIMARY KEY,
     application_name   VARCHAR(256) NOT NULL,
@@ -17,11 +19,12 @@ CREATE TABLE audit_log (
     calling_class      VARCHAR(256) NOT NULL,
     thread_name        VARCHAR(256) NOT NULL,
     version            VARCHAR(256),
-    build_time         TIMESTAMP,
-    param_user_id      VARCHAR(256),
-    param_operation_id VARCHAR(256)
+    build_time         TIMESTAMP
 );
 
+--
+-- Create audit parameters table.
+--
 CREATE TABLE audit_param (
     audit_log_id       VARCHAR(36),
     timestamp_created  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -29,6 +32,9 @@ CREATE TABLE audit_param (
     param_value        VARCHAR(3072)
 );
 
+--
+-- Create indexes.
+--
 CREATE INDEX audit_log_timestamp ON audit_log (timestamp_created);
 CREATE INDEX audit_log_application ON audit_log (application_name);
 CREATE INDEX audit_log_level ON audit_log (audit_level);

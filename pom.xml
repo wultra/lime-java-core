@@ -43,6 +43,7 @@
 	</developers>
 
 	<modules>
+		<module>audit-base</module>
 		<module>rest-model-base</module>
 		<module>rest-client-base</module>
 	</modules>

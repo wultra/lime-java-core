@@ -40,13 +40,4 @@ public class ClassUtil extends SecurityManager {
         return trace[trace.length - 1];
     }
 
-    private static final class ClassContextSecurityManager extends SecurityManager {
-        private ClassContextSecurityManager() {
-        }
-
-        protected Class<?>[] getClassContext() {
-            return super.getClassContext();
-        }
-    }
-
 }

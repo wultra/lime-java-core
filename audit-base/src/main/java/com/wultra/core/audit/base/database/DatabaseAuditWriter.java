@@ -91,8 +91,8 @@ public class DatabaseAuditWriter implements AuditWriter {
     private void prepareSqlInsertQueries() {
         insertAuditLog = "INSERT INTO " +
                 tableNameAudit +
-                "(audit_log_id, application_name, audit_level, timestamp_created, message, exception_message, stack_trace, param, calling_class, thread_name, version, build_time) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "(audit_log_id, application_name, audit_level, audit_type, timestamp_created, message, exception_message, stack_trace, param, calling_class, thread_name, version, build_time) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         insertAuditParam = "INSERT INTO " +
                 tableNameParam +
                 "(audit_log_id, timestamp_created, param_key, param_value) " +
@@ -137,24 +137,25 @@ public class DatabaseAuditWriter implements AuditWriter {
                                     ps.setString(1, record.getId());
                                     ps.setString(2, applicationName);
                                     ps.setString(3, record.getLevel().toString());
-                                    ps.setTimestamp(4, new Timestamp(record.getTimestamp().getTime()));
-                                    ps.setString(5, record.getMessage());
+                                    ps.setString(4, record.getType());
+                                    ps.setTimestamp(5, new Timestamp(record.getTimestamp().getTime()));
+                                    ps.setString(6, record.getMessage());
                                     Throwable throwable = record.getThrowable();
                                     if (throwable == null) {
-                                        ps.setNull(6, Types.VARCHAR);
                                         ps.setNull(7, Types.VARCHAR);
+                                        ps.setNull(8, Types.VARCHAR);
                                     } else {
                                         StringWriter sw = new StringWriter();
                                         PrintWriter pw = new PrintWriter(sw);
                                         throwable.printStackTrace(pw);
-                                        ps.setString(6, throwable.getMessage());
-                                        ps.setString(7, sw.toString());
+                                        ps.setString(7, throwable.getMessage());
+                                        ps.setString(8, sw.toString());
                                     }
-                                    ps.setString(8, jsonUtil.serializeMap(record.getParam()));
-                                    ps.setString(9, record.getCallingClass().getName());
-                                    ps.setString(10, record.getThreadName());
-                                    ps.setString(11, version);
-                                    ps.setTimestamp(12, new Timestamp(buildTime.toEpochMilli()));
+                                    ps.setString(9, jsonUtil.serializeMap(record.getParam()));
+                                    ps.setString(10, record.getCallingClass().getName());
+                                    ps.setString(11, record.getThreadName());
+                                    ps.setString(12, version);
+                                    ps.setTimestamp(13, new Timestamp(buildTime.toEpochMilli()));
                                 }
 
                                 public int getBatchSize() {

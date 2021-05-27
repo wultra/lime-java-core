@@ -18,14 +18,12 @@ package com.wultra.core.audit.base.database;
 import com.wultra.core.audit.base.Audit;
 import com.wultra.core.audit.base.AuditWriter;
 import com.wultra.core.audit.base.configuration.AuditConfiguration;
+import com.wultra.core.audit.base.model.AuditDetail;
 import com.wultra.core.audit.base.model.AuditLevel;
 import com.wultra.core.audit.base.model.AuditRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Database audit implementation.
@@ -56,29 +54,29 @@ public class DatabaseAudit implements Audit {
 
     @Override
     public void error(String message) {
-        errorInternal(message, Collections.emptyMap(), null);
+        errorInternal(message, new AuditDetail(), null);
     }
 
     @Override
     public void error(String message, Object... args) {
-        errorInternal(message, Collections.emptyMap(), args);
+        errorInternal(message, new AuditDetail(), args);
     }
 
     @Override
-    public void error(String message, Map<String, Object> param) {
-        errorInternal(message, param, null);
+    public void error(String message, AuditDetail detail) {
+        errorInternal(message, detail, null);
     }
 
     @Override
-    public void error(String message, Map<String, Object> param, Object... args) {
-        errorInternal(message, param, args);
+    public void error(String message, AuditDetail detail, Object... args) {
+        errorInternal(message, detail, args);
     }
 
-    private void errorInternal(String message, Map<String, Object> param, Object[] args) {
+    private void errorInternal(String message, AuditDetail detail, Object[] args) {
         if (!isErrorEnabled()) {
             return;
         }
-        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.ERROR, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.ERROR, detail.getType(), detail.getParam(), args);
         writer.write(auditRecord);
     }
 
@@ -89,29 +87,29 @@ public class DatabaseAudit implements Audit {
 
     @Override
     public void warn(String message) {
-        warnInternal(message, Collections.emptyMap(), null);
+        warnInternal(message, new AuditDetail(), null);
     }
 
     @Override
     public void warn(String message, Object... args) {
-        warnInternal(message, Collections.emptyMap(), args);
+        warnInternal(message, new AuditDetail(), args);
     }
 
     @Override
-    public void warn(String message, Map<String, Object> param) {
-        warnInternal(message, param, null);
+    public void warn(String message, AuditDetail detail) {
+        warnInternal(message, detail, null);
     }
 
     @Override
-    public void warn(String message, Map<String, Object> param, Object... args) {
-        warnInternal(message, param, args);
+    public void warn(String message, AuditDetail detail, Object... args) {
+        warnInternal(message, detail, args);
     }
 
-    private void warnInternal(String message, Map<String, Object> param, Object[] args) {
+    private void warnInternal(String message, AuditDetail detail, Object[] args) {
         if (!isWarnEnabled()) {
             return;
         }
-        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.WARN, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.WARN, detail.getType(), detail.getParam(), args);
         writer.write(auditRecord);
     }
 
@@ -122,29 +120,29 @@ public class DatabaseAudit implements Audit {
 
     @Override
     public void info(String message) {
-        infoInternal(message, Collections.emptyMap(), null);
+        infoInternal(message, new AuditDetail(), null);
     }
 
     @Override
     public void info(String message, Object... args) {
-        infoInternal(message, Collections.emptyMap(), args);
+        infoInternal(message, new AuditDetail(), args);
     }
 
     @Override
-    public void info(String message, Map<String, Object> param) {
-        infoInternal(message, param, null);
+    public void info(String message, AuditDetail detail) {
+        infoInternal(message, detail, null);
     }
 
     @Override
-    public void info(String message, Map<String, Object> param, Object... args) {
-        infoInternal(message, param, args);
+    public void info(String message, AuditDetail detail, Object... args) {
+        infoInternal(message, detail, args);
     }
 
-    private void infoInternal(String message, Map<String, Object> param, Object[] args) {
+    private void infoInternal(String message, AuditDetail detail, Object[] args) {
         if (!isInfoEnabled()) {
             return;
         }
-        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.INFO, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.INFO, detail.getType(), detail.getParam(), args);
         writer.write(auditRecord);
     }
 
@@ -155,29 +153,29 @@ public class DatabaseAudit implements Audit {
 
     @Override
     public void debug(String message) {
-        debugInternal(message, Collections.emptyMap(), null);
+        debugInternal(message, new AuditDetail(), null);
     }
 
     @Override
     public void debug(String message, Object... args) {
-        debugInternal(message, Collections.emptyMap(), args);
+        debugInternal(message, new AuditDetail(), args);
     }
 
     @Override
-    public void debug(String message, Map<String, Object> param) {
-        debugInternal(message, param, null);
+    public void debug(String message, AuditDetail detail) {
+        debugInternal(message, detail, null);
     }
 
     @Override
-    public void debug(String message, Map<String, Object> param, Object... args) {
-        debugInternal(message, param, args);
+    public void debug(String message, AuditDetail detail, Object... args) {
+        debugInternal(message, detail, args);
     }
 
-    private void debugInternal(String message, Map<String, Object> param, Object[] args) {
+    private void debugInternal(String message, AuditDetail detail, Object[] args) {
         if (!isDebugEnabled()) {
             return;
         }
-        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.DEBUG, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.DEBUG, detail.getType(), detail.getParam(), args);
         writer.write(auditRecord);
     }
 
@@ -188,29 +186,29 @@ public class DatabaseAudit implements Audit {
 
     @Override
     public void trace(String message) {
-        traceInternal(message, Collections.emptyMap(), null);
+        traceInternal(message, new AuditDetail(), null);
     }
 
     @Override
     public void trace(String message, Object... args) {
-        traceInternal(message, Collections.emptyMap(), args);
+        traceInternal(message, new AuditDetail(), args);
     }
 
     @Override
-    public void trace(String message, Map<String, Object> param) {
-        traceInternal(message, param, null);
+    public void trace(String message, AuditDetail detail) {
+        traceInternal(message, detail, null);
     }
 
     @Override
-    public void trace(String message, Map<String, Object> param, Object... args) {
-        traceInternal(message, param, args);
+    public void trace(String message, AuditDetail detail, Object... args) {
+        traceInternal(message, detail, args);
     }
 
-    private void traceInternal(String message, Map<String, Object> param, Object[] args) {
+    private void traceInternal(String message, AuditDetail detail, Object[] args) {
         if (!isTraceEnabled()) {
             return;
         }
-        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.TRACE, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.TRACE, detail.getType(), detail.getParam(), args);
         writer.write(auditRecord);
     }
 
@@ -221,29 +219,29 @@ public class DatabaseAudit implements Audit {
 
     @Override
     public void log(String message, AuditLevel level) {
-        logInternal(message, level, Collections.emptyMap(), null);
+        logInternal(message, level, new AuditDetail(), null);
     }
 
     @Override
     public void log(String message, AuditLevel level, Object... args) {
-        logInternal(message, level, Collections.emptyMap(), args);
+        logInternal(message, level, new AuditDetail(), args);
     }
 
     @Override
-    public void log(String message, AuditLevel level, Map<String, Object> param) {
-        logInternal(message, level, param, null);
+    public void log(String message, AuditLevel level, AuditDetail detail) {
+        logInternal(message, level, detail, null);
     }
 
     @Override
-    public void log(String message, AuditLevel level, Map<String, Object> param, Object... args) {
-        logInternal(message, level, param, args);
+    public void log(String message, AuditLevel level, AuditDetail detail, Object... args) {
+        logInternal(message, level, detail, args);
     }
 
-    private void logInternal(String message, AuditLevel level, Map<String, Object> param, Object[] args) {
+    private void logInternal(String message, AuditLevel level, AuditDetail detail, Object[] args) {
         if (!isLevelEnabled(level)) {
             return;
         }
-        final AuditRecord auditRecord = new AuditRecord(message, level, param, args);
+        final AuditRecord auditRecord = new AuditRecord(message, level, detail.getType(), detail.getParam(), args);
         writer.write(auditRecord);
     }
 

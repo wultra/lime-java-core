@@ -24,7 +24,7 @@ CREATE TABLE audit_param (
     audit_log_id       VARCHAR2(36 CHAR),
     timestamp_created  TIMESTAMP,
     param_key          VARCHAR2(256 CHAR),
-    param_value        VARCHAR2(3072 CHAR)
+    param_value        VARCHAR2(4000 CHAR)
 );
 
 --

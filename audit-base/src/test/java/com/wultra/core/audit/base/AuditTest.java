@@ -15,7 +15,9 @@
  */
 package com.wultra.core.audit.base;
 
+import com.wultra.core.audit.base.model.AuditDetail;
 import com.wultra.core.audit.base.model.AuditLevel;
+import com.wultra.core.audit.base.util.JsonUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +28,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -128,26 +131,52 @@ public class AuditTest {
     public void testAuditOneParam() {
         Timestamp timestampBeforeAudit = new Timestamp(System.currentTimeMillis() - 1);
         Audit audit = auditFactory.getAudit();
-        Map<String, Object> param = new LinkedHashMap<>();
-        param.put("my_id", "test_id");
-        audit.info("test message", param);
+        audit.info("test message", AuditDetail.builder().param("my_id", "test_id").build());
         audit.flush();
         jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id=ap.audit_log_id", rs -> {
             assertNotNull(rs.getString("audit_log_id"));
             assertTrue(rs.getTimestamp("timestamp_created").after(timestampBeforeAudit));
+            assertNull(rs.getString("audit_type"));
             assertEquals("my_id", rs.getString("param_key"));
             assertEquals("test_id", rs.getString("param_value"));
         });
     }
 
     @Test
-    public void testAuditTwoParams() {
+    public void testAuditTypeAndTwoParams() {
         Audit audit = auditFactory.getAudit();
-        Map<String, Object> param = new LinkedHashMap<>();
         String operationId = UUID.randomUUID().toString();
+        AuditDetail detail = AuditDetail.builder()
+                .type("TEST")
+                .param("user_id", "test_id")
+                .param("operation_id", operationId)
+                .build();
+        audit.info("test message", detail);
+        audit.flush();
+        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'user_id' AND ap.param_value = 'test_id'", rs -> {
+            assertNotNull(rs.getString("audit_log_id"));
+            assertEquals("TEST", rs.getString("audit_type"));
+            assertEquals("user_id", rs.getString("param_key"));
+            assertEquals("test_id", rs.getString("param_value"));
+        });
+        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'operation_id'", rs -> {
+            assertNotNull(rs.getString("audit_log_id"));
+            assertEquals("operation_id", rs.getString("param_key"));
+            assertEquals(operationId, rs.getString("param_value"));
+        });
+    }
+
+    @Test
+    public void testAuditMoreParams() {
+        Audit audit = auditFactory.getAudit();
+        String operationId = UUID.randomUUID().toString();
+        Date timestamp = new Date();
+        Map<String, Object> param = new LinkedHashMap<>();
         param.put("user_id", "test_id");
         param.put("operation_id", operationId);
-        audit.info("test message", param);
+        param.put("sessionId", "1A532637239A03B07199A54E8D531427");
+        param.put("timestamp", timestamp);
+        audit.info("test message", AuditDetail.builder().params(param).build());
         audit.flush();
         jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'user_id' AND ap.param_value = 'test_id'", rs -> {
             assertNotNull(rs.getString("audit_log_id"));
@@ -156,8 +185,15 @@ public class AuditTest {
         });
         jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'operation_id'", rs -> {
             assertNotNull(rs.getString("audit_log_id"));
-            assertEquals("operation_id", rs.getString("param_key"));
             assertEquals(operationId, rs.getString("param_value"));
+        });
+        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'session_id'", rs -> {
+            assertNotNull(rs.getString("audit_log_id"));
+            assertEquals("1A532637239A03B07199A54E8D531427", rs.getString("param_value"));
+        });
+        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'timestamp'", rs -> {
+            assertNotNull(rs.getString("audit_log_id"));
+            assertEquals(new JsonUtil().serializeObject(timestamp), rs.getString("param_value"));
         });
     }
 

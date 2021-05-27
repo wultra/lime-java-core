@@ -15,9 +15,8 @@
  */
 package com.wultra.core.audit.base;
 
+import com.wultra.core.audit.base.model.AuditDetail;
 import com.wultra.core.audit.base.model.AuditLevel;
-
-import java.util.Map;
 
 /**
  * Audit interface.
@@ -54,17 +53,17 @@ public interface Audit {
     /**
      * Create an error audit record.
      * @param message Error message.
-     * @param param Error message parameters.
+     * @param detail Detailed audit information.
      */
-    void error(String message, Map<String, Object> param);
+    void error(String message, AuditDetail detail);
 
     /**
      * Create an error audit record.
      * @param message Error message pattern.
-     * @param param Error message parameters.
+     * @param detail Detailed audit information.
      * @param args Error message arguments.
      */
-    void error(String message, Map<String, Object> param, Object ... args);
+    void error(String message, AuditDetail detail, Object ... args);
 
     /**
      * Get whether warning auditing is enabled.
@@ -88,17 +87,17 @@ public interface Audit {
     /**
      * Create a warning audit record.
      * @param message Warning message.
-     * @param param Warning message parameters.
+     * @param detail Detailed audit information.
      */
-    void warn(String message, Map<String, Object> param);
+    void warn(String message, AuditDetail detail);
 
     /**
      * Create a warning audit record.
      * @param message Warning message pattern.
-     * @param param Warning message parameters.
+     * @param detail Detailed audit information.
      * @param args Warning message arguments.
      */
-    void warn(String message, Map<String, Object> param, Object ... args);
+    void warn(String message, AuditDetail detail, Object ... args);
 
     /**
      * Get whether informational auditing is enabled.
@@ -122,17 +121,17 @@ public interface Audit {
     /**
      * Create an informational audit record.
      * @param message Informational message.
-     * @param param Informational message parameters.
+     * @param detail Detailed audit information.
      */
-    void info(String message, Map<String, Object> param);
+    void info(String message, AuditDetail detail);
 
     /**
      * Create an informational audit record.
      * @param message Informational message pattern.
-     * @param param Informational message parameters.
+     * @param detail Detailed audit information.
      * @param args Informational message arguments.
      */
-    void info(String message, Map<String, Object> param, Object ... args);
+    void info(String message, AuditDetail detail, Object ... args);
 
     /**
      * Get whether debug auditing is enabled.
@@ -156,17 +155,17 @@ public interface Audit {
     /**
      * Create a debug audit record.
      * @param message Debug message.
-     * @param param Debug message parameters.
+     * @param detail Detailed audit information.
      */
-    void debug(String message, Map<String, Object> param);
+    void debug(String message, AuditDetail detail);
 
     /**
      * Create a debug audit record.
      * @param message Debug message pattern.
-     * @param param Debug message parameters.
+     * @param detail Detailed audit information.
      * @param args Debug message arguments.
      */
-    void debug(String message, Map<String, Object> param, Object ... args);
+    void debug(String message, AuditDetail detail, Object ... args);
 
     /**
      * Get whether trace auditing is enabled.
@@ -190,17 +189,17 @@ public interface Audit {
     /**
      * Create a trace audit record.
      * @param message Trace message.
-     * @param param Trace message parameters.
+     * @param detail Detailed audit information.
      */
-    void trace(String message, Map<String, Object> param);
+    void trace(String message, AuditDetail detail);
 
     /**
      * Create a trace audit record.
      * @param message Trace message.
-     * @param param Trace message parameters.
+     * @param detail Detailed audit information.
      * @param args Trace message arguments.
      */
-    void trace(String message, Map<String, Object> param, Object ... args);
+    void trace(String message, AuditDetail detail, Object ... args);
 
     /**
      * Get whether specified auditing level is enabled.
@@ -228,18 +227,18 @@ public interface Audit {
      * Create an audit record.
      * @param message Audit message.
      * @param level Audit level.
-     * @param param Audit parameters.
+     * @param detail Detailed audit information.
      */
-    void log(String message, AuditLevel level, Map<String, Object> param);
+    void log(String message, AuditLevel level, AuditDetail detail);
 
     /**
      * Crate an audit record.
      * @param message Audit message pattern.
      * @param level Audit level.
-     * @param param Audit parameters.
+     * @param detail Detailed audit information.
      * @param args Audit message arguments.
      */
-    void log(String message, AuditLevel level, Map<String, Object> param, Object ... args);
+    void log(String message, AuditLevel level, AuditDetail detail, Object ... args);
 
     /**
      * Flush the audit record queue.

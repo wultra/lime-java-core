@@ -34,6 +34,7 @@ public class AuditRecord {
     private final String id;
     private final Date timestamp;
     private final AuditLevel level;
+    private final String type;
     private final Map<String, Object> param;
     private String message;
     private Throwable throwable;
@@ -44,13 +45,15 @@ public class AuditRecord {
      * Audit record constructor.
      * @param message Audit message or message pattern in case message arguments are present.
      * @param level Audit level.
+     * @param type Audit type.
      * @param param Audit parameters.
      * @param args Message arguments.
      */
-    public AuditRecord(@NonNull String message, @NonNull AuditLevel level, @NonNull Map<String, Object> param, Object[] args) {
+    public AuditRecord(@NonNull String message, @NonNull AuditLevel level, String type, @NonNull Map<String, Object> param, Object[] args) {
         this.id = UUID.randomUUID().toString();
         this.timestamp = new Date();
         this.level = level;
+        this.type = type;
         this.param = param;
         if (args != null) {
             parseArgs(message, args);
@@ -95,6 +98,14 @@ public class AuditRecord {
      */
     public AuditLevel getLevel() {
         return level;
+    }
+
+    /**
+     * Get audit type.
+     * @return Audit type.
+     */
+    public String getType() {
+        return type;
     }
 
     /**
@@ -161,11 +172,16 @@ public class AuditRecord {
     @Override
     public String toString() {
         return "AuditRecord{" +
-                "timestamp=" + timestamp +
-                ", message='" + message + '\'' +
+                "id='" + id + '\'' +
+                ", timestamp=" + timestamp +
                 ", level=" + level +
-                ", throwable=" + throwable +
+                ", type='" + type + '\'' +
                 ", param=" + param +
+                ", message='" + message + '\'' +
+                ", throwable=" + throwable +
+                ", callingClass=" + callingClass +
+                ", threadName='" + threadName + '\'' +
                 '}';
     }
+
 }

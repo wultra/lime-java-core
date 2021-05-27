@@ -46,18 +46,34 @@ public class AuditParam {
         this.value = value;
     }
 
+    /**
+     * Get audit log identifier.
+     * @return Audit log identifier.
+     */
     public String getAuditLogId() {
         return auditLogId;
     }
 
+    /**
+     * Get audit timestamp.
+     * @return Audit timestamp.
+     */
     public Date getTimestamp() {
         return timestamp;
     }
 
+    /**
+     * Get parameter key.
+     * @return Parameter key.
+     */
     public String getKey() {
         return key;
     }
 
+    /**
+     * Get parameter value.
+     * @return Parameter value.
+     */
     public Object getValue() {
         return value;
     }

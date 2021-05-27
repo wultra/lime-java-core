@@ -28,53 +28,104 @@ public class AuditDetail {
     private String type;
     private final Map<String, Object> param = new LinkedHashMap<>();
 
+    /**
+     * Default constructor.
+     */
     public AuditDetail() {
     }
 
+    /**
+     * Constructor with audit type.
+     * @param type Audit type.
+     */
     public AuditDetail(String type) {
         this.type = type;
     }
 
+    /**
+     * Constuctor with audit type and parameters.
+     * @param type Audit type.
+     * @param param Audit parameters.
+     */
     public AuditDetail(String type, Map<String, Object> param) {
         this.type = type;
         this.param.putAll(param);
     }
 
+    /**
+     * Get audit type.
+     * @return Audit type.
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * Set audit type.
+     * @param type Audit type.
+     */
     public void setType(String type) {
         this.type = type;
     }
 
+    /**
+     * Get audit parameters.
+     * @return Audit parameters.
+     */
     public Map<String, Object> getParam() {
         return param;
     }
 
+    /**
+     * Get audit detail builder.
+     * @return Audit detail builder.
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Audit detail builder.
+     */
     public static class Builder {
 
         private final AuditDetail auditDetail = new AuditDetail();
 
+        /**
+         * Set audit type.
+         * @param type Audit type.
+         * @return Audit detail builder.
+         */
         public Builder type(String type) {
             auditDetail.setType(type);
             return this;
         }
 
+        /**
+         * Set audit parameter.
+         * @param key Parameter key.
+         * @param value Parameter value.
+         * @return Audit detail builder.
+         */
         public Builder param(String key, Object value) {
             auditDetail.getParam().put(key, value);
             return this;
         }
 
+        /**
+         * Set audit parameters.
+         * @param params Audit parameters.
+         * @return Audit detail builder.
+         */
         public Builder params(Map<String, Object> params) {
             auditDetail.getParam().putAll(params);
             return this;
         }
 
+        /**
+         * Build the audit detail.
+         * @return Audit detail.
+         */
         public AuditDetail build() {
             return auditDetail;
         }

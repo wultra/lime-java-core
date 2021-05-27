@@ -43,7 +43,15 @@ public class AuditDetail {
     }
 
     /**
-     * Constuctor with audit type and parameters.
+     * Constructor with audit parameters.
+     * @param param Audit parameters.
+     */
+    public AuditDetail(Map<String, Object> param) {
+        this.param.putAll(param);
+    }
+
+    /**
+     * Constructor with audit type and parameters.
      * @param type Audit type.
      * @param param Audit parameters.
      */

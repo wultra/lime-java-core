@@ -34,7 +34,7 @@ public class StringUtil {
         }
         str = str.trim();
         if (str.length() > maxLength) {
-            str = str.substring(0, maxLength);
+            str = str.substring(0, maxLength - 3) + "...";
         }
         return str;
     }

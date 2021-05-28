@@ -105,6 +105,7 @@ public class DatabaseAuditWriter implements AuditWriter {
                 "VALUES (?, ?, ?, ?)";
     }
 
+    @Override
     public void write(AuditRecord auditRecord) {
         auditRecord.setCallingClass(ClassUtil.getCallingClass(this.getClass().getPackage().getName()));
         auditRecord.setThreadName(Thread.currentThread().getName());
@@ -118,6 +119,7 @@ public class DatabaseAuditWriter implements AuditWriter {
         }
     }
 
+    @Override
     public void flush() {
         if (jdbcTemplate.getDataSource() == null) {
             logger.error("Data source is not available");
@@ -204,6 +206,7 @@ public class DatabaseAuditWriter implements AuditWriter {
         }
     }
 
+    @Override
     public void cleanup() {
         if (jdbcTemplate.getDataSource() == null) {
             logger.error("Data source is not available");

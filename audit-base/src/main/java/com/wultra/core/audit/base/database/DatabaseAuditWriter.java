@@ -75,6 +75,11 @@ public class DatabaseAuditWriter implements AuditWriter {
     private final Object FLUSH_LOCK = new Object();
     private final Object CLEANUP_LOCK = new Object();
 
+    /**
+     * Service constructor.
+     * @param configuration Audit configuration.
+     * @param jdbcTemplate Spring JDBC template.
+     */
     @Autowired
     public DatabaseAuditWriter(AuditConfiguration configuration, JdbcTemplate jdbcTemplate) {
         this.queue = new LinkedBlockingDeque<>(configuration.getEventQueueSize());

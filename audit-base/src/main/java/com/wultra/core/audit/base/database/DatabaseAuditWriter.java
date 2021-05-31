@@ -21,6 +21,7 @@ import com.wultra.core.audit.base.model.AuditParam;
 import com.wultra.core.audit.base.model.AuditRecord;
 import com.wultra.core.audit.base.util.ClassUtil;
 import com.wultra.core.audit.base.util.JsonUtil;
+import com.wultra.core.audit.base.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,11 @@ public class DatabaseAuditWriter implements AuditWriter {
     private final Object FLUSH_LOCK = new Object();
     private final Object CLEANUP_LOCK = new Object();
 
+    /**
+     * Service constructor.
+     * @param configuration Audit configuration.
+     * @param jdbcTemplate Spring JDBC template.
+     */
     @Autowired
     public DatabaseAuditWriter(AuditConfiguration configuration, JdbcTemplate jdbcTemplate) {
         this.queue = new LinkedBlockingDeque<>(configuration.getEventQueueSize());
@@ -82,8 +88,8 @@ public class DatabaseAuditWriter implements AuditWriter {
         this.tableNameParam = configuration.getDbTableNameParam();
         this.batchSize = configuration.getBatchSize();
         this.cleanupDays = configuration.getDbCleanupDays();
-        this.applicationName = configuration.getApplicationName();
-        this.version = configuration.getVersion();
+        this.applicationName = StringUtil.trim(configuration.getApplicationName(), 256);
+        this.version = StringUtil.trim(configuration.getVersion(), 256);
         this.buildTime = configuration.getBuildTime();
         prepareSqlInsertQueries();
     }
@@ -99,16 +105,21 @@ public class DatabaseAuditWriter implements AuditWriter {
                 "VALUES (?, ?, ?, ?)";
     }
 
+    @Override
     public void write(AuditRecord auditRecord) {
         auditRecord.setCallingClass(ClassUtil.getCallingClass(this.getClass().getPackage().getName()));
         auditRecord.setThreadName(Thread.currentThread().getName());
         try {
+            if (queue.remainingCapacity() == 0) {
+                flush();
+            }
             queue.put(auditRecord);
         } catch (InterruptedException ex) {
             logger.warn(ex.getMessage(), ex);
         }
     }
 
+    @Override
     public void flush() {
         if (jdbcTemplate.getDataSource() == null) {
             logger.error("Data source is not available");
@@ -137,7 +148,12 @@ public class DatabaseAuditWriter implements AuditWriter {
                                     ps.setString(1, record.getId());
                                     ps.setString(2, applicationName);
                                     ps.setString(3, record.getLevel().toString());
-                                    ps.setString(4, record.getType());
+                                    String auditType = record.getType();
+                                    if (auditType == null) {
+                                        ps.setNull(4, Types.VARCHAR);
+                                    }  else {
+                                        ps.setString(4, StringUtil.trim(record.getType(), 256));
+                                    }
                                     ps.setTimestamp(5, new Timestamp(record.getTimestamp().getTime()));
                                     ps.setString(6, record.getMessage());
                                     Throwable throwable = record.getThrowable();
@@ -152,8 +168,8 @@ public class DatabaseAuditWriter implements AuditWriter {
                                         ps.setString(8, sw.toString());
                                     }
                                     ps.setString(9, jsonUtil.serializeMap(record.getParam()));
-                                    ps.setString(10, record.getCallingClass().getName());
-                                    ps.setString(11, record.getThreadName());
+                                    ps.setString(10, StringUtil.trim(record.getCallingClass().getName(), 256));
+                                    ps.setString(11, StringUtil.trim(record.getThreadName(), 256));
                                     ps.setString(12, version);
                                     ps.setTimestamp(13, new Timestamp(buildTime.toEpochMilli()));
                                 }
@@ -168,14 +184,14 @@ public class DatabaseAuditWriter implements AuditWriter {
                                     AuditParam record = paramsToPersist.get(i);
                                     ps.setString(1, record.getAuditLogId());
                                     ps.setTimestamp(2, new Timestamp(record.getTimestamp().getTime()));
-                                    ps.setString(3, record.getKey());
+                                    ps.setString(3, StringUtil.trim(record.getKey(), 256));
                                     Object value = record.getValue();
                                     if (value == null) {
                                         ps.setNull(4, Types.VARCHAR);
                                     } else if (value instanceof CharSequence) {
-                                        ps.setString(4, value.toString());
+                                        ps.setString(4, StringUtil.trim(value.toString(), 4000));
                                     } else {
-                                        ps.setString(4, jsonUtil.serializeObject(value));
+                                        ps.setString(4, StringUtil.trim(jsonUtil.serializeObject(value), 4000));
                                     }
                                 }
                                 public int getBatchSize() {
@@ -190,6 +206,7 @@ public class DatabaseAuditWriter implements AuditWriter {
         }
     }
 
+    @Override
     public void cleanup() {
         if (jdbcTemplate.getDataSource() == null) {
             logger.error("Data source is not available");
@@ -209,18 +226,27 @@ public class DatabaseAuditWriter implements AuditWriter {
         }
     }
 
+    /**
+     * Scheduled flush of persistence of audit data.
+     */
     @Scheduled(fixedDelayString = "${audit.flush.delay.fixed:1000}", initialDelayString = "${powerauth.audit.flush.delay.initial:1000}")
     public void scheduledFlush() {
         logger.debug("Scheduled audit log flush called");
         flush();
     }
 
+    /**
+     * Scheduled cleanup of audit data in database.
+     */
     @Scheduled(fixedDelayString = "${audit.cleanup.delay.fixed:3600000}", initialDelayString = "${powerauth.audit.cleanup.delay.initial:1000}")
     public void scheduledCleanup() {
         logger.debug("Scheduled audit log cleanup called");
         cleanup();
     }
 
+    /**
+     * Flush audit data before application exit.
+     */
     @PreDestroy
     public void destroy() {
         flush();

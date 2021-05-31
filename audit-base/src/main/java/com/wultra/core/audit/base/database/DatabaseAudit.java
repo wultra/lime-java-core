@@ -36,6 +36,11 @@ public class DatabaseAudit implements Audit {
     private final AuditWriter writer;
     private final AuditConfiguration configuration;
 
+    /**
+     * Service constructor.
+     * @param writer Database audit writer.
+     * @param configuration Audit configuration.
+     */
     @Autowired
     public DatabaseAudit(DatabaseAuditWriter writer, AuditConfiguration configuration) {
         this.writer = writer;

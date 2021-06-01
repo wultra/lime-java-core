@@ -1,0 +1,19 @@
+language: java
+jdk:
+  - openjdk11
+env:
+  global:
+    - secure: "GejYYyFcDabMavP3wNcOhuAOAaeQ2VYmFA+tSpt4Y4Al1rLDRKXEXmsYzvRTTYXjbAOMPc1rjgxGPA855XKguweO/zAx83w4+PssfJ/tTHW7epUxqlMYqT0u9Z7xpgRTk+IoQvd4RaLksEv2RvhNOlwUzpWGAPGUdwduG2/rLlwVTDSM0Ie97Rtb5NJ9Caku1XvVLHD4JjBsBcmOmvuNbQUK/YMTXmfmvadimrhVdL1B7F7cRZR+qpY2nHFa3pTrtQaRq6rRvbTCUtGawSq32sUVcQDxPQmNiRdzF9qvl0W4Gsb5KYQVfvVPMN5h5eIrr7txvQkEH2bSkn6pty351cb/SFdery9o1F9Ze22akFUZn7ULsKCOoIjOK+fmPQJdjf4O85nfaOxfoxkZ7l8Fv+qc/Ymmr6Q40XmtnzuZ+eUxC1WZINcioA1MGDi4zLtZz/Drz3NnhYpryrixu5ao9uFkiTa8AxiWGj/bffGC7yv+9wQ+uCQQGxzV9JcySGV0HhQ7pcIdKHV9N+Sk0P5VdBrjDQ5XKpq1uSqhaLltB4crwmAvjQ7w4YvXkH93VZxsiw3mI1yJU1Fam5fwgbRiHUXuU43rFS+BgrANvSVFwg6r+kkNluOfwgmbrNsgOKRG2qaHGLMW6CrS5Ea2PVZNcwtcmxwfUzeRZx4abf7RCdY="
+
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+addons:
+  coverity_scan:
+    project:
+      name: "wultra/lime-java-core"
+      description: Build submitted via Travis CI
+    notification_email: roman.strobl@wultra.com
+    build_command_prepend: "mvn clean"
+    build_command: "mvn -DskipTests=true compile"
+    branch_pattern: coverity_scan

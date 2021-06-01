@@ -21,7 +21,6 @@ import io.getlime.core.rest.model.base.response.Response;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.client.ClientResponse;
 
 import java.util.function.Consumer;
 
@@ -57,22 +56,25 @@ public interface RestClient {
     /**
      * Execute a non-blocking HTTP GET request.
      * @param path Request path.
+     * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
      * @throws RestClientException Thrown in case HTTP GET request fails.
      */
-    void getNonBlocking(String path, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+    <T> void getNonBlocking(String path, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
 
     /**
      * Execute a non-blocking HTTP GET request with specified HTTP headers.
      * @param path Request path.
      * @param queryParams Query parameters.
      * @param headers HTTP headers.
+     * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP GET request fails.
      */
-    void getNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+    <T> void getNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
 
     /**
      * Execute a blocking HTTP GET request with ObjectRequest / Response types.
@@ -142,11 +144,13 @@ public interface RestClient {
      * Execute a non-blocking HTTP POST request.
      * @param path Request path.
      * @param request Request object.
+     * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP POST request fails.
      */
-    void postNonBlocking(String path, Object request, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+    <T> void postNonBlocking(String path, Object request, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
 
     /**
      * Execute a non-blocking HTTP POST request with specified HTTP headers.
@@ -154,11 +158,13 @@ public interface RestClient {
      * @param request Request object.
      * @param queryParams Query parameters.
      * @param headers HTTP headers.
+     * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP POST request fails.
      */
-    void postNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+    <T> void postNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
 
     /**
      * Execute a blocking HTTP POST request with ObjectRequest / Response types.
@@ -232,11 +238,13 @@ public interface RestClient {
      * Execute a non-blocking HTTP PUT request.
      * @param path Request path.
      * @param request Request object.
+     * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP PUT request fails.
      */
-    void putNonBlocking(String path, Object request, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+    <T> void putNonBlocking(String path, Object request, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
 
     /**
      * Execute a non-blocking HTTP PUT request with specified HTTP headers.
@@ -244,11 +252,13 @@ public interface RestClient {
      * @param request Request object.
      * @param queryParams Query parameters.
      * @param headers HTTP headers.
+     * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP PUT request fails.
      */
-    void putNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+    <T> void putNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
 
     /**
      * Execute a blocking HTTP PUT request with ObjectRequest / Response types.
@@ -319,22 +329,26 @@ public interface RestClient {
     /**
      * Execute a non-blocking HTTP DELETE request.
      * @param path Request path.
+     * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP DELETE request fails.
      */
-    void deleteNonBlocking(String path, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+    <T> void deleteNonBlocking(String path, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
 
     /**
      * Execute a non-blocking HTTP DELETE request with specified HTTP headers.
      * @param path Request path.
      * @param queryParams Query parameters.
      * @param headers HTTP headers.
+     * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP DELETE request fails.
      */
-    void deleteNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Consumer<ClientResponse> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+    <T> void deleteNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
 
     /**
      * Execute a blocking HTTP DELETE request with ObjectRequest / Response types.

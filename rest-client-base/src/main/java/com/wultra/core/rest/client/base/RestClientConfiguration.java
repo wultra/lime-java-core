@@ -15,7 +15,9 @@
  */
 package com.wultra.core.rest.client.base;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
 /**
  * REST client configuration.
@@ -55,6 +57,12 @@ public class RestClientConfiguration {
     private boolean httpBasicAuthEnabled = false;
     private String httpBasicAuthUsername;
     private String httpBasicAuthPassword;
+
+    // Custom object mapper
+    private ObjectMapper objectMapper;
+
+    // Custom filter
+    private ExchangeFilterFunction filter;
 
     /**
      * Get base URL.
@@ -278,5 +286,37 @@ public class RestClientConfiguration {
      */
     public void setHttpBasicAuthPassword(String httpBasicAuthPassword) {
         this.httpBasicAuthPassword = httpBasicAuthPassword;
+    }
+
+    /**
+     * Get the object mapper.
+     * @return Object mapper.
+     */
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    /**
+     * Set the object mapper.
+     * @param objectMapper Object mapper.
+     */
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    /**
+     * Get the exchange filter function.
+     * @return Exchange filter function.
+     */
+    public ExchangeFilterFunction getFilter() {
+        return filter;
+    }
+
+    /**
+     * Set the exchange filter function.
+     * @param filter Exchange filter function.
+     */
+    public void setFilter(ExchangeFilterFunction filter) {
+        this.filter = filter;
     }
 }

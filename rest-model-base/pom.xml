@@ -6,22 +6,22 @@
 	<parent>
 		<groupId>io.getlime.core</groupId>
 		<artifactId>lime-java-core-parent</artifactId>
-		<version>1.2.0</version>
+		<version>1.3.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>rest-model-base</artifactId>
-	<version>1.2.0</version>
+	<version>1.3.0</version>
 	<name>rest-model-base</name>
 	<description>Model classes for Wultra back-end Java projects</description>
 	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.13.1</version>
-			<scope>test</scope>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
+			<version>2.0.2</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

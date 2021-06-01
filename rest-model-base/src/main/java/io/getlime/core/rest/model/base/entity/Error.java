@@ -15,6 +15,8 @@
  */
 package io.getlime.core.rest.model.base.entity;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * Transport object for RESTful API representing an error instance.
  *
@@ -25,7 +27,7 @@ public class Error {
     /**
      * List of defined error code constants.
      */
-    public class Code {
+    public static class Code {
         /**
          * Generic error occurred.
          */
@@ -35,13 +37,14 @@ public class Error {
     /**
      * List of defined message constants.
      */
-    public class Message {
+    public static class Message {
         /**
          * Unknown error.
          */
         public static final String UNKNOWN_ERROR = "UNKNOWN_ERROR";
     }
 
+    @NotBlank
     private String code;
     private String message;
 

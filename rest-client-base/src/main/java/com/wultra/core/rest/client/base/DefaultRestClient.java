@@ -591,6 +591,11 @@ public class DefaultRestClient implements RestClient {
             return new DefaultRestClient(this);
         }
 
+        /**
+         * Set base URL.
+         * @param baseUrl Base URL.
+         * @return Builder.
+         */
         public Builder baseUrl(String baseUrl) {
             config.setBaseUrl(baseUrl);
             return this;

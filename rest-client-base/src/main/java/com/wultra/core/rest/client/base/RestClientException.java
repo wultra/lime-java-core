@@ -26,9 +26,24 @@ import org.springframework.http.HttpStatus;
  */
 public class RestClientException extends Exception {
 
+    /**
+     * HTTP status.
+     */
     private HttpStatus statusCode;
+
+    /**
+     * Raw response.
+     */
     private String response;
+
+    /**
+     * Response HTTP headers.
+     */
     private HttpHeaders responseHeaders;
+
+    /**
+     * Error response.
+     */
     private ErrorResponse errorResponse;
 
     /**

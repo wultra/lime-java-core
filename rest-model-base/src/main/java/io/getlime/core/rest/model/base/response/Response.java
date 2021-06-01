@@ -41,6 +41,9 @@ public class Response {
 
     }
 
+    /**
+     * Response status.
+     */
     @NotBlank
     protected String status;
 

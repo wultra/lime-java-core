@@ -71,6 +71,7 @@ public interface RestClient {
      * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP GET request fails.
      */
     <T> void getNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
@@ -146,6 +147,7 @@ public interface RestClient {
      * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP POST request fails.
      */
     <T> void postNonBlocking(String path, Object request, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
@@ -159,6 +161,7 @@ public interface RestClient {
      * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP POST request fails.
      */
     <T> void postNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
@@ -238,6 +241,7 @@ public interface RestClient {
      * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP PUT request fails.
      */
     <T> void putNonBlocking(String path, Object request, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
@@ -251,6 +255,7 @@ public interface RestClient {
      * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP PUT request fails.
      */
     <T> void putNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
@@ -327,6 +332,7 @@ public interface RestClient {
      * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP DELETE request fails.
      */
     <T> void deleteNonBlocking(String path, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
@@ -339,6 +345,7 @@ public interface RestClient {
      * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP DELETE request fails.
      */
     <T> void deleteNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;

@@ -59,6 +59,7 @@ public interface RestClient {
      * @param responseType Parameterized response type.
      * @param onSuccess Consumer used in case of success.
      * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
      * @throws RestClientException Thrown in case HTTP GET request fails.
      */
     <T> void getNonBlocking(String path, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;

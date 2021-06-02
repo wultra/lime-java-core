@@ -49,10 +49,10 @@ public class AuditConfiguration {
     @Value("${audit.db.cleanup.days:365}")
     private Integer dbCleanupDays;
 
-    @Value("${audit.db.table.name:audit_log}")
+    @Value("${audit.db.table.log.name:audit_log}")
     private String dbTableNameAudit;
 
-    @Value("${audit.db.table.name:audit_param}")
+    @Value("${audit.db.table.param.name:audit_param}")
     private String dbTableNameParam;
 
     @Value("${audit.db.batch.size:1000}")

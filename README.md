@@ -263,8 +263,8 @@ Auditing of exceptions:
 
 Auditing with parameters:
 ```java
-Audit audit = auditFactory.getAudit();
-audit.info("a message", AuditDetail.builder().param("my_id", "some_id").build());
+   Audit audit = auditFactory.getAudit();
+   audit.info("a message", AuditDetail.builder().param("my_id", "some_id").build());
 ```
 
 Auditing with parameters and type of audit message:

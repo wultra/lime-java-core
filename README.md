@@ -131,6 +131,8 @@ The following options are available for the builder:
 - `httpBasicAuth` - HTTP basic authentication (default: disabled)
   - `username` - username for HTTP basic authentication
   - `password` - password for HTTP basic authentication
+- `objectMapper` - custom object mapper for JSON serialization
+- `filter` - custom `ExchangeFilterFunction` for applying a filter during communication
 
 ### Calling HTTP Methods Using REST Client
 
@@ -188,3 +190,89 @@ In case any HTTP error occurs during a blocking HTTP request execution, a `RestC
 - `errorResponse` - a parsed `ErrorResponse`, only used for the `ObjectResponse` response type
 
 Non-blocking methods provide an `onError` consumer for custom error handling.
+
+## Wultra Auditing Library
+
+The `audit-base` project provides auditing functionality for easier investigation of issues. Audit records are stored in a database and can be easily queried. The auditing library also handles removal of old audit records.
+
+The audit library requires two database tables. The DDL is available for the following databases:
+- [DDL for MySQL](./docs/sql/mysql/create_schema.sql)
+- [DDL for Oracle](./docs/sql/oracle/create_schema.sql)
+- [DDL for PostgreSQL](./docs/sql/postgresql/create_schema.sql)
+
+### Configuration
+
+The following configuration is required for integration of the auditing library:
+- Enable scheduling on the application using `@EnableScheduling` annotation on class annotated with `@SpringBootApplication` so that the `flush` and `cleanup` functionality can be scheduled.
+- Add the `com.wultra.core.audit.base` package to the `@ComponentScan`, e.g. `@ComponentScan(basePackages = {"...", "com.wultra.core.audit.base"})`, so that the annotations used in auditing library can be discovered.
+- Configure the `spring.application.name` property to enable storing application name with audit records.
+
+The following properties can be configured in case the default configuration needs to be changed:
+- `audit.level` - minimum audit level (default: `INFO`)
+- `audit.event.queue.size` - event queue size in memory (default: `100000`)
+- `audit.storage.type` - storage type, reserved for future use (default: `DATABASE`)
+- `audit.db.cleanup.days` - audit records older than specified number of days are deleted (default: `365`) 
+- `audit.db.table.log.name` - name of audit log database table (default: `audit_log`)
+- `audit.db.table.param.name:audit_param` - name of audit parameters database table (default: `audit_param`)
+- `audit.db.batch.size` - database batch size (default: `1000`)  
+
+### Audit Levels
+
+Following audit levels are available:
+- `error` - an error occurred 
+- `warn` - a minor error occurred
+- `info` - informational message
+- `debug` - debug message (disabled by default)
+- `trace` - trace message (disabled by default)
+
+### Code samples
+
+Initialization of audit factory:
+```java
+private AuditFactory auditFactory;
+
+@Autowired
+public void setAuditFactory() {
+    this.auditFactory = auditFactory;
+}
+```
+
+Basic usage:
+```java
+    Audit audit = auditFactory.getAudit();
+    audit.info("a message");
+```
+
+Formatting messages:
+```java
+   Audit audit = auditFactory.getAudit();
+   audit.info("a message with {}", "formatting");
+```
+
+Auditing with specified level:
+```java
+   Audit audit = auditFactory.getAudit();
+   audit.log("a message for error level", AuditLevel.ERROR);
+```
+
+Auditing of exceptions:
+```java
+   Audit audit = auditFactory.getAudit();
+   audit.warn("a message", new Exception("an exception"));
+```
+
+Auditing with parameters:
+```java
+   Audit audit = auditFactory.getAudit();
+   audit.info("a message", AuditDetail.builder().param("my_id", "some_id").build());
+```
+
+Auditing with parameters and type of audit message:
+```java
+   Audit audit = auditFactory.getAudit();
+   String operationId = UUID.randomUUID().toString();
+   Map<String, Object> param = new LinkedHashMap<>();
+   param.put("user_id", "some_id");
+   param.put("operation_id", operationId);
+   audit.info("an access message", AuditDetail.builder().type("ACCESS").params(param).build());
+```

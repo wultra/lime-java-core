@@ -213,7 +213,7 @@ The following properties can be configured in case the default configuration nee
 - `audit.storage.type` - storage type, reserved for future use (default: `DATABASE`)
 - `audit.db.cleanup.days` - audit records older than specified number of days are deleted (default: `365`) 
 - `audit.db.table.log.name` - name of audit log database table (default: `audit_log`)
-- `audit.db.table.param.name:audit_param` - name of audit parameters database table (default: `audit_param`)
+- `audit.db.table.param.name` - name of audit parameters database table (default: `audit_param`)
 - `audit.db.batch.size` - database batch size (default: `1000`)  
 
 ### Audit Levels

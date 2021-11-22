@@ -46,11 +46,18 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
 
-import javax.net.ssl.SSLException;
+import javax.net.ssl.KeyManagerFactory;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.function.Consumer;
 
 /**
@@ -108,18 +115,32 @@ public class DefaultRestClient implements RestClient {
                 throw new RestClientException("Invalid parameter baseUrl");
             }
         }
-        WebClient.Builder builder = WebClient.builder();
+        final WebClient.Builder builder = WebClient.builder();
         HttpClient httpClient = HttpClient.create();
-        SslContext sslContext;
+        final SslContext sslContext;
         try {
             if (config.isAcceptInvalidSslCertificate()) {
                 sslContext = SslContextBuilder
                         .forClient()
                         .trustManager(InsecureTrustManagerFactory.INSTANCE)
                         .build();
+            } else if (config.isClientCertificateAuthenticationEnabled()) {
+                final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                try (InputStream in = new FileInputStream(config.getKeyStoreFilename())) {
+                    keyStore.load(in, config.getKeyStorePassword().toCharArray());
+                }
+                final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+                keyManagerFactory.init(keyStore, config.getKeyStorePassword().toCharArray());
+                sslContext = SslContextBuilder.forClient()
+                        .keyManager(keyManagerFactory)
+                        .build();
+            } else {
+                sslContext = null;
+            }
+            if (sslContext != null) {
                 httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext));
             }
-        } catch (SSLException ex) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | IOException | CertificateException | UnrecoverableKeyException ex) {
             throw new RestClientException("SSL error occurred: " + ex.getMessage(), ex);
         }
         if (config.getConnectionTimeout() != null) {
@@ -142,7 +163,7 @@ public class DefaultRestClient implements RestClient {
         }
 
         final ObjectMapper objectMapper = config.getObjectMapper();
-        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
+        final ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
                 .codecs(configurer -> {
                     ClientCodecConfigurer.ClientDefaultCodecs defaultCodecs = configurer.defaultCodecs();
                     if (objectMapper != null) {
@@ -163,7 +184,7 @@ public class DefaultRestClient implements RestClient {
             builder.filter(config.getFilter());
         }
 
-        ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
+        final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
     }
 

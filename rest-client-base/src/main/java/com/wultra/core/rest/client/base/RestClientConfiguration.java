@@ -58,6 +58,11 @@ public class RestClientConfiguration {
     private String httpBasicAuthUsername;
     private String httpBasicAuthPassword;
 
+    // TLC client certificate authentication
+    private boolean clientCertificateAuthenticationEnabled = false;
+    private String keyStoreFilename;
+    private String keyStorePassword;
+
     // Custom object mapper
     private ObjectMapper objectMapper;
 
@@ -286,6 +291,54 @@ public class RestClientConfiguration {
      */
     public void setHttpBasicAuthPassword(String httpBasicAuthPassword) {
         this.httpBasicAuthPassword = httpBasicAuthPassword;
+    }
+
+    /**
+     * Get whether client TLS certificate authentication is enabled.
+     * @return Whether client TLS certificate authentication is enabled.
+     */
+    public boolean isClientCertificateAuthenticationEnabled() {
+        return clientCertificateAuthenticationEnabled;
+    }
+
+    /**
+     * Set whether client TLS certificate authentication is enabled.
+     * @param clientCertificateAuthenticationEnabled Whether client TLS certificate authentication is enabled.
+     */
+    public void setClientCertificateAuthenticationEnabled(boolean clientCertificateAuthenticationEnabled) {
+        this.clientCertificateAuthenticationEnabled = clientCertificateAuthenticationEnabled;
+    }
+
+    /**
+     * Get keystore filename for client TLS certificate authentication.
+     * @return Keystore filename for client TLS certificate authentication.
+     */
+    public String getKeyStoreFilename() {
+        return keyStoreFilename;
+    }
+
+    /**
+     * Set keystore filename for client TLS certificate authentication.
+     * @param keyStoreFilename Keystore filename for client TLS certificate authentication.
+     */
+    public void setKeyStoreFilename(String keyStoreFilename) {
+        this.keyStoreFilename = keyStoreFilename;
+    }
+
+    /**
+     * Get keystore password for client TLS certificate authentication.
+     * @return Keystore password for client TLS certificate authentication.
+     */
+    public String getKeyStorePassword() {
+        return keyStorePassword;
+    }
+
+    /**
+     * Set keystore password for client TLS certificate authentication.
+     * @param keyStorePassword Keystore password for client TLS certificate authentication.
+     */
+    public void setKeyStorePassword(String keyStorePassword) {
+        this.keyStorePassword = keyStorePassword;
     }
 
     /**

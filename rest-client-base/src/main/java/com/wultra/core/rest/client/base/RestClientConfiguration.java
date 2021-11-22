@@ -62,6 +62,8 @@ public class RestClientConfiguration {
     private boolean clientCertificateAuthenticationEnabled = false;
     private String keyStoreFilename;
     private String keyStorePassword;
+    private String trustStoreFilename;
+    private String trustStorePassword;
 
     // Custom object mapper
     private ObjectMapper objectMapper;
@@ -339,6 +341,38 @@ public class RestClientConfiguration {
      */
     public void setKeyStorePassword(String keyStorePassword) {
         this.keyStorePassword = keyStorePassword;
+    }
+
+    /**
+     * Get truststore filename for client TLS certificate authentication.
+     * @return Truststore filename for client TLS certificate authentication.
+     */
+    public String getTrustStoreFilename() {
+        return trustStoreFilename;
+    }
+
+    /**
+     * Set truststore filename for client TLS certificate authentication.
+     * @param trustStoreFilename Truststore filename for client TLS certificate authentication.
+     */
+    public void setTrustStoreFilename(String trustStoreFilename) {
+        this.trustStoreFilename = trustStoreFilename;
+    }
+
+    /**
+     * Get truststore password for client TLS certificate authentication.
+     * @return Truststore password for client TLS certificate authentication.
+     */
+    public String getTrustStorePassword() {
+        return trustStorePassword;
+    }
+
+    /**
+     * Set truststore password for client TLS certificate authentication.
+     * @param trustStorePassword Truststore password for client TLS certificate authentication.
+     */
+    public void setTrustStorePassword(String trustStorePassword) {
+        this.trustStorePassword = trustStorePassword;
     }
 
     /**

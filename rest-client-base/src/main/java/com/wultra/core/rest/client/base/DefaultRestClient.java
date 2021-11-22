@@ -47,6 +47,7 @@ import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -131,9 +132,16 @@ public class DefaultRestClient implements RestClient {
                 }
                 final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
                 keyManagerFactory.init(keyStore, config.getKeyStorePassword().toCharArray());
-                sslContext = SslContextBuilder.forClient()
-                        .keyManager(keyManagerFactory)
-                        .build();
+                final SslContextBuilder sslContextBuilder = SslContextBuilder.forClient().keyManager(keyManagerFactory);
+                if (config.getTrustStoreFilename() != null) {
+                    final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+                    final KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                    try (InputStream in = new FileInputStream(config.getTrustStoreFilename())) {
+                        trustStore.load(in, config.getTrustStorePassword().toCharArray());
+                    }
+                    sslContextBuilder.trustManager(trustManagerFactory);
+                }
+                sslContext = sslContextBuilder.build();
             } else {
                 sslContext = null;
             }

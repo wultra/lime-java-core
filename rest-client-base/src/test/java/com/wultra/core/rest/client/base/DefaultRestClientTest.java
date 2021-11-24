@@ -57,7 +57,7 @@ public class DefaultRestClientTest {
     private RestClient restClient;
 
     // Timeout for synchronization of non-blocking calls using countdown latch
-    private static final int SYNCHRONIZATION_TIMEOUT = 1000;
+    private static final int SYNCHRONIZATION_TIMEOUT = 10000;
 
     @BeforeEach
     public void initRestClient() throws RestClientException {

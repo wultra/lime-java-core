@@ -17,14 +17,13 @@ package com.wultra.core.rest.client.base;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.wultra.core.rest.client.base.util.SslUtils;
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ErrorResponse;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.reactivestreams.Publisher;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -46,19 +45,10 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.function.Consumer;
 
 /**
@@ -117,39 +107,10 @@ public class DefaultRestClient implements RestClient {
             }
         }
         final WebClient.Builder builder = WebClient.builder();
+        final SslContext sslContext = SslUtils.prepareSslContext(config);
         HttpClient httpClient = HttpClient.create();
-        final SslContext sslContext;
-        try {
-            if (config.isAcceptInvalidSslCertificate()) {
-                sslContext = SslContextBuilder
-                        .forClient()
-                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                        .build();
-            } else if (config.isClientCertificateAuthenticationEnabled()) {
-                final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                try (InputStream in = new FileInputStream(config.getKeyStoreFilename())) {
-                    keyStore.load(in, config.getKeyStorePassword().toCharArray());
-                }
-                final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-                keyManagerFactory.init(keyStore, config.getKeyStorePassword().toCharArray());
-                final SslContextBuilder sslContextBuilder = SslContextBuilder.forClient().keyManager(keyManagerFactory);
-                if (config.getTrustStoreFilename() != null) {
-                    final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
-                    final KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                    try (InputStream in = new FileInputStream(config.getTrustStoreFilename())) {
-                        trustStore.load(in, config.getTrustStorePassword().toCharArray());
-                    }
-                    sslContextBuilder.trustManager(trustManagerFactory);
-                }
-                sslContext = sslContextBuilder.build();
-            } else {
-                sslContext = null;
-            }
-            if (sslContext != null) {
-                httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext));
-            }
-        } catch (KeyStoreException | NoSuchAlgorithmException | IOException | CertificateException | UnrecoverableKeyException ex) {
-            throw new RestClientException("SSL error occurred: " + ex.getMessage(), ex);
+        if (sslContext != null) {
+            httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext));
         }
         if (config.getConnectionTimeout() != null) {
             httpClient.option(

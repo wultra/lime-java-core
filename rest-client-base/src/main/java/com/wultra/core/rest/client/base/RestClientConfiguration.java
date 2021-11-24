@@ -60,9 +60,15 @@ public class RestClientConfiguration {
 
     // TLC client certificate authentication
     private boolean clientCertificateAuthenticationEnabled = false;
-    private String keyStoreFilename;
+    private boolean useCustomKeyStore = false;
+    // Location uses Spring resource format
+    private String keyStoreLocation;
     private String keyStorePassword;
-    private String trustStoreFilename;
+    private String keyAlias;
+    private String keyPassword;
+    private boolean useCustomTrustStore = false;
+    // Location uses Spring resource format
+    private String trustStoreLocation;
     private String trustStorePassword;
 
     // Custom object mapper
@@ -312,19 +318,35 @@ public class RestClientConfiguration {
     }
 
     /**
-     * Get keystore filename for client TLS certificate authentication.
-     * @return Keystore filename for client TLS certificate authentication.
+     * Get whether custom keystore is used for client TLS certificate authentication.
+     * @return Whether custom keystore is used for client TLS certificate authentication.
      */
-    public String getKeyStoreFilename() {
-        return keyStoreFilename;
+    public boolean useCustomKeyStore() {
+        return useCustomKeyStore;
     }
 
     /**
-     * Set keystore filename for client TLS certificate authentication.
-     * @param keyStoreFilename Keystore filename for client TLS certificate authentication.
+     * Set whether custom keystore is used for client TLS certificate authentication.
+     * @param useCustomKeyStore Whether custom keystore is used for client TLS certificate authentication.
      */
-    public void setKeyStoreFilename(String keyStoreFilename) {
-        this.keyStoreFilename = keyStoreFilename;
+    public void setUseCustomKeyStore(boolean useCustomKeyStore) {
+        this.useCustomKeyStore = useCustomKeyStore;
+    }
+
+    /**
+     * Get keystore resource location for client TLS certificate authentication.
+     * @return Keystore resource location for client TLS certificate authentication.
+     */
+    public String getKeyStoreLocation() {
+        return keyStoreLocation;
+    }
+
+    /**
+     * Set keystore resource location for client TLS certificate authentication.
+     * @param keyStoreLocation Keystore resource location for client TLS certificate authentication.
+     */
+    public void setKeyStoreLocation(String keyStoreLocation) {
+        this.keyStoreLocation = keyStoreLocation;
     }
 
     /**
@@ -344,19 +366,67 @@ public class RestClientConfiguration {
     }
 
     /**
-     * Get truststore filename for client TLS certificate authentication.
-     * @return Truststore filename for client TLS certificate authentication.
+     * Get private key alias for client TLS certificate authentication.
+     * @return Private key alias for client TLS certificate authentication.
      */
-    public String getTrustStoreFilename() {
-        return trustStoreFilename;
+    public String getKeyAlias() {
+        return keyAlias;
     }
 
     /**
-     * Set truststore filename for client TLS certificate authentication.
-     * @param trustStoreFilename Truststore filename for client TLS certificate authentication.
+     * Set private key alias for client TLS certificate authentication.
+     * @param keyAlias Private key alias for client TLS certificate authentication.
      */
-    public void setTrustStoreFilename(String trustStoreFilename) {
-        this.trustStoreFilename = trustStoreFilename;
+    public void setKeyAlias(String keyAlias) {
+        this.keyAlias = keyAlias;
+    }
+
+    /**
+     * Get private key password for client TLS certificate authentication.
+     * @return Private key password for client TLS certificate authentication.
+     */
+    public String getKeyPassword() {
+        return keyPassword;
+    }
+
+    /**
+     * Set private key password for client TLS certificate authentication.
+     * @param keyPassword Private key password for client TLS certificate authentication.
+     */
+    public void setKeyPassword(String keyPassword) {
+        this.keyPassword = keyPassword;
+    }
+
+    /**
+     * Get whether custom truststore is used for client TLS certificate authentication.
+     * @return Whether custom truststore is used for client TLS certificate authentication.
+     */
+    public boolean useCustomTrustStore() {
+        return useCustomTrustStore;
+    }
+
+    /**
+     * Set whether custom truststore is used for client TLS certificate authentication.
+     * @param useCustomTrustStore Whether custom truststore is used for client TLS certificate authentication.
+     */
+    public void setUseCustomTrustStore(boolean useCustomTrustStore) {
+        this.useCustomTrustStore = useCustomTrustStore;
+    }
+
+    /**
+     * Get truststore resource location for client TLS certificate authentication.
+     * @return Truststore resource location for client TLS certificate authentication.
+     */
+    public String getTrustStoreLocation() {
+        return trustStoreLocation;
+    }
+
+    /**
+     * Set truststore resource location for client TLS certificate authentication.
+     * @param trustStoreLocation Truststore resource location for client TLS certificate authentication.
+     */
+    public void setTrustStoreLocation(String trustStoreLocation) {
+        this.trustStoreLocation = trustStoreLocation;
     }
 
     /**

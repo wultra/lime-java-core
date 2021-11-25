@@ -59,7 +59,7 @@ public class RestClientConfiguration {
     private String httpBasicAuthPassword;
 
     // TLC client certificate authentication
-    private boolean clientCertificateAuthenticationEnabled = false;
+    private boolean certificateAuthenticationEnabled = false;
     private boolean useCustomKeyStore = false;
     // Location uses Spring resource format
     private String keyStoreLocation;
@@ -305,16 +305,16 @@ public class RestClientConfiguration {
      * Get whether client TLS certificate authentication is enabled.
      * @return Whether client TLS certificate authentication is enabled.
      */
-    public boolean isClientCertificateAuthenticationEnabled() {
-        return clientCertificateAuthenticationEnabled;
+    public boolean isCertificateAuthenticationEnabled() {
+        return certificateAuthenticationEnabled;
     }
 
     /**
      * Set whether client TLS certificate authentication is enabled.
-     * @param clientCertificateAuthenticationEnabled Whether client TLS certificate authentication is enabled.
+     * @param certificateAuthenticationEnabled Whether client TLS certificate authentication is enabled.
      */
-    public void setClientCertificateAuthenticationEnabled(boolean clientCertificateAuthenticationEnabled) {
-        this.clientCertificateAuthenticationEnabled = clientCertificateAuthenticationEnabled;
+    public void setCertificateAuthenticationEnabled(boolean certificateAuthenticationEnabled) {
+        this.certificateAuthenticationEnabled = certificateAuthenticationEnabled;
     }
 
     /**

@@ -58,7 +58,7 @@ public class SslUtils {
             }
 
             // Configure client TLS certificate authentication
-            if (config.isClientCertificateAuthenticationEnabled()) {
+            if (config.isCertificateAuthenticationEnabled()) {
 
                 // Extract private key from keystore
                 if (config.useCustomKeyStore()) {

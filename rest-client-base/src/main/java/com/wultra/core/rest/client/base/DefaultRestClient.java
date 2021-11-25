@@ -659,6 +659,15 @@ public class DefaultRestClient implements RestClient {
             return new HttpBasicAuthBuilder(this);
         }
 
+        /**
+         * Configure certificate authentication.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder certificateAuth() {
+            config.setCertificateAuthenticationEnabled(true);
+            return new CertificateAuthBuilder(this);
+        }
+
     }
 
     /**
@@ -674,15 +683,6 @@ public class DefaultRestClient implements RestClient {
          */
         private ProxyBuilder(Builder mainBuilder) {
             this.mainBuilder = mainBuilder;
-        }
-
-        /**
-         * Enable HTTP proxy.
-         * @return Builder.
-         */
-        public ProxyBuilder enable() {
-            mainBuilder.config.setProxyEnabled(true);
-            return this;
         }
 
         /**
@@ -751,15 +751,6 @@ public class DefaultRestClient implements RestClient {
         }
 
         /**
-         * Enable HTTP basic authentication.
-         * @return Builder.
-         */
-        public HttpBasicAuthBuilder enable() {
-            mainBuilder.config.setHttpBasicAuthEnabled(true);
-            return this;
-        }
-
-        /**
          * Configure HTTP basic authentication username.
          * @param basicAuthUsername HTTP basic authentication username.
          * @return Builder.
@@ -803,15 +794,6 @@ public class DefaultRestClient implements RestClient {
          */
         private CertificateAuthBuilder(Builder mainBuilder) {
             this.mainBuilder = mainBuilder;
-        }
-
-        /**
-         * Enable client TLS certificate authentication.
-         * @return Builder.
-         */
-        public CertificateAuthBuilder enable() {
-            mainBuilder.config.setClientCertificateAuthenticationEnabled(true);
-            return this;
         }
 
         /**

@@ -68,7 +68,7 @@ public class DefaultRestClientTest {
 
     private RestClientConfiguration prepareConfiguration() {
         RestClientConfiguration config = new RestClientConfiguration();
-        config.setClientCertificateAuthenticationEnabled(true);
+        config.setCertificateAuthenticationEnabled(true);
         config.setUseCustomKeyStore(true);
         config.setKeyStoreLocation("classpath:ssl/keystore-client.jks");
         config.setKeyStorePassword("changeit");

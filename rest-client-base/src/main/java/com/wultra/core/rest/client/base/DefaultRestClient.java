@@ -677,6 +677,15 @@ public class DefaultRestClient implements RestClient {
         }
 
         /**
+         * Enable HTTP proxy.
+         * @return Builder.
+         */
+        public ProxyBuilder enable() {
+            mainBuilder.config.setProxyEnabled(true);
+            return this;
+        }
+
+        /**
          * Configure proxy host.
          * @param proxyHost Proxy host.
          * @return ProxyBuilder.
@@ -742,6 +751,15 @@ public class DefaultRestClient implements RestClient {
         }
 
         /**
+         * Enable HTTP basic authentication.
+         * @return Builder.
+         */
+        public HttpBasicAuthBuilder enable() {
+            mainBuilder.config.setHttpBasicAuthEnabled(true);
+            return this;
+        }
+
+        /**
          * Configure HTTP basic authentication username.
          * @param basicAuthUsername HTTP basic authentication username.
          * @return Builder.
@@ -770,4 +788,118 @@ public class DefaultRestClient implements RestClient {
             return mainBuilder;
         }
     }
+
+    /**
+     * Certificate authentication builder.
+     */
+    public static class CertificateAuthBuilder {
+
+        private final Builder mainBuilder;
+
+        /**
+         * Certificate authentication builder constructor.
+         *
+         * @param mainBuilder Parent builder.
+         */
+        private CertificateAuthBuilder(Builder mainBuilder) {
+            this.mainBuilder = mainBuilder;
+        }
+
+        /**
+         * Enable client TLS certificate authentication.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder enable() {
+            mainBuilder.config.setClientCertificateAuthenticationEnabled(true);
+            return this;
+        }
+
+        /**
+         * Enable custom keystore.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder enableCustomKeyStore() {
+            mainBuilder.config.setUseCustomKeyStore(true);
+            return this;
+        }
+
+        /**
+         * Set keystore location.
+         * @param keyStoreLocation Keystore location.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder keyStoreLocation(String keyStoreLocation) {
+            mainBuilder.config.setKeyStoreLocation(keyStoreLocation);
+            return this;
+        }
+
+        /**
+         * Set keystore password.
+         * @param keyStorePassword Keystore password.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder keyStorePassword(String keyStorePassword) {
+            mainBuilder.config.setKeyStorePassword(keyStorePassword);
+            return this;
+        }
+
+        /**
+         * Set key alias.
+         * @param keyAlias Key alias.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder keyAlias(String keyAlias) {
+            mainBuilder.config.setKeyAlias(keyAlias);
+            return this;
+        }
+
+        /**
+         * Set key password.
+         * @param keyPassword Key password.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder keyPassword(String keyPassword) {
+            mainBuilder.config.setKeyPassword(keyPassword);
+            return this;
+        }
+
+        /**
+         * Enable custom truststore.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder enableCustomTruststore() {
+            mainBuilder.config.setUseCustomTrustStore(true);
+            return this;
+        }
+
+        /**
+         * Set truststore location.
+         * @param trustStoreLocation Truststore location.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder trustStoreLocation(String trustStoreLocation) {
+            mainBuilder.config.setTrustStoreLocation(trustStoreLocation);
+            return this;
+        }
+
+        /**
+         * Set truststore password.
+         * @param trustStorePassword Truststore password.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder trustStorePassword(String trustStorePassword) {
+            mainBuilder.config.setTrustStorePassword(trustStorePassword);
+            return this;
+        }
+
+        /**
+         * Build the builder.
+         *
+         * @return Builder.
+         */
+        public Builder build() {
+            return mainBuilder;
+        }
+    }
+
 }

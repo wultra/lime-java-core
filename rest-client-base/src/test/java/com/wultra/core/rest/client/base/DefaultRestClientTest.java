@@ -57,11 +57,30 @@ public class DefaultRestClientTest {
     private RestClient restClient;
 
     // Timeout for synchronization of non-blocking calls using countdown latch
-    private static final int SYNCHRONIZATION_TIMEOUT = 500;
+    private static final int SYNCHRONIZATION_TIMEOUT = 10000;
 
     @BeforeEach
     public void initRestClient() throws RestClientException {
-        restClient = new DefaultRestClient("http://localhost:" + port + "/api/test");
+        RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        restClient = new DefaultRestClient(config);
+    }
+
+    private RestClientConfiguration prepareConfiguration() {
+        RestClientConfiguration config = new RestClientConfiguration();
+        config.setCertificateAuthenticationEnabled(true);
+        config.setUseCustomKeyStore(true);
+        config.setKeyStoreLocation("classpath:ssl/keystore-client.jks");
+        config.setKeyStorePassword("changeit");
+        config.setKeyAlias("client");
+        config.setKeyPassword("changeit");
+        config.setUseCustomTrustStore(true);
+        config.setTrustStoreLocation("classpath:ssl/truststore.jks");
+        config.setTrustStorePassword("changeit");
+        config.setHttpBasicAuthEnabled(true);
+        config.setHttpBasicAuthUsername("test");
+        config.setHttpBasicAuthPassword("test");
+        return config;
     }
 
     @Test
@@ -388,32 +407,36 @@ public class DefaultRestClientTest {
 
     @Test
     public void testGetWithFullUrl() throws RestClientException {
-        restClient = DefaultRestClient.builder().build();
-        Response response = restClient.getObject("http://localhost:" + port + "/api/test/response");
+        RestClientConfiguration config = prepareConfiguration();
+        restClient = new DefaultRestClient(config);
+        Response response = restClient.getObject("https://localhost:" + port + "/api/test/response");
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
 
     @Test
     public void testPostWithFullUrl() throws RestClientException {
-        restClient = DefaultRestClient.builder().build();
-        Response response = restClient.postObject("http://localhost:" + port + "/api/test/response", null);
+        RestClientConfiguration config = prepareConfiguration();
+        restClient = new DefaultRestClient(config);
+        Response response = restClient.postObject("https://localhost:" + port + "/api/test/response", null);
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
 
     @Test
     public void testPutWithFullUrl() throws RestClientException {
-        restClient = DefaultRestClient.builder().build();
-        Response response = restClient.putObject("http://localhost:" + port + "/api/test/response", null);
+        RestClientConfiguration config = prepareConfiguration();
+        restClient = new DefaultRestClient(config);
+        Response response = restClient.putObject("https://localhost:" + port + "/api/test/response", null);
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
 
     @Test
     public void testDeleteWithFullUrl() throws RestClientException {
-        restClient = DefaultRestClient.builder().build();
-        Response response = restClient.deleteObject("http://localhost:" + port + "/api/test/response");
+        RestClientConfiguration config = prepareConfiguration();
+        restClient = new DefaultRestClient(config);
+        Response response = restClient.deleteObject("https://localhost:" + port + "/api/test/response");
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }

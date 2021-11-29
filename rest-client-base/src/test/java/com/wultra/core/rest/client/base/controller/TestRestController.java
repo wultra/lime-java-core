@@ -21,6 +21,7 @@ import com.wultra.core.rest.client.base.model.error.RestException;
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/test")
+@Secured("ROLE_TEST_USER")
 public class TestRestController {
 
     @GetMapping("/response")

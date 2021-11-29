@@ -1,0 +1,21 @@
+File localhost.ext:
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = localhost
+
+Certificates, keystores and truststore:
+openssl req -x509 -sha256 -days 36500 -newkey rsa:4096 -keyout rootCA.key -out rootCA.crt
+openssl req -new -newkey rsa:4096 -keyout localhost.key > localhost.csr
+openssl x509 -sha256 -req -CA rootCA.crt -CAkey rootCA.key -in localhost.csr -out localhost.crt -days 36500 -CAcreateserial -extfile localhost.ext
+openssl x509 -in localhost.crt -text
+
+openssl pkcs12 -export -out localhost.p12 -name "localhost" -inkey localhost.key -in localhost.crt
+keytool -importkeystore -srckeystore localhost.p12 -srcstoretype PKCS12 -destkeystore keystore-server.jks -deststoretype JKS
+keytool -import -trustcacerts -noprompt -alias ca -ext san=dns:localhost,ip:127.0.0.1 -file rootCA.crt -keystore truststore.jks
+
+openssl req -new -newkey rsa:4096 -nodes -keyout client.key -out client.csr
+openssl x509 -sha256 -req -CA rootCA.crt -CAkey rootCA.key -in client.csr -out client.crt -days 36500 -CAcreateserial
+openssl pkcs12 -export -out client.p12 -name "client" -inkey client.key -in client.crt
+keytool -importkeystore -srckeystore client.p12 -srcstoretype PKCS12 -destkeystore keystore-client.jks -deststoretype JKS

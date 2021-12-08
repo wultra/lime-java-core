@@ -664,7 +664,7 @@ public class DefaultRestClient implements RestClient {
          * @return Builder.
          */
         public CertificateAuthBuilder certificateAuth() {
-            config.setCertificateAuthenticationEnabled(true);
+            config.setCertificateAuthEnabled(true);
             return new CertificateAuthBuilder(this);
         }
 

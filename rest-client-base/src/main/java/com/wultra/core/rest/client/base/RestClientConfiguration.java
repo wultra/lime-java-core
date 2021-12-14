@@ -58,6 +58,19 @@ public class RestClientConfiguration {
     private String httpBasicAuthUsername;
     private String httpBasicAuthPassword;
 
+    // TLS client certificate authentication
+    private boolean certificateAuthEnabled = false;
+    private boolean useCustomKeyStore = false;
+    // Location uses Spring resource format
+    private String keyStoreLocation;
+    private String keyStorePassword;
+    private String keyAlias;
+    private String keyPassword;
+    private boolean useCustomTrustStore = false;
+    // Location uses Spring resource format
+    private String trustStoreLocation;
+    private String trustStorePassword;
+
     // Custom object mapper
     private ObjectMapper objectMapper;
 
@@ -286,6 +299,150 @@ public class RestClientConfiguration {
      */
     public void setHttpBasicAuthPassword(String httpBasicAuthPassword) {
         this.httpBasicAuthPassword = httpBasicAuthPassword;
+    }
+
+    /**
+     * Get whether client TLS certificate authentication is enabled.
+     * @return Whether client TLS certificate authentication is enabled.
+     */
+    public boolean isCertificateAuthEnabled() {
+        return certificateAuthEnabled;
+    }
+
+    /**
+     * Set whether client TLS certificate authentication is enabled.
+     * @param certificateAuthEnabled Whether client TLS certificate authentication is enabled.
+     */
+    public void setCertificateAuthEnabled(boolean certificateAuthEnabled) {
+        this.certificateAuthEnabled = certificateAuthEnabled;
+    }
+
+    /**
+     * Get whether custom keystore is used for client TLS certificate authentication.
+     * @return Whether custom keystore is used for client TLS certificate authentication.
+     */
+    public boolean useCustomKeyStore() {
+        return useCustomKeyStore;
+    }
+
+    /**
+     * Set whether custom keystore is used for client TLS certificate authentication.
+     * @param useCustomKeyStore Whether custom keystore is used for client TLS certificate authentication.
+     */
+    public void setUseCustomKeyStore(boolean useCustomKeyStore) {
+        this.useCustomKeyStore = useCustomKeyStore;
+    }
+
+    /**
+     * Get keystore resource location for client TLS certificate authentication.
+     * @return Keystore resource location for client TLS certificate authentication.
+     */
+    public String getKeyStoreLocation() {
+        return keyStoreLocation;
+    }
+
+    /**
+     * Set keystore resource location for client TLS certificate authentication.
+     * @param keyStoreLocation Keystore resource location for client TLS certificate authentication.
+     */
+    public void setKeyStoreLocation(String keyStoreLocation) {
+        this.keyStoreLocation = keyStoreLocation;
+    }
+
+    /**
+     * Get keystore password for client TLS certificate authentication.
+     * @return Keystore password for client TLS certificate authentication.
+     */
+    public String getKeyStorePassword() {
+        return keyStorePassword;
+    }
+
+    /**
+     * Set keystore password for client TLS certificate authentication.
+     * @param keyStorePassword Keystore password for client TLS certificate authentication.
+     */
+    public void setKeyStorePassword(String keyStorePassword) {
+        this.keyStorePassword = keyStorePassword;
+    }
+
+    /**
+     * Get private key alias for client TLS certificate authentication.
+     * @return Private key alias for client TLS certificate authentication.
+     */
+    public String getKeyAlias() {
+        return keyAlias;
+    }
+
+    /**
+     * Set private key alias for client TLS certificate authentication.
+     * @param keyAlias Private key alias for client TLS certificate authentication.
+     */
+    public void setKeyAlias(String keyAlias) {
+        this.keyAlias = keyAlias;
+    }
+
+    /**
+     * Get private key password for client TLS certificate authentication.
+     * @return Private key password for client TLS certificate authentication.
+     */
+    public String getKeyPassword() {
+        return keyPassword;
+    }
+
+    /**
+     * Set private key password for client TLS certificate authentication.
+     * @param keyPassword Private key password for client TLS certificate authentication.
+     */
+    public void setKeyPassword(String keyPassword) {
+        this.keyPassword = keyPassword;
+    }
+
+    /**
+     * Get whether custom truststore is used for client TLS certificate authentication.
+     * @return Whether custom truststore is used for client TLS certificate authentication.
+     */
+    public boolean useCustomTrustStore() {
+        return useCustomTrustStore;
+    }
+
+    /**
+     * Set whether custom truststore is used for client TLS certificate authentication.
+     * @param useCustomTrustStore Whether custom truststore is used for client TLS certificate authentication.
+     */
+    public void setUseCustomTrustStore(boolean useCustomTrustStore) {
+        this.useCustomTrustStore = useCustomTrustStore;
+    }
+
+    /**
+     * Get truststore resource location for client TLS certificate authentication.
+     * @return Truststore resource location for client TLS certificate authentication.
+     */
+    public String getTrustStoreLocation() {
+        return trustStoreLocation;
+    }
+
+    /**
+     * Set truststore resource location for client TLS certificate authentication.
+     * @param trustStoreLocation Truststore resource location for client TLS certificate authentication.
+     */
+    public void setTrustStoreLocation(String trustStoreLocation) {
+        this.trustStoreLocation = trustStoreLocation;
+    }
+
+    /**
+     * Get truststore password for client TLS certificate authentication.
+     * @return Truststore password for client TLS certificate authentication.
+     */
+    public String getTrustStorePassword() {
+        return trustStorePassword;
+    }
+
+    /**
+     * Set truststore password for client TLS certificate authentication.
+     * @param trustStorePassword Truststore password for client TLS certificate authentication.
+     */
+    public void setTrustStorePassword(String trustStorePassword) {
+        this.trustStorePassword = trustStorePassword;
     }
 
     /**

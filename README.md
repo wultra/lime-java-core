@@ -131,6 +131,15 @@ The following options are available for the builder:
 - `httpBasicAuth` - HTTP basic authentication (default: disabled)
   - `username` - username for HTTP basic authentication
   - `password` - password for HTTP basic authentication
+- `certificateAuth` - certificate authentication (default: disabled)
+  - `useCustomKeyStore` - whether custom keystore should be used for certificate authentication (default: false)
+  - `keyStoreLocation` - resource location of keystore (e.g. `file:/path_to_keystore`)
+  - `keyStorePassword` - keystore password
+  - `keyAlias` - key alias for the private key stored inside the keystore
+  - `keyPassword` - password for the private key stored inside the keystore
+  - `useCustomTrustStore` - whether custom truststore should be used for certificate authentication (default: false)
+  - `trustStoreLocation` - resource location of truststore (e.g. `file:/path_to_truststore`)
+  - `trustStorePassword` - truststore password
 - `objectMapper` - custom object mapper for JSON serialization
 - `filter` - custom `ExchangeFilterFunction` for applying a filter during communication
 
@@ -213,7 +222,7 @@ The following properties can be configured in case the default configuration nee
 - `audit.storage.type` - storage type, reserved for future use (default: `DATABASE`)
 - `audit.db.cleanup.days` - audit records older than specified number of days are deleted (default: `365`) 
 - `audit.db.table.log.name` - name of audit log database table (default: `audit_log`)
-- `audit.db.table.param.name:audit_param` - name of audit parameters database table (default: `audit_param`)
+- `audit.db.table.param.name` - name of audit parameters database table (default: `audit_param`)
 - `audit.db.batch.size` - database batch size (default: `1000`)  
 
 ### Audit Levels

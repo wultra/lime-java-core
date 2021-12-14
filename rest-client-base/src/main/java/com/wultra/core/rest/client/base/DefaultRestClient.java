@@ -17,14 +17,13 @@ package com.wultra.core.rest.client.base;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.wultra.core.rest.client.base.util.SslUtils;
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ErrorResponse;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.reactivestreams.Publisher;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -46,7 +45,6 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
 
-import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -108,19 +106,11 @@ public class DefaultRestClient implements RestClient {
                 throw new RestClientException("Invalid parameter baseUrl");
             }
         }
-        WebClient.Builder builder = WebClient.builder();
+        final WebClient.Builder builder = WebClient.builder();
+        final SslContext sslContext = SslUtils.prepareSslContext(config);
         HttpClient httpClient = HttpClient.create();
-        SslContext sslContext;
-        try {
-            if (config.isAcceptInvalidSslCertificate()) {
-                sslContext = SslContextBuilder
-                        .forClient()
-                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                        .build();
-                httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext));
-            }
-        } catch (SSLException ex) {
-            throw new RestClientException("SSL error occurred: " + ex.getMessage(), ex);
+        if (sslContext != null) {
+            httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext));
         }
         if (config.getConnectionTimeout() != null) {
             httpClient.option(
@@ -142,7 +132,7 @@ public class DefaultRestClient implements RestClient {
         }
 
         final ObjectMapper objectMapper = config.getObjectMapper();
-        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
+        final ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
                 .codecs(configurer -> {
                     ClientCodecConfigurer.ClientDefaultCodecs defaultCodecs = configurer.defaultCodecs();
                     if (objectMapper != null) {
@@ -163,7 +153,7 @@ public class DefaultRestClient implements RestClient {
             builder.filter(config.getFilter());
         }
 
-        ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
+        final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
     }
 
@@ -669,6 +659,15 @@ public class DefaultRestClient implements RestClient {
             return new HttpBasicAuthBuilder(this);
         }
 
+        /**
+         * Configure certificate authentication.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder certificateAuth() {
+            config.setCertificateAuthEnabled(true);
+            return new CertificateAuthBuilder(this);
+        }
+
     }
 
     /**
@@ -780,4 +779,109 @@ public class DefaultRestClient implements RestClient {
             return mainBuilder;
         }
     }
+
+    /**
+     * Certificate authentication builder.
+     */
+    public static class CertificateAuthBuilder {
+
+        private final Builder mainBuilder;
+
+        /**
+         * Certificate authentication builder constructor.
+         *
+         * @param mainBuilder Parent builder.
+         */
+        private CertificateAuthBuilder(Builder mainBuilder) {
+            this.mainBuilder = mainBuilder;
+        }
+
+        /**
+         * Enable custom keystore.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder enableCustomKeyStore() {
+            mainBuilder.config.setUseCustomKeyStore(true);
+            return this;
+        }
+
+        /**
+         * Set keystore location.
+         * @param keyStoreLocation Keystore location.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder keyStoreLocation(String keyStoreLocation) {
+            mainBuilder.config.setKeyStoreLocation(keyStoreLocation);
+            return this;
+        }
+
+        /**
+         * Set keystore password.
+         * @param keyStorePassword Keystore password.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder keyStorePassword(String keyStorePassword) {
+            mainBuilder.config.setKeyStorePassword(keyStorePassword);
+            return this;
+        }
+
+        /**
+         * Set key alias.
+         * @param keyAlias Key alias.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder keyAlias(String keyAlias) {
+            mainBuilder.config.setKeyAlias(keyAlias);
+            return this;
+        }
+
+        /**
+         * Set key password.
+         * @param keyPassword Key password.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder keyPassword(String keyPassword) {
+            mainBuilder.config.setKeyPassword(keyPassword);
+            return this;
+        }
+
+        /**
+         * Enable custom truststore.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder enableCustomTruststore() {
+            mainBuilder.config.setUseCustomTrustStore(true);
+            return this;
+        }
+
+        /**
+         * Set truststore location.
+         * @param trustStoreLocation Truststore location.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder trustStoreLocation(String trustStoreLocation) {
+            mainBuilder.config.setTrustStoreLocation(trustStoreLocation);
+            return this;
+        }
+
+        /**
+         * Set truststore password.
+         * @param trustStorePassword Truststore password.
+         * @return Builder.
+         */
+        public CertificateAuthBuilder trustStorePassword(String trustStorePassword) {
+            mainBuilder.config.setTrustStorePassword(trustStorePassword);
+            return this;
+        }
+
+        /**
+         * Build the builder.
+         *
+         * @return Builder.
+         */
+        public Builder build() {
+            return mainBuilder;
+        }
+    }
+
 }

@@ -58,7 +58,7 @@ public class SslUtils {
             }
 
             // Configure client TLS certificate authentication
-            if (config.isCertificateAuthenticationEnabled()) {
+            if (config.isCertificateAuthEnabled()) {
 
                 // Extract private key from keystore
                 if (config.useCustomKeyStore()) {
@@ -79,7 +79,9 @@ public class SslUtils {
                     final String keyAlias = config.getKeyAlias();
                     final char[] keyPassword = config.getKeyPassword().toCharArray();
                     final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                    keyStore.load(new FileInputStream(keyStoreFile), keyStorePassword);
+                    try (final FileInputStream fis = new FileInputStream(keyStoreFile)) {
+                        keyStore.load(fis, keyStorePassword);
+                    }
                     final PrivateKey privateKey = (PrivateKey) keyStore.getKey(keyAlias, keyPassword);
                     final Certificate[] certChain = keyStore.getCertificateChain(keyAlias);
                     final X509Certificate[] x509CertificateChain = Arrays.stream(certChain)
@@ -100,7 +102,9 @@ public class SslUtils {
                     }
                     final char[] trustStorePassword = config.getTrustStorePassword().toCharArray();
                     final KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                    trustStore.load(new FileInputStream(trustStoreFile), trustStorePassword);
+                    try (final FileInputStream fis = new FileInputStream(trustStoreFile)) {
+                        trustStore.load(fis, trustStorePassword);
+                    }
                     final List<KeyStoreException> keyStoreExceptions = new ArrayList<>();
                     final X509Certificate[] certificates = Collections.list(trustStore.aliases())
                             .stream()

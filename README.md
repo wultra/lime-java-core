@@ -131,6 +131,15 @@ The following options are available for the builder:
 - `httpBasicAuth` - HTTP basic authentication (default: disabled)
   - `username` - username for HTTP basic authentication
   - `password` - password for HTTP basic authentication
+- `certificateAuth` - certificate authentication (default: disabled)
+  - `useCustomKeyStore` - whether custom keystore should be used for certificate authentication (default: false)
+  - `keyStoreLocation` - resource location of keystore (e.g. `file:/path_to_keystore`)
+  - `keyStorePassword` - keystore password
+  - `keyAlias` - key alias for the private key stored inside the keystore
+  - `keyPassword` - password for the private key stored inside the keystore
+  - `useCustomTrustStore` - whether custom truststore should be used for certificate authentication (default: false)
+  - `trustStoreLocation` - resource location of truststore (e.g. `file:/path_to_truststore`)
+  - `trustStorePassword` - truststore password
 - `objectMapper` - custom object mapper for JSON serialization
 - `filter` - custom `ExchangeFilterFunction` for applying a filter during communication
 

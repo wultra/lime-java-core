@@ -29,6 +29,9 @@ public class ClassUtil extends SecurityManager {
      */
     public static Class<?> getCallingClass(String packageFilter) {
         final Class<?>[] trace = INSTANCE.getClassContext();
+        if (trace == null) {
+            return null;
+        }
         for (Class<?> cl : trace) {
             if (cl.getName().equals(ClassUtil.class.getName())) {
                 continue;

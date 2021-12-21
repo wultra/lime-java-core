@@ -84,6 +84,9 @@ public class SslUtils {
                     }
                     final PrivateKey privateKey = (PrivateKey) keyStore.getKey(keyAlias, keyPassword);
                     final Certificate[] certChain = keyStore.getCertificateChain(keyAlias);
+                    if (certChain == null) {
+                        throw new RestClientException("Invalid or missing key with alias: " + config.getKeyAlias());
+                    }
                     final X509Certificate[] x509CertificateChain = Arrays.stream(certChain)
                             .map(certificate -> (X509Certificate) certificate)
                             .collect(Collectors.toList())

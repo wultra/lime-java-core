@@ -6,12 +6,12 @@
     <parent>
         <groupId>io.getlime.core</groupId>
         <artifactId>lime-java-core-parent</artifactId>
-        <version>1.4.0</version>
+        <version>1.5.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>audit-base</artifactId>
-    <version>1.4.0</version>
+    <version>1.5.0-SNAPSHOT</version>
     <name>audit-base</name>
     <description>Common auditing functionality used by Wultra backend Java projects</description>
     <packaging>jar</packaging>

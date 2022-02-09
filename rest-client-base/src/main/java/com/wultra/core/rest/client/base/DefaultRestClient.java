@@ -123,12 +123,12 @@ public class DefaultRestClient implements RestClient {
             throw new RestClientException("SSL error occurred: " + ex.getMessage(), ex);
         }
         if (config.getConnectionTimeout() != null) {
-            httpClient.option(
+            httpClient = httpClient.option(
                     ChannelOption.CONNECT_TIMEOUT_MILLIS,
                     config.getConnectionTimeout());
         }
         if (config.isProxyEnabled()) {
-            httpClient.proxy(proxySpec -> {
+            httpClient = httpClient.proxy(proxySpec -> {
                 ProxyProvider.Builder proxyBuilder = proxySpec
                         .type(ProxyProvider.Proxy.HTTP)
                         .host(config.getProxyHost())

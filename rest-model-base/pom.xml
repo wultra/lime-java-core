@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>io.getlime.core</groupId>
 		<artifactId>lime-java-core-parent</artifactId>
-		<version>1.4.0</version>
+		<version>1.4.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>rest-model-base</artifactId>
-	<version>1.4.0</version>
+	<version>1.4.1</version>
 	<name>rest-model-base</name>
 	<description>Model classes for Wultra back-end Java projects</description>
 	<packaging>jar</packaging>

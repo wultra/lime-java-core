@@ -51,6 +51,18 @@ public class ErrorResponse extends ObjectResponse<Error> {
      *
      * @param code Error code.
      * @param t Throwable, whose message is used as an error message.
+     * @param defaultMessage Default message, used when Throwable message is null.
+     */
+    public ErrorResponse(@NotBlank String code, Throwable t, String defaultMessage) {
+        super(Status.ERROR, new Error(code, ((t != null && t.getMessage() != null) ? t.getMessage() : defaultMessage)));
+    }
+
+    /**
+     * Create a new error response with response object with provided code
+     * and throwable, that is a source for the error message (t.getMessage()).
+     *
+     * @param code Error code.
+     * @param t Throwable, whose message is used as an error message.
      */
     public ErrorResponse(@NotBlank String code, Throwable t) {
         super(Status.ERROR, new Error(code, t != null ? t.getMessage() : null));

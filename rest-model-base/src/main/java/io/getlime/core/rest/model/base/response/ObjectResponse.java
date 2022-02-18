@@ -15,8 +15,8 @@
  */
 package io.getlime.core.rest.model.base.response;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Generic response with status and object object of a custom class.

@@ -21,6 +21,7 @@ import com.wultra.core.rest.client.base.model.error.RestException;
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,6 +70,12 @@ public class TestRestController {
     @PostMapping("/object-request-response")
     public ObjectResponse<TestResponse> testPostWithObjectRequestAndResponse(@RequestBody ObjectRequest<TestRequest> request) {
         TestResponse testResponse = new TestResponse(request.getRequestObject().getRequest());
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PostMapping(value = "/multipart-request-response", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ObjectResponse<TestResponse> testPostWithMultipartRequestAndResponse(@RequestPart TestRequest request) {
+        TestResponse testResponse = new TestResponse(request.getRequest());
         return new ObjectResponse<>(testResponse);
     }
 

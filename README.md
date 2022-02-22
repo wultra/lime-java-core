@@ -238,47 +238,64 @@ Following audit levels are available:
 
 Initialization of audit factory:
 ```java
-private AuditFactory auditFactory;
+@Configuration
+@ComponentScan(basePackages = {"com.wultra.core.audit.base"})
+public class WebServerConfiguration {
 
-@Autowired
-public void setAuditFactory() {
-    this.auditFactory = auditFactory;
+    private final AuditFactory auditFactory;
+
+    @Autowired
+    public WebServerConfiguration(AuditFactory auditFactory) {
+        this.auditFactory = auditFactory;
+    }
+
+    @Bean
+    public Audit audit() {
+       return auditFactory.getAudit();
+    }
 }
+```  
+
+Autowiring:
+```java
+public class MyClass {
+    private final Audit audit;
+
+    @Autowired
+    public MyClass(Audit audit) {
+      this.audit = audit;
+    }
+}
+
 ```
 
 Basic usage:
 ```java
-    Audit audit = auditFactory.getAudit();
-    audit.info("a message");
+   audit.info("a message");
 ```
 
 Formatting messages:
 ```java
-   Audit audit = auditFactory.getAudit();
    audit.info("a message with {}", "formatting");
 ```
 
 Auditing with specified level:
 ```java
-   Audit audit = auditFactory.getAudit();
    audit.log("a message for error level", AuditLevel.ERROR);
 ```
 
 Auditing of exceptions:
 ```java
-   Audit audit = auditFactory.getAudit();
    audit.warn("a message", new Exception("an exception"));
 ```
 
 Auditing with parameters:
 ```java
-   Audit audit = auditFactory.getAudit();
    audit.info("a message", AuditDetail.builder().param("my_id", "some_id").build());
 ```
 
 Auditing with parameters and type of audit message:
 ```java
-   Audit audit = auditFactory.getAudit();
    String operationId = UUID.randomUUID().toString();
    Map<String, Object> param = new LinkedHashMap<>();
    param.put("user_id", "some_id");

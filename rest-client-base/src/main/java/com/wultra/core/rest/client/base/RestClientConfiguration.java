@@ -16,6 +16,7 @@
 package com.wultra.core.rest.client.base;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
@@ -73,6 +74,8 @@ public class RestClientConfiguration {
 
     // Custom object mapper
     private ObjectMapper objectMapper;
+
+    private HttpHeaders defaultHttpHeaders;
 
     // Custom filter
     private ExchangeFilterFunction filter;
@@ -476,4 +479,21 @@ public class RestClientConfiguration {
     public void setFilter(ExchangeFilterFunction filter) {
         this.filter = filter;
     }
+
+    /**
+     * Get the default HTTP headers.
+     * @return Default HTTP headers.
+     */
+    public HttpHeaders getDefaultHttpHeaders() {
+        return defaultHttpHeaders;
+    }
+
+    /**
+     * Set the default HTTP headers.
+     * @param headers Default HTTP headers.
+     */
+    public void setDefaultHttpHeaders(HttpHeaders headers) {
+        this.defaultHttpHeaders = headers;
+    }
+
 }

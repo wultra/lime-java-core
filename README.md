@@ -142,6 +142,7 @@ The following options are available for the builder:
   - `trustStorePassword` - truststore password
 - `objectMapper` - custom object mapper for JSON serialization
 - `filter` - custom `ExchangeFilterFunction` for applying a filter during communication
+- `defaultHttpHeaders` - custom `HttpHeaders` to be added to all requests as default HTTP headers
 
 ### Calling HTTP Methods Using REST Client
 

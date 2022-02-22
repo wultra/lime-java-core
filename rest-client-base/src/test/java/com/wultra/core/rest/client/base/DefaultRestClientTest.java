@@ -31,6 +31,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DefaultDataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Flux;
@@ -456,6 +457,24 @@ public class DefaultRestClientTest {
         assertNotNull(responseEntity.getBody().getResponseObject());
         assertEquals("OK", responseEntity.getBody().getStatus());
         assertEquals(requestData, responseEntity.getBody().getResponseObject().getResponse());
+    }
+
+    @Test
+    public void testDefaultHttpHeaders() throws RestClientException {
+        String headerName = "Header-Name";
+        String headerVaue = "value";
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(headerName, headerVaue);
+
+        RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setDefaultHttpHeaders(headers);
+        RestClient restClient = new DefaultRestClient(config);
+
+        ResponseEntity<ObjectResponse<TestResponse>> responseEntity =
+                restClient.post("/request-headers-response", null, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){});
+        assertTrue(responseEntity.getHeaders().containsKey(headerName));
+        assertEquals(headerVaue, responseEntity.getHeaders().getFirst(headerName));
     }
 
 }

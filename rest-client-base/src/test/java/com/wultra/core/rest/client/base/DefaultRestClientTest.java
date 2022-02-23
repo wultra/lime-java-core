@@ -480,4 +480,22 @@ public class DefaultRestClientTest {
         assertEquals(requestData, responseEntity.getBody().getResponseObject().getResponse());
     }
 
+    @Test
+    public void testDefaultHttpHeaders() throws RestClientException {
+        String headerName = "Header-Name";
+        String headerVaue = "value";
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(headerName, headerVaue);
+
+        RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setDefaultHttpHeaders(headers);
+        RestClient restClient = new DefaultRestClient(config);
+
+        ResponseEntity<ObjectResponse<TestResponse>> responseEntity =
+                restClient.post("/request-headers-response", null, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){});
+        assertTrue(responseEntity.getHeaders().containsKey(headerName));
+        assertEquals(headerVaue, responseEntity.getHeaders().getFirst(headerName));
+    }
+
 }

@@ -25,6 +25,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Enumeration;
+
 /**
  * Rest controller for tests.
  *
@@ -120,6 +124,16 @@ public class TestRestController {
     @PostMapping("/error-response")
     public ObjectResponse<TestResponse> testErrorResponse() throws RestException {
         throw new RestException();
+    }
+
+    @RequestMapping(value = "/request-headers-response", method = { RequestMethod.DELETE, RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT })
+    public Response testRequestHeadersResponse(HttpServletRequest request, HttpServletResponse response) {
+        Enumeration<String> headerNamesIterator = request.getHeaderNames();
+        while (headerNamesIterator.hasMoreElements()) {
+            String headerName = headerNamesIterator.nextElement();
+            response.setHeader(headerName, request.getHeader(headerName));
+        }
+        return new Response();
     }
 
 }

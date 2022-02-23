@@ -152,6 +152,9 @@ public class DefaultRestClient implements RestClient {
         if (config.getFilter() != null) {
             builder.filter(config.getFilter());
         }
+        if (config.getDefaultHttpHeaders() != null) {
+            builder.defaultHeaders(httpHeaders -> httpHeaders.addAll(config.getDefaultHttpHeaders()));
+        }
 
         final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();

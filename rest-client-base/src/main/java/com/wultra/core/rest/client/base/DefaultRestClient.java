@@ -544,7 +544,9 @@ public class DefaultRestClient implements RestClient {
     @SuppressWarnings("unchecked")
     private WebClient.RequestHeadersSpec<?> buildRequest(WebClient.RequestBodySpec requestSpec, Object request) {
         if (request != null) {
-            if (request instanceof Publisher) {
+            if (request instanceof MultiValueMap) {
+                return requestSpec.body(BodyInserters.fromMultipartData(((MultiValueMap<String, ?>) request)));
+            } else if (request instanceof Publisher) {
                 return requestSpec.body(BodyInserters.fromDataBuffers((Publisher<DataBuffer>) request));
             }
             return requestSpec.body(BodyInserters.fromValue(request));

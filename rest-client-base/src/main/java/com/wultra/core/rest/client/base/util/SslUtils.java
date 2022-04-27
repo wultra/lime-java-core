@@ -26,10 +26,7 @@ import java.io.*;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -62,10 +59,6 @@ public class SslUtils {
 
                 // Extract private key from keystore
                 if (config.useCustomKeyStore()) {
-                    final File keyStoreFile = ResourceUtils.getFile(config.getKeyStoreLocation());
-                    if (!keyStoreFile.exists() || !keyStoreFile.canRead()) {
-                        throw new RestClientException("Keystore is not accessible: " + keyStoreFile.getAbsolutePath());
-                    }
                     if (config.getKeyStorePassword() == null) {
                         throw new RestClientException("Keystore password is not configured");
                     }
@@ -79,8 +72,26 @@ public class SslUtils {
                     final String keyAlias = config.getKeyAlias();
                     final char[] keyPassword = config.getKeyPassword().toCharArray();
                     final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                    try (final FileInputStream fis = new FileInputStream(keyStoreFile)) {
-                        keyStore.load(fis, keyStorePassword);
+                    if (config.getKeyStoreValue() == null) {
+                        if (config.getKeyStoreLocation() == null) {
+                            throw new RestClientException("Keystore location is not configured");
+                        }
+                        final File keyStoreFile = ResourceUtils.getFile(config.getKeyStoreLocation());
+                        if (!keyStoreFile.exists() || !keyStoreFile.canRead()) {
+                            throw new RestClientException("Keystore is not accessible: " + keyStoreFile.getAbsolutePath());
+                        }
+                        try (final FileInputStream fis = new FileInputStream(keyStoreFile)) {
+                            keyStore.load(fis, keyStorePassword);
+                        }
+                    } else {
+                        byte[] keyStoreBytes;
+                        try {
+                            keyStoreBytes = Base64.getDecoder().decode(config.getKeyStoreValue());
+                        } catch (Exception e) {
+                            throw new RestClientException("Keystore value is not readable", e);
+                        }
+                        keyStore.load(new ByteArrayInputStream(keyStoreBytes), keyStorePassword);
+                        config.setKeyStoreValue(null);
                     }
                     final PrivateKey privateKey = (PrivateKey) keyStore.getKey(keyAlias, keyPassword);
                     final Certificate[] certChain = keyStore.getCertificateChain(keyAlias);

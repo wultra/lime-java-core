@@ -65,6 +65,7 @@ public class RestClientConfiguration {
     // Location uses Spring resource format
     private String keyStoreLocation;
     private String keyStorePassword;
+    private String keyStoreValue;
     private String keyAlias;
     private String keyPassword;
     private boolean useCustomTrustStore = false;
@@ -494,6 +495,22 @@ public class RestClientConfiguration {
      */
     public void setDefaultHttpHeaders(HttpHeaders headers) {
         this.defaultHttpHeaders = headers;
+    }
+
+    /**
+     * Get the base64 encoded key store value.
+     * @return Base64 encoded key store value
+     */
+    public String getKeyStoreValue() {
+        return keyStoreValue;
+    }
+
+    /**
+     * Set the base64 encoded key store value.
+     * @param keyStoreValue Base64 encoded key store value
+     */
+    public void setKeyStoreValue(String keyStoreValue) {
+        this.keyStoreValue = keyStoreValue;
     }
 
 }

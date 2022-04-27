@@ -36,9 +36,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.util.ResourceUtils;
 import reactor.core.publisher.Flux;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Base64;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -496,6 +501,24 @@ public class DefaultRestClientTest {
                 restClient.post("/request-headers-response", null, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){});
         assertTrue(responseEntity.getHeaders().containsKey(headerName));
         assertEquals(headerVaue, responseEntity.getHeaders().getFirst(headerName));
+    }
+
+    @Test
+    public void testCustomSslAuthValues() throws Exception {
+        File file = ResourceUtils.getFile("classpath:ssl/keystore-client.jks");
+        byte[] keystoreBytes = new byte[(int) file.length()];
+        try (final InputStream inputStream = new FileInputStream(file)) {
+            inputStream.read(keystoreBytes);
+        }
+        String keyStoreBase64 = Base64.getEncoder().encodeToString(keystoreBytes);
+
+        RestClientConfiguration config = prepareConfiguration();
+        config.setKeyStoreLocation(null);
+        config.setKeyStoreValue(keyStoreBase64);
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        restClient = new DefaultRestClient(config);
+
+        testGetWithResponse();
     }
 
 }

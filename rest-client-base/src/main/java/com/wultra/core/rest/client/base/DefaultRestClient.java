@@ -37,10 +37,7 @@ import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunctions;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.*;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
@@ -671,6 +668,36 @@ public class DefaultRestClient implements RestClient {
         public CertificateAuthBuilder certificateAuth() {
             config.setCertificateAuthEnabled(true);
             return new CertificateAuthBuilder(this);
+        }
+
+        /**
+         * Configure Object Mapper.
+         * @param objectMapper Object Mapper.
+         * @return Builder.
+         */
+        public Builder objectMapper(ObjectMapper objectMapper) {
+            config.setObjectMapper(objectMapper);
+            return this;
+        }
+
+        /**
+         * Configure default HTTP headers.
+         * @param defaultHttpHeaders Default HTTP headers.
+         * @return Builder.
+         */
+        public Builder defaultHttpHeaders(HttpHeaders defaultHttpHeaders) {
+            config.setDefaultHttpHeaders(defaultHttpHeaders);
+            return this;
+        }
+
+        /**
+         * Configure filter function.
+         * @param filter Filter function.
+         * @return Builder.
+         */
+        public Builder filter(ExchangeFilterFunction filter) {
+            config.setFilter(filter);
+            return this;
         }
 
     }

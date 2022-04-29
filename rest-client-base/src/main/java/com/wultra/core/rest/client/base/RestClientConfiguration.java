@@ -75,6 +75,7 @@ public class RestClientConfiguration {
     // Custom object mapper
     private ObjectMapper objectMapper;
 
+    // Custom default HTTP headers
     private HttpHeaders defaultHttpHeaders;
 
     // Custom filter

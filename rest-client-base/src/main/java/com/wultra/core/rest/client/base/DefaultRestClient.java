@@ -25,6 +25,8 @@ import io.getlime.core.rest.model.base.response.Response;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
@@ -43,12 +45,14 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.tcp.SslProvider;
 import reactor.netty.transport.ProxyProvider;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.function.Consumer;
 
 /**
@@ -57,6 +61,8 @@ import java.util.function.Consumer;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 public class DefaultRestClient implements RestClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultRestClient.class);
 
     private WebClient webClient;
     private final RestClientConfiguration config;
@@ -110,12 +116,23 @@ public class DefaultRestClient implements RestClient {
         final SslContext sslContext = SslUtils.prepareSslContext(config);
         HttpClient httpClient = HttpClient.create();
         if (sslContext != null) {
-            httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext));
+            httpClient = httpClient.secure(sslContextSpec -> {
+                final SslProvider.Builder sslProviderBuilder = sslContextSpec.sslContext(sslContext);
+                config.getHandshakeTimeout().ifPresent(it -> {
+                    logger.debug("Setting handshake timeout {}", it);
+                    sslProviderBuilder.handshakeTimeout(it);
+                });
+            });
         }
         if (config.getConnectionTimeout() != null) {
             httpClient = httpClient.option(
                     ChannelOption.CONNECT_TIMEOUT_MILLIS,
                     config.getConnectionTimeout());
+        }
+        final Duration responseTimeout = config.getResponseTimeout();
+        if (responseTimeout != null) {
+            logger.debug("Setting response timeout {}", responseTimeout);
+            httpClient.responseTimeout(responseTimeout);
         }
         if (config.isProxyEnabled()) {
             httpClient = httpClient.proxy(proxySpec -> {

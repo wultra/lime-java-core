@@ -20,6 +20,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
+import java.time.Duration;
+import java.util.Optional;
+
 /**
  * REST client configuration.
  *
@@ -47,9 +50,11 @@ public class RestClientConfiguration {
 
     // HTTP connection timeout
     private Integer connectionTimeout = 5000;
+    private Duration responseTimeout;
 
     // TLS certificate settings
     private boolean acceptInvalidSslCertificate = false;
+    private Duration handshakeTimeout;
 
     // HTTP message settings
     private Integer maxInMemorySize = 1024 * 1024;
@@ -209,7 +214,8 @@ public class RestClientConfiguration {
     }
 
     /**
-     * Get connection timeout.
+     * Get connection timeout in milliseconds.
+     *
      * @return Connection timeout.
      */
     public Integer getConnectionTimeout() {
@@ -217,8 +223,9 @@ public class RestClientConfiguration {
     }
 
     /**
-     * Set connection timeout.
-     * @param connectionTimeout Connection timeout.
+     * Set connection timeout in milliseconds.
+     *
+     * @param connectionTimeout Connection timeout in milliseconds.
      */
     public void setConnectionTimeout(Integer connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
@@ -496,4 +503,39 @@ public class RestClientConfiguration {
         this.defaultHttpHeaders = headers;
     }
 
+    /**
+     * Get the SSL handshake timeout.
+     *
+     * @return timeout duration
+     */
+    public Optional<Duration> getHandshakeTimeout() {
+        return Optional.ofNullable(handshakeTimeout);
+    }
+
+    /**
+     * Set the SSL handshake timeout. Default to 10000 ms.
+     *
+     * @param handshakeTimeout timeout duration
+     */
+    public void setHandshakeTimeout(Duration handshakeTimeout) {
+        this.handshakeTimeout = handshakeTimeout;
+    }
+
+    /**
+     * Get the maximum duration allowed between each network-level read operations (resolution: ms).
+     *
+     * @return response timeout
+     */
+    public Duration getResponseTimeout() {
+        return responseTimeout;
+    }
+
+    /**
+     * Set the maximum duration allowed between each network-level read operations (resolution: ms).
+     *
+     * @param responseTimeout response timeout (resolution: ms)
+     */
+    public void setResponseTimeout(Duration responseTimeout) {
+        this.responseTimeout = responseTimeout;
+    }
 }

@@ -508,8 +508,8 @@ public class RestClientConfiguration {
      *
      * @return timeout duration
      */
-    public Optional<Duration> getHandshakeTimeout() {
-        return Optional.ofNullable(handshakeTimeout);
+    public Duration getHandshakeTimeout() {
+        return handshakeTimeout;
     }
 
     /**

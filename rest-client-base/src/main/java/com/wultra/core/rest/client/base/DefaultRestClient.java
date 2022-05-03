@@ -118,10 +118,11 @@ public class DefaultRestClient implements RestClient {
         if (sslContext != null) {
             httpClient = httpClient.secure(sslContextSpec -> {
                 final SslProvider.Builder sslProviderBuilder = sslContextSpec.sslContext(sslContext);
-                config.getHandshakeTimeout().ifPresent(it -> {
-                    logger.debug("Setting handshake timeout {}", it);
-                    sslProviderBuilder.handshakeTimeout(it);
-                });
+                final Duration handshakeTimeout = config.getHandshakeTimeout();
+                if (handshakeTimeout != null) {
+                    logger.debug("Setting handshake timeout {}", handshakeTimeout);
+                    sslProviderBuilder.handshakeTimeout(handshakeTimeout);
+                }
             });
         }
         if (config.getConnectionTimeout() != null) {

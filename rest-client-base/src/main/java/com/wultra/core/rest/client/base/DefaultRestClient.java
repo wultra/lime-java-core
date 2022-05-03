@@ -133,7 +133,7 @@ public class DefaultRestClient implements RestClient {
         final Duration responseTimeout = config.getResponseTimeout();
         if (responseTimeout != null) {
             logger.debug("Setting response timeout {}", responseTimeout);
-            httpClient.responseTimeout(responseTimeout);
+            httpClient = httpClient.responseTimeout(responseTimeout);
         }
         if (config.isProxyEnabled()) {
             httpClient = httpClient.proxy(proxySpec -> {

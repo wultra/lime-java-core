@@ -21,7 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
 import java.time.Duration;
-import java.util.Optional;
 
 /**
  * REST client configuration.
@@ -29,12 +28,6 @@ import java.util.Optional;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 public class RestClientConfiguration {
-
-    /**
-     * Constructor of REST client configuration.
-     */
-    public RestClientConfiguration() {
-    }
 
     // Basic settings
     private String baseUrl;

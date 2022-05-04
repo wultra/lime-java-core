@@ -36,9 +36,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Flux;
 
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -80,9 +82,11 @@ public class DefaultRestClientTest {
         config.setUseCustomTrustStore(true);
         config.setTrustStoreLocation("classpath:ssl/truststore.jks");
         config.setTrustStorePassword("changeit");
+        config.setHandshakeTimeout(Duration.ofSeconds(5));
         config.setHttpBasicAuthEnabled(true);
         config.setHttpBasicAuthUsername("test");
         config.setHttpBasicAuthPassword("test");
+        config.setResponseTimeout(Duration.ofSeconds(10));
         return config;
     }
 
@@ -498,4 +502,26 @@ public class DefaultRestClientTest {
         assertEquals(headerVaue, responseEntity.getHeaders().getFirst(headerName));
     }
 
+    @Test
+    public void testConfiguration() throws RestClientException {
+        final RestClientConfiguration config = prepareConfiguration();
+        final DefaultRestClient restClient = new DefaultRestClient(config);
+
+        final Object handshakeTimeout = getField(restClient, "webClient.builder.connector.httpClient.config.sslProvider.handshakeTimeoutMillis");
+        assertEquals(5000L, handshakeTimeout);
+
+        final Object responseTimeout = getField(restClient, "webClient.builder.connector.httpClient.config.responseTimeout");
+        assertEquals(Duration.ofSeconds(10), responseTimeout);
+    }
+
+    private static Object getField(final Object parentBean, String path) {
+        final String[] pathParts = path.split("\\.");
+        final String fieldName = pathParts[0];
+        final Object childBean = ReflectionTestUtils.getField(parentBean, fieldName);
+        if (pathParts.length == 1) {
+            return childBean;
+        } else {
+            return getField(childBean, path.replace(fieldName + ".", ""));
+        }
+    }
 }

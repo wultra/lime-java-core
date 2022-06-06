@@ -156,9 +156,9 @@ Once the rest client is initialized, you can use the following methods. Each met
 - `postObject` - a blocking POST call with `ObjectRequest` / `ObjectResponse`
 - `put` - a blocking PUT call with a generic request / response
 - `putNonBlocking` - a non-blocking PUT call with a generic request / response with `onSuccess` and `onError` consumers
-- `putObject` - a blocking PATCH call with `ObjectRequest` / `ObjectResponse`
+- `putObject` - a blocking PUT call with `ObjectRequest` / `ObjectResponse`
 - `patch` - a blocking PATCH call with a generic request / response
-- `patchNonBlocking` - a non-blocking PUT call with a generic request / response with `onSuccess` and `onError` consumers
+- `patchNonBlocking` - a non-blocking PATCH call with a generic request / response with `onSuccess` and `onError` consumers
 - `patchObject` - a blocking PATCH call with `ObjectRequest` / `ObjectResponse`
 - `delete` - a blocking DELETE call with a generic response
 - `deleteNonBlocking` - a non-blocking DELETE call with a generic response with `onSuccess` and `onError` consumers

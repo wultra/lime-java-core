@@ -391,4 +391,106 @@ public interface RestClient {
      */
     <T> ObjectResponse<T> deleteObject(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException;
 
+    /**
+     * Execute a blocking HTTP PATCH request.
+     *
+     * @param path Request path.
+     * @param request Request object.
+     * @param responseType Parameterized response type.
+     * @param <T> Response type.
+     * @return HTTP PUT response.
+     * @throws RestClientException Thrown in case HTTP PATCH request fails.
+     */
+    <T> ResponseEntity<T> patch(String path, Object request, ParameterizedTypeReference<T> responseType) throws RestClientException;
+
+    /**
+     * Execute a blocking HTTP PATCH request with specified HTTP headers.
+     *
+     * @param path Request path.
+     * @param request Request object.
+     * @param queryParams Query parameters.
+     * @param headers HTTP headers.
+     * @param responseType Parameterized response type.
+     * @param <T> Response type.
+     * @return HTTP PUT response.
+     * @throws RestClientException Thrown in case HTTP PATCH request fails.
+     */
+    <T> ResponseEntity<T> patch(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException;
+
+    /**
+     * Execute a non-blocking HTTP PATCH request.
+     *
+     * @param path Request path.
+     * @param request Request object.
+     * @param responseType Parameterized response type.
+     * @param onSuccess Consumer used in case of success.
+     * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
+     * @throws RestClientException Thrown in case HTTP PATCH request fails.
+     */
+    <T> void patchNonBlocking(String path, Object request, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+
+    /**
+     * Execute a non-blocking HTTP PATCH request with specified HTTP headers.
+     *
+     * @param path Request path.
+     * @param request Request object.
+     * @param queryParams Query parameters.
+     * @param headers HTTP headers.
+     * @param responseType Parameterized response type.
+     * @param onSuccess Consumer used in case of success.
+     * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
+     * @throws RestClientException Thrown in case HTTP PATCH request fails.
+     */
+    <T> void patchNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+
+    /**
+     * Execute a blocking HTTP PATCH request with ObjectRequest / Response types.
+     *
+     * @param path Request path.
+     * @param objectRequest Object request.
+     * @return Response.
+     * @throws RestClientException Thrown in case HTTP PATCH request fails.
+     */
+    Response patchObject(String path, ObjectRequest<?> objectRequest) throws RestClientException;
+
+    /**
+     * Execute a blocking HTTP PATCH request with ObjectRequest / Response types and specified query parameters and HTTP headers.
+     *
+     * @param path Request path.
+     * @param objectRequest Object request.
+     * @param queryParams Query parameters.
+     * @param headers HTTP headers.
+     * @return Response.
+     * @throws RestClientException Thrown in case HTTP PATCH request fails.
+     */
+    Response patchObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers) throws RestClientException;
+
+    /**
+     * Execute a blocking HTTP PATCH request with ObjectRequest / ObjectResponse types.
+     *
+     * @param path Request path.
+     * @param objectRequest Object request.
+     * @param responseType Object response type.
+     * @param <T> Response type.
+     * @return Object response.
+     * @throws RestClientException Thrown in case HTTP PATCH request fails.
+     */
+    <T> ObjectResponse<T> patchObject(String path, ObjectRequest<?> objectRequest, Class<T> responseType) throws RestClientException;
+
+    /**
+     * Execute a blocking HTTP PATCH request with ObjectRequest / ObjectResponse types and specified query parameters and HTTP headers.
+     *
+     * @param path Request path.
+     * @param objectRequest Object request.
+     * @param queryParams Query parameters.
+     * @param headers HTTP headers.
+     * @param responseType Object response type.
+     * @param <T> Response type.
+     * @return Object response.
+     * @throws RestClientException Thrown in case HTTP PATCH request fails.
+     */
+    <T> ObjectResponse<T> patchObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException;
+
 }

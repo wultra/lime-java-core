@@ -105,6 +105,28 @@ public class TestRestController {
         return new ObjectResponse<>(testResponse);
     }
 
+    @PatchMapping("/response")
+    public Response testPatchWithResponse() {
+        return new Response();
+    }
+
+    @PatchMapping("/test-response")
+    public TestResponse testPatchWithTestResponse() {
+        return new TestResponse("test response");
+    }
+
+    @PatchMapping("/object-response")
+    public ObjectResponse<TestResponse> testPatchWithObjectResponse() {
+        TestResponse testResponse = new TestResponse("object response");
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PatchMapping("/object-request-response")
+    public ObjectResponse<TestResponse> testPatchWithObjectRequestAndResponse(@RequestBody ObjectRequest<TestRequest> request) {
+        TestResponse testResponse = new TestResponse(request.getRequestObject().getRequest());
+        return new ObjectResponse<>(testResponse);
+    }
+
     @DeleteMapping("/response")
     public Response testDeleteWithResponse() {
         return new Response();

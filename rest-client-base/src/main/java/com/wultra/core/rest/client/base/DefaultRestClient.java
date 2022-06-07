@@ -460,6 +460,80 @@ public class DefaultRestClient implements RestClient {
         return responseEntity.getBody();
     }
 
+    @Override
+    public <T> ResponseEntity<T> patch(String path, Object request, ParameterizedTypeReference<T> responseType) throws RestClientException {
+        return patch(path, request, null, null, responseType);
+    }
+
+    @Override
+    public <T> ResponseEntity<T> patch(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
+        try {
+            WebClient.RequestBodySpec spec = buildUri(webClient.patch(), path, queryParams)
+                    .headers(h -> {
+                        if (headers != null) {
+                            h.addAll(headers);
+                        }
+                    })
+                    .contentType(config.getContentType())
+                    .accept(config.getAcceptType());
+            return buildRequest(spec, request)
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
+                    .block();
+        } catch (Exception ex) {
+            if (ex.getCause() instanceof RestClientException) {
+                // Throw exceptions created by REST client
+                throw (RestClientException) ex.getCause();
+            }
+            throw new RestClientException("HTTP PATCH request failed", ex);
+        }
+    }
+
+    @Override
+    public <T> void patchNonBlocking(String path, Object request,  ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+        patchNonBlocking(path, request, null, null, responseType, onSuccess, onError);
+    }
+
+    @Override
+    public <T> void patchNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers,  ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+        try {
+            WebClient.RequestBodySpec spec = buildUri(webClient.patch(), path, queryParams)
+                    .headers(h -> {
+                        if (headers != null) {
+                            h.addAll(headers);
+                        }
+                    })
+                    .contentType(config.getContentType())
+                    .accept(config.getAcceptType());
+            buildRequest(spec, request)
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
+                    .subscribe(onSuccess, onError);
+        } catch (Exception ex) {
+            throw new RestClientException("HTTP PATCH request failed", ex);
+        }
+    }
+
+    @Override
+    public Response patchObject(String path, ObjectRequest<?> objectRequest) throws RestClientException {
+        return patch(path, objectRequest, new ParameterizedTypeReference<Response>(){}).getBody();
+    }
+
+    @Override
+    public Response patchObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers) throws RestClientException {
+        return patch(path, objectRequest, queryParams, headers, new ParameterizedTypeReference<Response>(){}).getBody();
+    }
+
+    @Override
+    public <T> ObjectResponse<T> patchObject(String path, ObjectRequest<?> objectRequest, Class<T> responseType) throws RestClientException {
+        return patchObject(path, objectRequest, null, null ,responseType);
+    }
+
+    @Override
+    public <T> ObjectResponse<T> patchObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException {
+        ParameterizedTypeReference<ObjectResponse<T>> typeReference = getTypeReference(responseType);
+        ResponseEntity<ObjectResponse<T>> responseEntity = patch(path, objectRequest, queryParams, headers, typeReference);
+        return responseEntity.getBody();
+    }
+
     /**
      * Convert response type to parameterized type reference of ObjectResponse.
      * @param responseType Object response type.

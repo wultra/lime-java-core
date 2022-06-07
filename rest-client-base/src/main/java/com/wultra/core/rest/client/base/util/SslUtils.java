@@ -20,13 +20,24 @@ import com.wultra.core.rest.client.base.RestClientException;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-import java.io.*;
-import java.security.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +46,10 @@ import java.util.stream.Collectors;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 public class SslUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(SslUtils.class);
+
+    private SslUtils() { }
 
     /**
      * Prepare SSL context for a REST client configuration.
@@ -72,7 +87,7 @@ public class SslUtils {
                     final String keyAlias = config.getKeyAlias();
                     final char[] keyPassword = config.getKeyPassword().toCharArray();
                     final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                    if (config.getKeyStoreValue() == null) {
+                    if (config.getKeyStoreBytes() == null) {
                         if (config.getKeyStoreLocation() == null) {
                             throw new RestClientException("Keystore location is not configured");
                         }
@@ -82,16 +97,12 @@ public class SslUtils {
                         }
                         try (final FileInputStream fis = new FileInputStream(keyStoreFile)) {
                             keyStore.load(fis, keyStorePassword);
+                            logger.debug("Loaded key store from the configured file location");
                         }
                     } else {
-                        byte[] keyStoreBytes;
-                        try {
-                            keyStoreBytes = Base64.getDecoder().decode(config.getKeyStoreValue());
-                        } catch (Exception e) {
-                            throw new RestClientException("Keystore value is not readable", e);
-                        }
-                        keyStore.load(new ByteArrayInputStream(keyStoreBytes), keyStorePassword);
-                        config.setKeyStoreValue(null);
+                        final ByteArrayInputStream inputStream = new ByteArrayInputStream(config.getKeyStoreBytes().array());
+                        keyStore.load(inputStream, keyStorePassword);
+                        logger.debug("Loaded key store from the provided byte data");
                     }
                     final PrivateKey privateKey = (PrivateKey) keyStore.getKey(keyAlias, keyPassword);
                     final Certificate[] certChain = keyStore.getCertificateChain(keyAlias);
@@ -107,18 +118,29 @@ public class SslUtils {
 
                 // Override default truststore
                 if (config.useCustomTrustStore()) {
-                    final File trustStoreFile = ResourceUtils.getFile(config.getTrustStoreLocation());
-                    if (!trustStoreFile.exists() || !trustStoreFile.canRead()) {
-                        throw new RestClientException("Truststore is not accessible: " + trustStoreFile);
-                    }
-                    if (config.getTrustStorePassword() == null) {
-                        throw new RestClientException("Truststore password is not configured");
-                    }
                     final char[] trustStorePassword = config.getTrustStorePassword().toCharArray();
                     final KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                    try (final FileInputStream fis = new FileInputStream(trustStoreFile)) {
-                        trustStore.load(fis, trustStorePassword);
+                    if (config.getKeyStoreBytes() == null) {
+                        if (config.getTrustStoreLocation() == null) {
+                            throw new RestClientException("Truststore location is not configured");
+                        }
+                        final File trustStoreFile = ResourceUtils.getFile(config.getTrustStoreLocation());
+                        if (!trustStoreFile.exists() || !trustStoreFile.canRead()) {
+                            throw new RestClientException("Truststore is not accessible: " + trustStoreFile);
+                        }
+                        if (config.getTrustStorePassword() == null) {
+                            throw new RestClientException("Truststore password is not configured");
+                        }
+                        try (final FileInputStream fis = new FileInputStream(trustStoreFile)) {
+                            trustStore.load(fis, trustStorePassword);
+                            logger.debug("Loaded trust store from the configured file location");
+                        }
+                    } else {
+                        final ByteArrayInputStream inputStream = new ByteArrayInputStream(config.getTrustStoreBytes().array());
+                        trustStore.load(inputStream, trustStorePassword);
+                        logger.debug("Loaded trust store from the provided byte data");
                     }
+
                     final List<KeyStoreException> keyStoreExceptions = new ArrayList<>();
                     final X509Certificate[] certificates = Collections.list(trustStore.aliases())
                             .stream()
@@ -139,7 +161,7 @@ public class SslUtils {
                                 }
                             }).toArray(X509Certificate[]::new);
                     if (!keyStoreExceptions.isEmpty()) {
-                        throw new RestClientException("Invalid truststore: " + trustStoreFile.getAbsolutePath());
+                        throw new RestClientException("Invalid truststore data provided: " + keyStoreExceptions);
                     }
                     sslContextBuilder.trustManager(certificates);
                 }

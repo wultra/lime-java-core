@@ -20,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 
 /**
@@ -60,13 +61,14 @@ public class RestClientConfiguration {
     // TLS client certificate authentication
     private boolean certificateAuthEnabled = false;
     private boolean useCustomKeyStore = false;
+    private ByteBuffer keyStoreBytes;
     // Location uses Spring resource format
     private String keyStoreLocation;
     private String keyStorePassword;
-    private String keyStoreValue;
     private String keyAlias;
     private String keyPassword;
     private boolean useCustomTrustStore = false;
+    private ByteBuffer trustStoreBytes;
     // Location uses Spring resource format
     private String trustStoreLocation;
     private String trustStorePassword;
@@ -339,6 +341,22 @@ public class RestClientConfiguration {
     }
 
     /**
+     * Get byte data of the key store.
+     * @return Byte data with key store data
+     */
+    public ByteBuffer getKeyStoreBytes() {
+        return keyStoreBytes;
+    }
+
+    /**
+     * Set byte data with key store.
+     * @param keyStoreBytes Byte data with key store
+     */
+    public void setKeyStoreBytes(ByteBuffer keyStoreBytes) {
+        this.keyStoreBytes = keyStoreBytes;
+    }
+
+    /**
      * Get keystore resource location for client TLS certificate authentication.
      * @return Keystore resource location for client TLS certificate authentication.
      */
@@ -416,6 +434,22 @@ public class RestClientConfiguration {
      */
     public void setUseCustomTrustStore(boolean useCustomTrustStore) {
         this.useCustomTrustStore = useCustomTrustStore;
+    }
+
+    /**
+     * Get byte data of the trust store.
+     * @return Byte data with trust store data
+     */
+    public ByteBuffer getTrustStoreBytes() {
+        return trustStoreBytes;
+    }
+
+    /**
+     * Set trust store data.
+     * @param trustStoreBytes Byte buffer data of the trust store
+     */
+    public void setTrustStoreBytes(ByteBuffer trustStoreBytes) {
+        this.trustStoreBytes = trustStoreBytes;
     }
 
     /**
@@ -532,23 +566,6 @@ public class RestClientConfiguration {
      */
     public void setResponseTimeout(Duration responseTimeout) {
         this.responseTimeout = responseTimeout;
-    }
-
-
-    /**
-     * Get the base64 encoded key store value.
-     * @return Base64 encoded key store value
-     */
-    public String getKeyStoreValue() {
-        return keyStoreValue;
-    }
-
-    /**
-     * Set the base64 encoded key store value.
-     * @param keyStoreValue Base64 encoded key store value
-     */
-    public void setKeyStoreValue(String keyStoreValue) {
-        this.keyStoreValue = keyStoreValue;
     }
 
 }

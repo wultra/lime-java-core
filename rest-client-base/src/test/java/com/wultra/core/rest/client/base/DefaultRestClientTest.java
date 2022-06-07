@@ -45,7 +45,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.Base64;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -532,17 +531,31 @@ class DefaultRestClientTest {
 
     @Test
     public void testCustomSslAuthValues() throws Exception {
-        File file = ResourceUtils.getFile("classpath:ssl/keystore-client.jks");
-        byte[] keystoreBytes = new byte[(int) file.length()];
-        try (final InputStream inputStream = new FileInputStream(file)) {
+        File keyStoreFile = ResourceUtils.getFile("classpath:ssl/keystore-client.jks");
+        byte[] keystoreBytes = new byte[(int) keyStoreFile.length()];
+        try (final InputStream inputStream = new FileInputStream(keyStoreFile)) {
             inputStream.read(keystoreBytes);
         }
-        String keyStoreBase64 = Base64.getEncoder().encodeToString(keystoreBytes);
+
+        File trustStoreFile = ResourceUtils.getFile("classpath:ssl/truststore.jks");
+        byte[] trustStoreBytes = new byte[(int) trustStoreFile.length()];
+        try (final InputStream inputStream = new FileInputStream(trustStoreFile)) {
+            inputStream.read(trustStoreBytes);
+        }
 
         RestClientConfiguration config = prepareConfiguration();
-        config.setKeyStoreLocation(null);
-        config.setKeyStoreValue(keyStoreBase64);
         config.setBaseUrl("https://localhost:" + port + "/api/test");
+
+        config.setKeyStoreLocation(null);
+        config.setKeyStoreBytes(ByteBuffer.wrap(keystoreBytes));
+        config.setKeyStorePassword("changeit");
+        config.setKeyAlias("client");
+        config.setKeyPassword("changeit");
+
+        config.setTrustStoreLocation(null);
+        config.setTrustStoreBytes(ByteBuffer.wrap(trustStoreBytes));
+        config.setTrustStorePassword("changeit");
+
         restClient = new DefaultRestClient(config);
 
         testGetWithResponse();

@@ -135,11 +135,13 @@ The following options are available for the builder:
   - `useCustomKeyStore` - whether custom keystore should be used for certificate authentication (default: false)
   - `keyStoreLocation` - resource location of keystore (e.g. `file:/path_to_keystore`)
   - `keyStorePassword` - keystore password
+  - `keyStoreBytes` - byte data with keystore (alternative configuration way to `keyStoreLocation`)
   - `keyAlias` - key alias for the private key stored inside the keystore
   - `keyPassword` - password for the private key stored inside the keystore
   - `useCustomTrustStore` - whether custom truststore should be used for certificate authentication (default: false)
   - `trustStoreLocation` - resource location of truststore (e.g. `file:/path_to_truststore`)
   - `trustStorePassword` - truststore password
+  - `trustStoreBytes` - byte data with truststore (alternative configuration way to `trustStoreLocation`)
 - `objectMapper` - custom object mapper for JSON serialization
 - `filter` - custom `ExchangeFilterFunction` for applying a filter during communication
 - `defaultHttpHeaders` - custom `HttpHeaders` to be added to all requests as default HTTP headers

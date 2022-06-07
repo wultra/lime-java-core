@@ -341,16 +341,16 @@ public class RestClientConfiguration {
     }
 
     /**
-     * Get byte data of the key store.
-     * @return Byte data with key store data
+     * Get byte data with the key store.
+     * @return Byte data with key store data.
      */
     public ByteBuffer getKeyStoreBytes() {
         return keyStoreBytes;
     }
 
     /**
-     * Set byte data with key store.
-     * @param keyStoreBytes Byte data with key store
+     * Set byte data with the key store.
+     * @param keyStoreBytes Byte data with the key store.
      */
     public void setKeyStoreBytes(ByteBuffer keyStoreBytes) {
         this.keyStoreBytes = keyStoreBytes;
@@ -437,16 +437,16 @@ public class RestClientConfiguration {
     }
 
     /**
-     * Get byte data of the trust store.
-     * @return Byte data with trust store data
+     * Get byte data with the trust store.
+     * @return Byte data with the trust store
      */
     public ByteBuffer getTrustStoreBytes() {
         return trustStoreBytes;
     }
 
     /**
-     * Set trust store data.
-     * @param trustStoreBytes Byte buffer data of the trust store
+     * Set byte data with the trust store.
+     * @param trustStoreBytes Byte data with the trust store.
      */
     public void setTrustStoreBytes(ByteBuffer trustStoreBytes) {
         this.trustStoreBytes = trustStoreBytes;

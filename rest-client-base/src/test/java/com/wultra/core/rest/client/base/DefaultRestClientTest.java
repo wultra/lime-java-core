@@ -37,8 +37,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.ResourceUtils;
 import reactor.core.publisher.Flux;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
@@ -621,4 +625,37 @@ class DefaultRestClientTest {
             return getField(childBean, path.replace(fieldName + ".", ""));
         }
     }
+
+    @Test
+    public void testCustomSslAuthValues() throws Exception {
+        File keyStoreFile = ResourceUtils.getFile("classpath:ssl/keystore-client.jks");
+        byte[] keystoreBytes = new byte[(int) keyStoreFile.length()];
+        try (final InputStream inputStream = new FileInputStream(keyStoreFile)) {
+            inputStream.read(keystoreBytes);
+        }
+
+        File trustStoreFile = ResourceUtils.getFile("classpath:ssl/truststore.jks");
+        byte[] trustStoreBytes = new byte[(int) trustStoreFile.length()];
+        try (final InputStream inputStream = new FileInputStream(trustStoreFile)) {
+            inputStream.read(trustStoreBytes);
+        }
+
+        RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+
+        config.setKeyStoreLocation(null);
+        config.setKeyStoreBytes(keystoreBytes);
+        config.setKeyStorePassword("changeit");
+        config.setKeyAlias("client");
+        config.setKeyPassword("changeit");
+
+        config.setTrustStoreLocation(null);
+        config.setTrustStoreBytes(trustStoreBytes);
+        config.setTrustStorePassword("changeit");
+
+        restClient = new DefaultRestClient(config);
+
+        testGetWithResponse();
+    }
+
 }

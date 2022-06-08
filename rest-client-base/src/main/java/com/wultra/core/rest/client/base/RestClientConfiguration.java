@@ -18,9 +18,11 @@ package com.wultra.core.rest.client.base;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.lang.Nullable;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
 import java.time.Duration;
+import java.util.Arrays;
 
 /**
  * REST client configuration.
@@ -60,12 +62,14 @@ public class RestClientConfiguration {
     // TLS client certificate authentication
     private boolean certificateAuthEnabled = false;
     private boolean useCustomKeyStore = false;
+    private byte[] keyStoreBytes;
     // Location uses Spring resource format
     private String keyStoreLocation;
     private String keyStorePassword;
     private String keyAlias;
     private String keyPassword;
     private boolean useCustomTrustStore = false;
+    private byte[] trustStoreBytes;
     // Location uses Spring resource format
     private String trustStoreLocation;
     private String trustStorePassword;
@@ -338,6 +342,26 @@ public class RestClientConfiguration {
     }
 
     /**
+     * Get byte data with the key store.
+     * @return Byte data with the key store.
+     */
+    @Nullable
+    public byte[] getKeyStoreBytes() {
+        if (keyStoreBytes == null) {
+            return null;
+        }
+        return Arrays.copyOf(keyStoreBytes, keyStoreBytes.length);
+    }
+
+    /**
+     * Set byte data with the key store.
+     * @param keyStoreBytes Byte data with the key store.
+     */
+    public void setKeyStoreBytes(byte[] keyStoreBytes) {
+        this.keyStoreBytes = Arrays.copyOf(keyStoreBytes, keyStoreBytes.length);
+    }
+
+    /**
      * Get keystore resource location for client TLS certificate authentication.
      * @return Keystore resource location for client TLS certificate authentication.
      */
@@ -415,6 +439,26 @@ public class RestClientConfiguration {
      */
     public void setUseCustomTrustStore(boolean useCustomTrustStore) {
         this.useCustomTrustStore = useCustomTrustStore;
+    }
+
+    /**
+     * Get byte data with the trust store.
+     * @return Byte data with the trust store
+     */
+    @Nullable
+    public byte[] getTrustStoreBytes() {
+        if (trustStoreBytes == null) {
+            return null;
+        }
+        return Arrays.copyOf(trustStoreBytes, trustStoreBytes.length);
+    }
+
+    /**
+     * Set byte data with the trust store.
+     * @param trustStoreBytes Byte data with the trust store.
+     */
+    public void setTrustStoreBytes(byte[] trustStoreBytes) {
+        this.trustStoreBytes = Arrays.copyOf(trustStoreBytes, trustStoreBytes.length);
     }
 
     /**
@@ -532,4 +576,5 @@ public class RestClientConfiguration {
     public void setResponseTimeout(Duration responseTimeout) {
         this.responseTimeout = responseTimeout;
     }
+
 }

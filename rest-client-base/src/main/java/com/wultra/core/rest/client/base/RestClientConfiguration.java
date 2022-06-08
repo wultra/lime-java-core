@@ -22,6 +22,7 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.Arrays;
 
 /**
  * REST client configuration.
@@ -353,7 +354,8 @@ public class RestClientConfiguration {
      * @param keyStoreBytes Byte data with the key store.
      */
     public void setKeyStoreBytes(ByteBuffer keyStoreBytes) {
-        this.keyStoreBytes = keyStoreBytes;
+        byte[] bytes = keyStoreBytes.array();
+        this.keyStoreBytes = ByteBuffer.wrap(Arrays.copyOf(bytes, bytes.length)).asReadOnlyBuffer();
     }
 
     /**
@@ -449,7 +451,8 @@ public class RestClientConfiguration {
      * @param trustStoreBytes Byte data with the trust store.
      */
     public void setTrustStoreBytes(ByteBuffer trustStoreBytes) {
-        this.trustStoreBytes = trustStoreBytes;
+        byte[] bytes = trustStoreBytes.array();
+        this.trustStoreBytes = ByteBuffer.wrap(Arrays.copyOf(bytes, bytes.length)).asReadOnlyBuffer();
     }
 
     /**

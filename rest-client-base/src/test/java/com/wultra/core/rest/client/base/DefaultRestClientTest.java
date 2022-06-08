@@ -644,13 +644,13 @@ class DefaultRestClientTest {
         config.setBaseUrl("https://localhost:" + port + "/api/test");
 
         config.setKeyStoreLocation(null);
-        config.setKeyStoreBytes(ByteBuffer.wrap(keystoreBytes));
+        config.setKeyStoreBytes(keystoreBytes);
         config.setKeyStorePassword("changeit");
         config.setKeyAlias("client");
         config.setKeyPassword("changeit");
 
         config.setTrustStoreLocation(null);
-        config.setTrustStoreBytes(ByteBuffer.wrap(trustStoreBytes));
+        config.setTrustStoreBytes(trustStoreBytes);
         config.setTrustStorePassword("changeit");
 
         restClient = new DefaultRestClient(config);

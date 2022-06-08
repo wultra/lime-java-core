@@ -15,7 +15,6 @@
  */
 package com.wultra.core.rest.client.base.util;
 
-import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
 import com.wultra.core.rest.client.base.RestClientConfiguration;
 import com.wultra.core.rest.client.base.RestClientException;
 import io.netty.handler.ssl.SslContext;
@@ -25,10 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -101,7 +97,7 @@ public class SslUtils {
                             logger.debug("Loaded key store from the configured file location");
                         }
                     } else {
-                        final InputStream inputStream = new ByteBufferBackedInputStream(config.getKeyStoreBytes());
+                        final InputStream inputStream = new ByteArrayInputStream(config.getKeyStoreBytes());
                         keyStore.load(inputStream, keyStorePassword);
                         logger.debug("Loaded key store from the provided byte data");
                     }
@@ -137,7 +133,7 @@ public class SslUtils {
                             logger.debug("Loaded trust store from the configured file location");
                         }
                     } else {
-                        final InputStream inputStream = new ByteBufferBackedInputStream(config.getTrustStoreBytes());
+                        final InputStream inputStream = new ByteArrayInputStream(config.getTrustStoreBytes());
                         trustStore.load(inputStream, trustStorePassword);
                         logger.debug("Loaded trust store from the provided byte data");
                     }

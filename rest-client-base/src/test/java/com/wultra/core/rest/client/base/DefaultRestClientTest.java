@@ -615,6 +615,40 @@ class DefaultRestClientTest {
         assertEquals(Duration.ofSeconds(10), responseTimeout);
     }
 
+    @Test
+    void testCustomKeyStoreTrustStoreBytes() throws Exception {
+        RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        configureCustomKeyStore(config);
+        configureCustomTrustStore(config);
+
+        restClient = new DefaultRestClient(config);
+
+        testGetWithResponse();
+    }
+
+    @Test
+    void testCustomKeyStoreBytes() throws Exception {
+        RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        configureCustomKeyStore(config);
+
+        restClient = new DefaultRestClient(config);
+
+        testGetWithResponse();
+    }
+
+    @Test
+    void testCustomTrustStoreBytes() throws Exception {
+        RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        configureCustomTrustStore(config);
+
+        restClient = new DefaultRestClient(config);
+
+        testGetWithResponse();
+    }
+
     private static Object getField(final Object parentBean, String path) {
         final String[] pathParts = path.split("\\.");
         final String fieldName = pathParts[0];
@@ -626,36 +660,30 @@ class DefaultRestClientTest {
         }
     }
 
-    @Test
-    public void testCustomSslAuthValues() throws Exception {
+    private void configureCustomKeyStore(RestClientConfiguration config) throws Exception {
         File keyStoreFile = ResourceUtils.getFile("classpath:ssl/keystore-client.jks");
         byte[] keystoreBytes = new byte[(int) keyStoreFile.length()];
         try (final InputStream inputStream = new FileInputStream(keyStoreFile)) {
             inputStream.read(keystoreBytes);
         }
 
+        config.setKeyStoreLocation(null);
+        config.setKeyStoreBytes(keystoreBytes);
+        config.setKeyStorePassword("changeit");
+        config.setKeyAlias("client");
+        config.setKeyPassword("changeit");
+    }
+
+    private void configureCustomTrustStore(RestClientConfiguration config) throws Exception {
         File trustStoreFile = ResourceUtils.getFile("classpath:ssl/truststore.jks");
         byte[] trustStoreBytes = new byte[(int) trustStoreFile.length()];
         try (final InputStream inputStream = new FileInputStream(trustStoreFile)) {
             inputStream.read(trustStoreBytes);
         }
 
-        RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
-
-        config.setKeyStoreLocation(null);
-        config.setKeyStoreBytes(keystoreBytes);
-        config.setKeyStorePassword("changeit");
-        config.setKeyAlias("client");
-        config.setKeyPassword("changeit");
-
         config.setTrustStoreLocation(null);
         config.setTrustStoreBytes(trustStoreBytes);
         config.setTrustStorePassword("changeit");
-
-        restClient = new DefaultRestClient(config);
-
-        testGetWithResponse();
     }
 
 }

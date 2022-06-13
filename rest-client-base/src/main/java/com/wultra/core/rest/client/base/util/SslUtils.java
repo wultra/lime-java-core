@@ -117,7 +117,7 @@ public class SslUtils {
                 if (config.useCustomTrustStore()) {
                     final char[] trustStorePassword = config.getTrustStorePassword().toCharArray();
                     final KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                    if (config.getKeyStoreBytes() == null) {
+                    if (config.getTrustStoreBytes() == null) {
                         if (config.getTrustStoreLocation() == null) {
                             throw new RestClientException("Truststore location is not configured");
                         }

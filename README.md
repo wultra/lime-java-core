@@ -135,13 +135,16 @@ The following options are available for the builder:
   - `useCustomKeyStore` - whether custom keystore should be used for certificate authentication (default: false)
   - `keyStoreLocation` - resource location of keystore (e.g. `file:/path_to_keystore`)
   - `keyStorePassword` - keystore password
+  - `keyStoreBytes` - byte data with keystore (alternative configuration way to `keyStoreLocation`)
   - `keyAlias` - key alias for the private key stored inside the keystore
   - `keyPassword` - password for the private key stored inside the keystore
   - `useCustomTrustStore` - whether custom truststore should be used for certificate authentication (default: false)
   - `trustStoreLocation` - resource location of truststore (e.g. `file:/path_to_truststore`)
   - `trustStorePassword` - truststore password
+  - `trustStoreBytes` - byte data with truststore (alternative configuration way to `trustStoreLocation`)
 - `objectMapper` - custom object mapper for JSON serialization
 - `filter` - custom `ExchangeFilterFunction` for applying a filter during communication
+- `defaultHttpHeaders` - custom `HttpHeaders` to be added to all requests as default HTTP headers
 
 ### Calling HTTP Methods Using REST Client
 
@@ -156,6 +159,9 @@ Once the rest client is initialized, you can use the following methods. Each met
 - `put` - a blocking PUT call with a generic request / response
 - `putNonBlocking` - a non-blocking PUT call with a generic request / response with `onSuccess` and `onError` consumers
 - `putObject` - a blocking PUT call with `ObjectRequest` / `ObjectResponse`
+- `patch` - a blocking PATCH call with a generic request / response
+- `patchNonBlocking` - a non-blocking PATCH call with a generic request / response with `onSuccess` and `onError` consumers
+- `patchObject` - a blocking PATCH call with `ObjectRequest` / `ObjectResponse`
 - `delete` - a blocking DELETE call with a generic response
 - `deleteNonBlocking` - a non-blocking DELETE call with a generic response with `onSuccess` and `onError` consumers
 - `deleteObject` - a blocking DELETE call with `ObjectResponse`
@@ -238,47 +244,64 @@ Following audit levels are available:
 
 Initialization of audit factory:
 ```java
-private AuditFactory auditFactory;
+@Configuration
+@ComponentScan(basePackages = {"com.wultra.core.audit.base"})
+public class WebServerConfiguration {
 
-@Autowired
-public void setAuditFactory() {
-    this.auditFactory = auditFactory;
+    private final AuditFactory auditFactory;
+
+    @Autowired
+    public WebServerConfiguration(AuditFactory auditFactory) {
+        this.auditFactory = auditFactory;
+    }
+
+    @Bean
+    public Audit audit() {
+       return auditFactory.getAudit();
+    }
 }
+```  
+
+Autowiring:
+```java
+public class MyClass {
+    private final Audit audit;
+
+    @Autowired
+    public MyClass(Audit audit) {
+      this.audit = audit;
+    }
+}
+
 ```
 
 Basic usage:
 ```java
-    Audit audit = auditFactory.getAudit();
-    audit.info("a message");
+   audit.info("a message");
 ```
 
 Formatting messages:
 ```java
-   Audit audit = auditFactory.getAudit();
    audit.info("a message with {}", "formatting");
 ```
 
 Auditing with specified level:
 ```java
-   Audit audit = auditFactory.getAudit();
    audit.log("a message for error level", AuditLevel.ERROR);
 ```
 
 Auditing of exceptions:
 ```java
-   Audit audit = auditFactory.getAudit();
    audit.warn("a message", new Exception("an exception"));
 ```
 
 Auditing with parameters:
 ```java
-   Audit audit = auditFactory.getAudit();
    audit.info("a message", AuditDetail.builder().param("my_id", "some_id").build());
 ```
 
 Auditing with parameters and type of audit message:
 ```java
-   Audit audit = auditFactory.getAudit();
    String operationId = UUID.randomUUID().toString();
    Map<String, Object> param = new LinkedHashMap<>();
    param.put("user_id", "some_id");

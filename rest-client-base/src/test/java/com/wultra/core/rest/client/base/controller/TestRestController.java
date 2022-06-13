@@ -21,8 +21,13 @@ import com.wultra.core.rest.client.base.model.error.RestException;
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Enumeration;
 
 /**
  * Rest controller for tests.
@@ -72,6 +77,12 @@ public class TestRestController {
         return new ObjectResponse<>(testResponse);
     }
 
+    @PostMapping(value = "/multipart-request-response", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ObjectResponse<TestResponse> testPostWithMultipartRequestAndResponse(@RequestPart TestRequest request) {
+        TestResponse testResponse = new TestResponse(request.getRequest());
+        return new ObjectResponse<>(testResponse);
+    }
+
     @PutMapping("/response")
     public Response testPutWithResponse() {
         return new Response();
@@ -90,6 +101,28 @@ public class TestRestController {
 
     @PutMapping("/object-request-response")
     public ObjectResponse<TestResponse> testPutWithObjectRequestAndResponse(@RequestBody ObjectRequest<TestRequest> request) {
+        TestResponse testResponse = new TestResponse(request.getRequestObject().getRequest());
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PatchMapping("/response")
+    public Response testPatchWithResponse() {
+        return new Response();
+    }
+
+    @PatchMapping("/test-response")
+    public TestResponse testPatchWithTestResponse() {
+        return new TestResponse("test response");
+    }
+
+    @PatchMapping("/object-response")
+    public ObjectResponse<TestResponse> testPatchWithObjectResponse() {
+        TestResponse testResponse = new TestResponse("object response");
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PatchMapping("/object-request-response")
+    public ObjectResponse<TestResponse> testPatchWithObjectRequestAndResponse(@RequestBody ObjectRequest<TestRequest> request) {
         TestResponse testResponse = new TestResponse(request.getRequestObject().getRequest());
         return new ObjectResponse<>(testResponse);
     }
@@ -113,6 +146,16 @@ public class TestRestController {
     @PostMapping("/error-response")
     public ObjectResponse<TestResponse> testErrorResponse() throws RestException {
         throw new RestException();
+    }
+
+    @RequestMapping(value = "/request-headers-response", method = { RequestMethod.DELETE, RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT })
+    public Response testRequestHeadersResponse(HttpServletRequest request, HttpServletResponse response) {
+        Enumeration<String> headerNamesIterator = request.getHeaderNames();
+        while (headerNamesIterator.hasMoreElements()) {
+            String headerName = headerNamesIterator.nextElement();
+            response.setHeader(headerName, request.getHeader(headerName));
+        }
+        return new Response();
     }
 
 }

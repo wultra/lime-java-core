@@ -15,8 +15,8 @@
  */
 package io.getlime.core.rest.model.base.request;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Simple class representing a request with an object.

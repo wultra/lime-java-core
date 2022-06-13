@@ -16,9 +16,8 @@
 package io.getlime.core.rest.model.base.response;
 
 import io.getlime.core.rest.model.base.entity.Error;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Class representing an error response.
@@ -43,6 +42,18 @@ public class ErrorResponse extends ObjectResponse<Error> {
      */
     public ErrorResponse(@NotBlank String code, String message) {
         super(Status.ERROR, new Error(code, message));
+    }
+
+    /**
+     * Create a new error response with response object with provided code
+     * and throwable, that is a source for the error message (t.getMessage()).
+     *
+     * @param code Error code.
+     * @param t Throwable, whose message is used as an error message.
+     * @param defaultMessage Default message, used when Throwable message is null.
+     */
+    public ErrorResponse(@NotBlank String code, Throwable t, String defaultMessage) {
+        super(Status.ERROR, new Error(code, ((t != null && t.getMessage() != null) ? t.getMessage() : defaultMessage)));
     }
 
     /**

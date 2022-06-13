@@ -25,6 +25,8 @@ import io.getlime.core.rest.model.base.response.Response;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
@@ -37,18 +39,17 @@ import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunctions;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.*;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.tcp.SslProvider;
 import reactor.netty.transport.ProxyProvider;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.function.Consumer;
 
 /**
@@ -57,6 +58,8 @@ import java.util.function.Consumer;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 public class DefaultRestClient implements RestClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultRestClient.class);
 
     private WebClient webClient;
     private final RestClientConfiguration config;
@@ -110,15 +113,27 @@ public class DefaultRestClient implements RestClient {
         final SslContext sslContext = SslUtils.prepareSslContext(config);
         HttpClient httpClient = HttpClient.create();
         if (sslContext != null) {
-            httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext));
+            httpClient = httpClient.secure(sslContextSpec -> {
+                final SslProvider.Builder sslProviderBuilder = sslContextSpec.sslContext(sslContext);
+                final Duration handshakeTimeout = config.getHandshakeTimeout();
+                if (handshakeTimeout != null) {
+                    logger.debug("Setting handshake timeout {}", handshakeTimeout);
+                    sslProviderBuilder.handshakeTimeout(handshakeTimeout);
+                }
+            });
         }
         if (config.getConnectionTimeout() != null) {
-            httpClient.option(
+            httpClient = httpClient.option(
                     ChannelOption.CONNECT_TIMEOUT_MILLIS,
                     config.getConnectionTimeout());
         }
+        final Duration responseTimeout = config.getResponseTimeout();
+        if (responseTimeout != null) {
+            logger.debug("Setting response timeout {}", responseTimeout);
+            httpClient = httpClient.responseTimeout(responseTimeout);
+        }
         if (config.isProxyEnabled()) {
-            httpClient.proxy(proxySpec -> {
+            httpClient = httpClient.proxy(proxySpec -> {
                 ProxyProvider.Builder proxyBuilder = proxySpec
                         .type(ProxyProvider.Proxy.HTTP)
                         .host(config.getProxyHost())
@@ -151,6 +166,9 @@ public class DefaultRestClient implements RestClient {
 
         if (config.getFilter() != null) {
             builder.filter(config.getFilter());
+        }
+        if (config.getDefaultHttpHeaders() != null) {
+            builder.defaultHeaders(httpHeaders -> httpHeaders.addAll(config.getDefaultHttpHeaders()));
         }
 
         final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
@@ -442,6 +460,80 @@ public class DefaultRestClient implements RestClient {
         return responseEntity.getBody();
     }
 
+    @Override
+    public <T> ResponseEntity<T> patch(String path, Object request, ParameterizedTypeReference<T> responseType) throws RestClientException {
+        return patch(path, request, null, null, responseType);
+    }
+
+    @Override
+    public <T> ResponseEntity<T> patch(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
+        try {
+            WebClient.RequestBodySpec spec = buildUri(webClient.patch(), path, queryParams)
+                    .headers(h -> {
+                        if (headers != null) {
+                            h.addAll(headers);
+                        }
+                    })
+                    .contentType(config.getContentType())
+                    .accept(config.getAcceptType());
+            return buildRequest(spec, request)
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
+                    .block();
+        } catch (Exception ex) {
+            if (ex.getCause() instanceof RestClientException) {
+                // Throw exceptions created by REST client
+                throw (RestClientException) ex.getCause();
+            }
+            throw new RestClientException("HTTP PATCH request failed", ex);
+        }
+    }
+
+    @Override
+    public <T> void patchNonBlocking(String path, Object request,  ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+        patchNonBlocking(path, request, null, null, responseType, onSuccess, onError);
+    }
+
+    @Override
+    public <T> void patchNonBlocking(String path, Object request, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers,  ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+        try {
+            WebClient.RequestBodySpec spec = buildUri(webClient.patch(), path, queryParams)
+                    .headers(h -> {
+                        if (headers != null) {
+                            h.addAll(headers);
+                        }
+                    })
+                    .contentType(config.getContentType())
+                    .accept(config.getAcceptType());
+            buildRequest(spec, request)
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
+                    .subscribe(onSuccess, onError);
+        } catch (Exception ex) {
+            throw new RestClientException("HTTP PATCH request failed", ex);
+        }
+    }
+
+    @Override
+    public Response patchObject(String path, ObjectRequest<?> objectRequest) throws RestClientException {
+        return patch(path, objectRequest, new ParameterizedTypeReference<Response>(){}).getBody();
+    }
+
+    @Override
+    public Response patchObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers) throws RestClientException {
+        return patch(path, objectRequest, queryParams, headers, new ParameterizedTypeReference<Response>(){}).getBody();
+    }
+
+    @Override
+    public <T> ObjectResponse<T> patchObject(String path, ObjectRequest<?> objectRequest, Class<T> responseType) throws RestClientException {
+        return patchObject(path, objectRequest, null, null ,responseType);
+    }
+
+    @Override
+    public <T> ObjectResponse<T> patchObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException {
+        ParameterizedTypeReference<ObjectResponse<T>> typeReference = getTypeReference(responseType);
+        ResponseEntity<ObjectResponse<T>> responseEntity = patch(path, objectRequest, queryParams, headers, typeReference);
+        return responseEntity.getBody();
+    }
+
     /**
      * Convert response type to parameterized type reference of ObjectResponse.
      * @param responseType Object response type.
@@ -541,7 +633,9 @@ public class DefaultRestClient implements RestClient {
     @SuppressWarnings("unchecked")
     private WebClient.RequestHeadersSpec<?> buildRequest(WebClient.RequestBodySpec requestSpec, Object request) {
         if (request != null) {
-            if (request instanceof Publisher) {
+            if (request instanceof MultiValueMap) {
+                return requestSpec.body(BodyInserters.fromMultipartData(((MultiValueMap<String, ?>) request)));
+            } else if (request instanceof Publisher) {
                 return requestSpec.body(BodyInserters.fromDataBuffers((Publisher<DataBuffer>) request));
             }
             return requestSpec.body(BodyInserters.fromValue(request));
@@ -666,6 +760,36 @@ public class DefaultRestClient implements RestClient {
         public CertificateAuthBuilder certificateAuth() {
             config.setCertificateAuthEnabled(true);
             return new CertificateAuthBuilder(this);
+        }
+
+        /**
+         * Configure Object Mapper.
+         * @param objectMapper Object Mapper.
+         * @return Builder.
+         */
+        public Builder objectMapper(ObjectMapper objectMapper) {
+            config.setObjectMapper(objectMapper);
+            return this;
+        }
+
+        /**
+         * Configure default HTTP headers.
+         * @param defaultHttpHeaders Default HTTP headers.
+         * @return Builder.
+         */
+        public Builder defaultHttpHeaders(HttpHeaders defaultHttpHeaders) {
+            config.setDefaultHttpHeaders(defaultHttpHeaders);
+            return this;
+        }
+
+        /**
+         * Configure filter function.
+         * @param filter Filter function.
+         * @return Builder.
+         */
+        public Builder filter(ExchangeFilterFunction filter) {
+            config.setFilter(filter);
+            return this;
         }
 
     }

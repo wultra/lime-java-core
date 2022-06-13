@@ -16,8 +16,13 @@
 package com.wultra.core.rest.client.base;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.lang.Nullable;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
+
+import java.time.Duration;
+import java.util.Arrays;
 
 /**
  * REST client configuration.
@@ -25,12 +30,6 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 public class RestClientConfiguration {
-
-    /**
-     * Constructor of REST client configuration.
-     */
-    public RestClientConfiguration() {
-    }
 
     // Basic settings
     private String baseUrl;
@@ -46,9 +45,11 @@ public class RestClientConfiguration {
 
     // HTTP connection timeout
     private Integer connectionTimeout = 5000;
+    private Duration responseTimeout;
 
     // TLS certificate settings
     private boolean acceptInvalidSslCertificate = false;
+    private Duration handshakeTimeout;
 
     // HTTP message settings
     private Integer maxInMemorySize = 1024 * 1024;
@@ -61,18 +62,23 @@ public class RestClientConfiguration {
     // TLS client certificate authentication
     private boolean certificateAuthEnabled = false;
     private boolean useCustomKeyStore = false;
+    private byte[] keyStoreBytes;
     // Location uses Spring resource format
     private String keyStoreLocation;
     private String keyStorePassword;
     private String keyAlias;
     private String keyPassword;
     private boolean useCustomTrustStore = false;
+    private byte[] trustStoreBytes;
     // Location uses Spring resource format
     private String trustStoreLocation;
     private String trustStorePassword;
 
     // Custom object mapper
     private ObjectMapper objectMapper;
+
+    // Custom default HTTP headers
+    private HttpHeaders defaultHttpHeaders;
 
     // Custom filter
     private ExchangeFilterFunction filter;
@@ -206,7 +212,8 @@ public class RestClientConfiguration {
     }
 
     /**
-     * Get connection timeout.
+     * Get connection timeout in milliseconds.
+     *
      * @return Connection timeout.
      */
     public Integer getConnectionTimeout() {
@@ -214,8 +221,9 @@ public class RestClientConfiguration {
     }
 
     /**
-     * Set connection timeout.
-     * @param connectionTimeout Connection timeout.
+     * Set connection timeout in milliseconds.
+     *
+     * @param connectionTimeout Connection timeout in milliseconds.
      */
     public void setConnectionTimeout(Integer connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
@@ -334,6 +342,26 @@ public class RestClientConfiguration {
     }
 
     /**
+     * Get byte data with the key store.
+     * @return Byte data with the key store.
+     */
+    @Nullable
+    public byte[] getKeyStoreBytes() {
+        if (keyStoreBytes == null) {
+            return null;
+        }
+        return Arrays.copyOf(keyStoreBytes, keyStoreBytes.length);
+    }
+
+    /**
+     * Set byte data with the key store.
+     * @param keyStoreBytes Byte data with the key store.
+     */
+    public void setKeyStoreBytes(byte[] keyStoreBytes) {
+        this.keyStoreBytes = Arrays.copyOf(keyStoreBytes, keyStoreBytes.length);
+    }
+
+    /**
      * Get keystore resource location for client TLS certificate authentication.
      * @return Keystore resource location for client TLS certificate authentication.
      */
@@ -414,6 +442,26 @@ public class RestClientConfiguration {
     }
 
     /**
+     * Get byte data with the trust store.
+     * @return Byte data with the trust store
+     */
+    @Nullable
+    public byte[] getTrustStoreBytes() {
+        if (trustStoreBytes == null) {
+            return null;
+        }
+        return Arrays.copyOf(trustStoreBytes, trustStoreBytes.length);
+    }
+
+    /**
+     * Set byte data with the trust store.
+     * @param trustStoreBytes Byte data with the trust store.
+     */
+    public void setTrustStoreBytes(byte[] trustStoreBytes) {
+        this.trustStoreBytes = Arrays.copyOf(trustStoreBytes, trustStoreBytes.length);
+    }
+
+    /**
      * Get truststore resource location for client TLS certificate authentication.
      * @return Truststore resource location for client TLS certificate authentication.
      */
@@ -476,4 +524,57 @@ public class RestClientConfiguration {
     public void setFilter(ExchangeFilterFunction filter) {
         this.filter = filter;
     }
+
+    /**
+     * Get the default HTTP headers.
+     * @return Default HTTP headers.
+     */
+    public HttpHeaders getDefaultHttpHeaders() {
+        return defaultHttpHeaders;
+    }
+
+    /**
+     * Set the default HTTP headers.
+     * @param headers Default HTTP headers.
+     */
+    public void setDefaultHttpHeaders(HttpHeaders headers) {
+        this.defaultHttpHeaders = headers;
+    }
+
+    /**
+     * Get the SSL handshake timeout.
+     *
+     * @return timeout duration
+     */
+    public Duration getHandshakeTimeout() {
+        return handshakeTimeout;
+    }
+
+    /**
+     * Set the SSL handshake timeout. Default to 10000 ms.
+     *
+     * @param handshakeTimeout timeout duration
+     */
+    public void setHandshakeTimeout(Duration handshakeTimeout) {
+        this.handshakeTimeout = handshakeTimeout;
+    }
+
+    /**
+     * Get the maximum duration allowed between each network-level read operations (resolution: ms).
+     *
+     * @return response timeout
+     */
+    public Duration getResponseTimeout() {
+        return responseTimeout;
+    }
+
+    /**
+     * Set the maximum duration allowed between each network-level read operations (resolution: ms).
+     *
+     * @param responseTimeout response timeout (resolution: ms)
+     */
+    public void setResponseTimeout(Duration responseTimeout) {
+        this.responseTimeout = responseTimeout;
+    }
+
 }

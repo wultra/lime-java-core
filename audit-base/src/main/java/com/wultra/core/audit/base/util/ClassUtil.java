@@ -31,23 +31,22 @@ public class ClassUtil extends SecurityManager {
      * @param packageFilter Packages to filter out when resolving calling class.
      * @return Calling class.
      */
-    public static Class<?> getCallingClass(List<String> packageFilter) {
+    public static Class<?> getCallingClass(final List<String> packageFilter) {
         final Class<?>[] trace = INSTANCE.getClassContext();
         if (trace == null) {
             return null;
         }
-        if (packageFilter == null) {
-            packageFilter = Collections.emptyList();
-        }
-        final List<String> filterFinal = packageFilter;
         return Arrays.stream(trace)
                 .filter(it -> !it.isAssignableFrom(ClassUtil.class))
-                .filter(it -> !packageMatches(it.getPackage().getName(), filterFinal))
+                .filter(it -> !packageMatches(it.getPackage().getName(), packageFilter))
                 .findFirst()
                 .orElse(trace[trace.length - 1]);
     }
 
     private static boolean packageMatches(String pkg, List<String> packageFilter) {
+        if (packageFilter == null) {
+            return false;
+        }
         return packageFilter.stream().anyMatch(pkg::startsWith);
     }
 

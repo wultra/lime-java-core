@@ -30,6 +30,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
@@ -55,6 +56,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class DatabaseAuditWriter implements AuditWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseAuditWriter.class);
+
+    private static final String SPRING_FRAMEWORK_PACKAGE_PREFIX = "org.springframework";
 
     private final BlockingQueue<AuditRecord> queue;
     private final JdbcTemplate jdbcTemplate;
@@ -107,7 +110,10 @@ public class DatabaseAuditWriter implements AuditWriter {
 
     @Override
     public void write(AuditRecord auditRecord) {
-        auditRecord.setCallingClass(ClassUtil.getCallingClass(this.getClass().getPackage().getName()));
+        List<String> packageFilter = new ArrayList<>();
+        packageFilter.add(this.getClass().getPackage().getName());
+        packageFilter.add(SPRING_FRAMEWORK_PACKAGE_PREFIX);
+        auditRecord.setCallingClass(ClassUtil.getCallingClass(packageFilter));
         auditRecord.setThreadName(Thread.currentThread().getName());
         try {
             if (queue.remainingCapacity() == 0) {
@@ -120,6 +126,7 @@ public class DatabaseAuditWriter implements AuditWriter {
     }
 
     @Override
+    @Transactional
     public void flush() {
         if (jdbcTemplate.getDataSource() == null) {
             logger.error("Data source is not available");
@@ -207,6 +214,7 @@ public class DatabaseAuditWriter implements AuditWriter {
     }
 
     @Override
+    @Transactional
     public void cleanup() {
         if (jdbcTemplate.getDataSource() == null) {
             logger.error("Data source is not available");

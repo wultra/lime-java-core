@@ -15,7 +15,11 @@
  */
 package com.wultra.core.audit.base.util;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Utility for obtaining information about calling class.
@@ -34,21 +38,19 @@ public class ClassUtil extends SecurityManager {
         if (trace == null) {
             return null;
         }
-        classLoop:
-        for (Class<?> cl : trace) {
-            if (cl.getName().equals(ClassUtil.class.getName())) {
-                continue;
-            }
-            if (packageFilter != null) {
-                for (String filter : packageFilter) {
-                    if (cl.getPackage().getName().startsWith(filter)) {
-                        continue classLoop;
-                    }
-                }
-            }
-            return cl;
+        if (packageFilter == null) {
+            packageFilter = Collections.emptyList();
         }
-        return trace[trace.length - 1];
+        final List<String> filterFinal = packageFilter;
+        return Arrays.stream(trace)
+                .filter(it -> !it.isAssignableFrom(ClassUtil.class))
+                .filter(it -> !packageMatches(it.getPackage().getName(), filterFinal))
+                .findFirst()
+                .orElse(trace[trace.length - 1]);
+    }
+
+    private static boolean packageMatches(String pkg, List<String> packageFilter) {
+        return packageFilter.stream().anyMatch(pkg::startsWith);
     }
 
 }

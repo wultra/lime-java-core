@@ -15,6 +15,9 @@
  */
 package com.wultra.core.audit.base.util;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Utility for obtaining information about calling class.
  */
@@ -24,23 +27,26 @@ public class ClassUtil extends SecurityManager {
 
     /**
      * Get calling class.
-     * @param packageFilter Package to filter out when resolving calling class.
+     * @param packageFilter Packages to filter out when resolving calling class.
      * @return Calling class.
      */
-    public static Class<?> getCallingClass(String packageFilter) {
+    public static Class<?> getCallingClass(final List<String> packageFilter) {
         final Class<?>[] trace = INSTANCE.getClassContext();
         if (trace == null) {
             return null;
         }
-        for (Class<?> cl : trace) {
-            if (cl.getName().equals(ClassUtil.class.getName())) {
-                continue;
-            }
-            if (packageFilter == null || !cl.getPackage().getName().startsWith(packageFilter)) {
-                return cl;
-            }
+        return Arrays.stream(trace)
+                .filter(it -> !it.isAssignableFrom(ClassUtil.class))
+                .filter(it -> !packageMatches(it.getPackage().getName(), packageFilter))
+                .findFirst()
+                .orElse(trace[trace.length - 1]);
+    }
+
+    private static boolean packageMatches(String pkg, List<String> packageFilter) {
+        if (packageFilter == null) {
+            return false;
         }
-        return trace[trace.length - 1];
+        return packageFilter.stream().anyMatch(pkg::startsWith);
     }
 
 }

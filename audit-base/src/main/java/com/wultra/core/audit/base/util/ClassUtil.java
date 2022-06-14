@@ -18,8 +18,6 @@ package com.wultra.core.audit.base.util;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Utility for obtaining information about calling class.

@@ -15,7 +15,6 @@
  */
 package com.wultra.core.audit.base.util;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -35,18 +34,28 @@ public class ClassUtil extends SecurityManager {
         if (trace == null) {
             return null;
         }
-        return Arrays.stream(trace)
-                .filter(it -> !it.isAssignableFrom(ClassUtil.class))
-                .filter(it -> !packageMatches(it.getPackage().getName(), packageFilter))
-                .findFirst()
-                .orElse(trace[trace.length - 1]);
+
+        for (final Class<?> t : trace) {
+            if (t.isAssignableFrom(ClassUtil.class)) {
+                continue;
+            }
+            if (!packageMatches(t.getPackage().getName(), packageFilter)) {
+                return t;
+            }
+        }
+        return trace[trace.length - 1];
     }
 
     private static boolean packageMatches(String pkg, List<String> packageFilter) {
         if (packageFilter == null) {
             return false;
         }
-        return packageFilter.stream().anyMatch(pkg::startsWith);
+        for (final String pf : packageFilter) {
+            if (pkg.startsWith(pf)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

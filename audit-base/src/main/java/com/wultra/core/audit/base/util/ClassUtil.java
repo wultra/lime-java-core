@@ -15,7 +15,6 @@
  */
 package com.wultra.core.audit.base.util;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**

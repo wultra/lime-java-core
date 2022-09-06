@@ -160,7 +160,7 @@ public class AuditConfiguration {
      * Get enabled flag for detail logging to database table.
      * @return Flag for detail logging into audit database.
      */
-    public boolean getDbTableParamLoggingEnabled() {
+    public boolean isDbTableParamLoggingEnabled() {
         return dbTableParamLoggingEnabled;
     }
 }

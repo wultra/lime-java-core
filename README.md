@@ -210,7 +210,7 @@ Non-blocking methods provide an `onError` consumer for custom error handling.
 
 The `audit-base` project provides auditing functionality for easier investigation of issues. Audit records are stored in a database and can be easily queried. The auditing library also handles removal of old audit records.
 
-The audit library requires one database table `audit_log` and optionally second table `audit_params` for logging detail parameters. The DDL is available for the following databases:
+The audit library requires one database table `audit_log` and optionally the second table `audit_params` for logging detail parameters. The DDL is available for the following databases:
 - [DDL for MySQL](./docs/sql/mysql/create_schema.sql)
 - [DDL for Oracle](./docs/sql/oracle/create_schema.sql)
 - [DDL for PostgreSQL](./docs/sql/postgresql/create_schema.sql)

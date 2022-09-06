@@ -93,7 +93,7 @@ public class DatabaseAuditWriter implements AuditWriter {
         this.tableNameAudit = configuration.getDbTableNameAudit();
         this.tableNameParam = configuration.getDbTableNameParam();
         this.batchSize = configuration.getBatchSize();
-        this.paramLoggingEnabled = configuration.getDbTableParamLoggingEnabled();
+        this.paramLoggingEnabled = configuration.isDbTableParamLoggingEnabled();
         this.cleanupDays = configuration.getDbCleanupDays();
         this.applicationName = StringUtil.trim(configuration.getApplicationName(), 256);
         this.version = StringUtil.trim(configuration.getVersion(), 256);
@@ -189,37 +189,38 @@ public class DatabaseAuditWriter implements AuditWriter {
                                     return auditsToPersist.size();
                                 }
                             });
-                    if (paramLoggingEnabled) {
-                        final int[] insertCountsParam = jdbcTemplate.batchUpdate(insertAuditParam,
-                                new BatchPreparedStatementSetter() {
-                                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                                        AuditParam record = paramsToPersist.get(i);
-                                        ps.setString(1, record.getAuditLogId());
-                                        ps.setTimestamp(2, new Timestamp(record.getTimestamp().getTime()));
-                                        ps.setString(3, StringUtil.trim(record.getKey(), 256));
-                                        Object value = record.getValue();
-                                        if (value == null) {
-                                            ps.setNull(4, Types.VARCHAR);
-                                        } else if (value instanceof CharSequence) {
-                                            ps.setString(4, StringUtil.trim(value.toString(), 4000));
-                                        } else {
-                                            ps.setString(4, StringUtil.trim(jsonUtil.serializeObject(value), 4000));
-                                        }
-                                    }
-
-                                    public int getBatchSize() {
-                                        return paramsToPersist.size();
-                                    }
-                                });
-                        logger.debug("Audit log batch insert succeeded, audit record count: {}, audit param count: {}", insertCountsLog.length, insertCountsParam.length);
-                    } else {
+                    if (!paramLoggingEnabled) {
                         logger.debug("Audit log batch insert succeeded, audit record count: {}, audit param is disabled", insertCountsLog.length);
+                        continue;
                     }
+                    final int[] insertCountsParam = jdbcTemplate.batchUpdate(insertAuditParam,
+                            new BatchPreparedStatementSetter() {
+                                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                                    AuditParam record = paramsToPersist.get(i);
+                                    ps.setString(1, record.getAuditLogId());
+                                    ps.setTimestamp(2, new Timestamp(record.getTimestamp().getTime()));
+                                    ps.setString(3, StringUtil.trim(record.getKey(), 256));
+                                    Object value = record.getValue();
+                                    if (value == null) {
+                                        ps.setNull(4, Types.VARCHAR);
+                                    } else if (value instanceof CharSequence) {
+                                        ps.setString(4, StringUtil.trim(value.toString(), 4000));
+                                    } else {
+                                        ps.setString(4, StringUtil.trim(jsonUtil.serializeObject(value), 4000));
+                                    }
+                                }
+
+                                public int getBatchSize() {
+                                    return paramsToPersist.size();
+                                }
+                            });
+                    logger.debug("Audit log batch insert succeeded, audit record count: {}, audit param count: {}", insertCountsLog.length, insertCountsParam.length);
                 } catch (InterruptedException ex) {
                     logger.warn(ex.getMessage(), ex);
                 }
             }
         }
+
     }
 
     @Override

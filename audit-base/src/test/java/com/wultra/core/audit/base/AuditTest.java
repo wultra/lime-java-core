@@ -17,28 +17,20 @@ package com.wultra.core.audit.base;
 
 import com.wultra.core.audit.base.model.AuditDetail;
 import com.wultra.core.audit.base.model.AuditLevel;
-import com.wultra.core.audit.base.model.AuditRecord;
-import com.wultra.core.audit.base.util.JsonUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.Timestamp;
-import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = TestApplication.class, properties = {"audit.db.table.param.enabled=false"})
 @Sql(scripts = "/db_schema.sql")
-public class AuditTest {
+class AuditTest {
 
     private final AuditFactory auditFactory;
     private final JdbcTemplate jdbcTemplate;
@@ -56,7 +48,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditInfo() {
+    void testAuditInfo() {
         Timestamp timestampBeforeAudit = new Timestamp(System.currentTimeMillis() - 1);
         Audit audit = auditFactory.getAudit();
         audit.info("test message");
@@ -76,7 +68,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditWarn() {
+    void testAuditWarn() {
         Timestamp timestampBeforeAudit = new Timestamp(System.currentTimeMillis() - 1);
         Audit audit = auditFactory.getAudit();
         audit.warn("test message for warning");
@@ -96,7 +88,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditError() {
+    void testAuditError() {
         Timestamp timestampBeforeAudit = new Timestamp(System.currentTimeMillis() - 1);
         Audit audit = auditFactory.getAudit();
         audit.error("test message for error");
@@ -116,7 +108,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditErrorSpecifiedLogLevel() {
+    void testAuditErrorSpecifiedLogLevel() {
         Timestamp timestampBeforeAudit = new Timestamp(System.currentTimeMillis() - 1);
         Audit audit = auditFactory.getAudit();
         audit.log("test message for error", AuditLevel.ERROR);
@@ -136,7 +128,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditParamDisabled() {
+    void testAuditParamDisabled() {
         Timestamp timestampBeforeAudit = new Timestamp(System.currentTimeMillis() - 1);
         Audit audit = auditFactory.getAudit();
         audit.info("test message", AuditDetail.builder().param("my_id", "test_id").build());
@@ -153,7 +145,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditException() {
+    void testAuditException() {
         Audit audit = auditFactory.getAudit();
         audit.info("test message", new Exception("test exception"));
         audit.flush();
@@ -167,7 +159,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditFormattedMessage() {
+    void testAuditFormattedMessage() {
         Audit audit = auditFactory.getAudit();
         audit.info("test message with {}", "formatting");
         audit.flush();
@@ -179,7 +171,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditFormattedMessageTwoArgs() {
+    void testAuditFormattedMessageTwoArgs() {
         Audit audit = auditFactory.getAudit();
         audit.info("test message with {} {}", "more", "formatting");
         audit.flush();
@@ -191,7 +183,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditFormattedMessageThreeArgs() {
+    void testAuditFormattedMessageThreeArgs() {
         Audit audit = auditFactory.getAudit();
         audit.info("test message with {} {} {}", "even", "more", "formatting");
         audit.flush();
@@ -203,7 +195,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditFormattedMessageException() {
+    void testAuditFormattedMessageException() {
         Audit audit = auditFactory.getAudit();
         audit.info("test message with {} {} and exception", "more", "formatting", new Exception("test exception"));
         audit.flush();
@@ -218,7 +210,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditFormattedMessageBadArgs() {
+    void testAuditFormattedMessageBadArgs() {
         Audit audit = auditFactory.getAudit();
         audit.info("test message with {} {} {}", "invalid", "formatting");
         audit.flush();
@@ -230,7 +222,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditDebug() {
+    void testAuditDebug() {
         Audit audit = auditFactory.getAudit();
         audit.debug("debug message");
         audit.flush();
@@ -241,7 +233,7 @@ public class AuditTest {
     }
 
     @Test
-    public void testAuditTrace() {
+    void testAuditTrace() {
         Audit audit = auditFactory.getAudit();
         audit.debug("trace message");
         audit.flush();

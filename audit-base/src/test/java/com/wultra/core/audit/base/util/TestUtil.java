@@ -35,7 +35,7 @@ public final class TestUtil {
         try {
             return clobObject.getSubString(1, Math.toIntExact(clobObject.length()));
         } catch (Exception ex) {
-            throw new RuntimeException();
+            throw new RuntimeException(ex);
         }
     }
 }

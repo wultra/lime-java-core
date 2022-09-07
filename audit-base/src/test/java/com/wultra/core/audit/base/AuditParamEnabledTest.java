@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.sql.Timestamp;
@@ -57,15 +58,13 @@ class AuditParamEnabledTest {
         Audit audit = auditFactory.getAudit();
         audit.info("test message", AuditDetail.builder().param("my_id", "test_id").build());
         audit.flush();
-        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id=ap.audit_log_id", rs -> {
-            assertTrue(rs.next());
-            assertNotNull(rs.getString("audit_log_id"));
-            assertTrue(rs.getTimestamp("timestamp_created").after(timestampBeforeAudit));
-            assertNull(rs.getString("audit_type"));
-            assertEquals("my_id", rs.getString("param_key"));
-            assertEquals("test_id", rs.getString("param_value"));
-            return rs.getString("audit_log_id");
-        });
+        final SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id=ap.audit_log_id");
+        assertTrue(rs.next());
+        assertNotNull(rs.getString("audit_log_id"));
+        assertTrue(rs.getTimestamp("timestamp_created").after(timestampBeforeAudit));
+        assertNull(rs.getString("audit_type"));
+        assertEquals("my_id", rs.getString("param_key"));
+        assertEquals("test_id", rs.getString("param_value"));
     }
 
     @Test
@@ -79,21 +78,17 @@ class AuditParamEnabledTest {
                 .build();
         audit.info("test message", detail);
         audit.flush();
-        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'user_id' AND ap.param_value = 'test_id'", rs -> {
-            assertTrue(rs.next());
-            assertNotNull(rs.getString("audit_log_id"));
-            assertEquals("TEST", rs.getString("audit_type"));
-            assertEquals("user_id", rs.getString("param_key"));
-            assertEquals("test_id", rs.getString("param_value"));
-            return rs.getString("audit_log_id");
-        });
-        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'operation_id'", rs -> {
-            assertTrue(rs.next());
-            assertNotNull(rs.getString("audit_log_id"));
-            assertEquals("operation_id", rs.getString("param_key"));
-            assertEquals(operationId, rs.getString("param_value"));
-            return rs.getString("audit_log_id");
-        });
+        final SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'user_id' AND ap.param_value = 'test_id'");
+        assertTrue(rs.next());
+        assertNotNull(rs.getString("audit_log_id"));
+        assertEquals("TEST", rs.getString("audit_type"));
+        assertEquals("user_id", rs.getString("param_key"));
+        assertEquals("test_id", rs.getString("param_value"));
+        final SqlRowSet rs1 = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'operation_id'");
+        assertTrue(rs1.next());
+        assertNotNull(rs1.getString("audit_log_id"));
+        assertEquals("operation_id", rs1.getString("param_key"));
+        assertEquals(operationId, rs1.getString("param_value"));
     }
 
     @Test
@@ -108,32 +103,23 @@ class AuditParamEnabledTest {
         param.put("timestamp", timestamp);
         audit.info("test message", AuditDetail.builder().params(param).build());
         audit.flush();
-        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'user_id' AND ap.param_value = 'test_id'", rs -> {
-            assertTrue(rs.next());
-            assertNotNull(rs.getString("audit_log_id"));
-            assertEquals("user_id", rs.getString("param_key"));
-            assertEquals("test_id", rs.getString("param_value"));
-            return rs.getString("audit_log_id");
-
-        });
-        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'operation_id'", rs -> {
-            assertTrue(rs.next());
-            assertNotNull(rs.getString("audit_log_id"));
-            assertEquals(operationId, rs.getString("param_value"));
-            return rs.getString("audit_log_id");
-        });
-        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'session_id'", rs -> {
-            assertTrue(rs.next());
-            assertNotNull(rs.getString("audit_log_id"));
-            assertEquals("1A532637239A03B07199A54E8D531427", rs.getString("param_value"));
-            return rs.getString("audit_log_id");
-        });
-        jdbcTemplate.query("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'timestamp'", rs -> {
-            assertTrue(rs.next());
-            assertNotNull(rs.getString("audit_log_id"));
-            assertEquals(new JsonUtil().serializeObject(timestamp), rs.getString("param_value"));
-            return rs.getString("audit_log_id");
-        });
+        final SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'user_id' AND ap.param_value = 'test_id'");
+        assertTrue(rs.next());
+        assertNotNull(rs.getString("audit_log_id"));
+        assertEquals("user_id", rs.getString("param_key"));
+        assertEquals("test_id", rs.getString("param_value"));
+        final SqlRowSet rs1 = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'operation_id'");
+        assertTrue(rs1.next());
+        assertNotNull(rs1.getString("audit_log_id"));
+        assertEquals(operationId, rs1.getString("param_value"));
+        final SqlRowSet rs2 = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'session_id'");
+        assertTrue(rs2.next());
+        assertNotNull(rs2.getString("audit_log_id"));
+        assertEquals("1A532637239A03B07199A54E8D531427", rs2.getString("param_value"));
+        final SqlRowSet rs3 = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log al INNER JOIN audit_param ap ON al.audit_log_id = ap.audit_log_id WHERE ap.param_key = 'timestamp'");
+        assertTrue(rs3.next());
+        assertNotNull(rs3.getString("audit_log_id"));
+        assertEquals(new JsonUtil().serializeObject(timestamp), rs3.getString("param_value"));
     }
 
 }

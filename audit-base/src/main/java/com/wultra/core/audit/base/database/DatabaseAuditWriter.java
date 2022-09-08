@@ -70,6 +70,8 @@ public class DatabaseAuditWriter implements AuditWriter {
     private final String version;
     private final Instant buildTime;
 
+    private final boolean paramLoggingEnabled;
+
     private String insertAuditLog;
     private String insertAuditParam;
 
@@ -80,8 +82,9 @@ public class DatabaseAuditWriter implements AuditWriter {
 
     /**
      * Service constructor.
+     *
      * @param configuration Audit configuration.
-     * @param jdbcTemplate Spring JDBC template.
+     * @param jdbcTemplate  Spring JDBC template.
      */
     @Autowired
     public DatabaseAuditWriter(AuditConfiguration configuration, JdbcTemplate jdbcTemplate) {
@@ -90,6 +93,7 @@ public class DatabaseAuditWriter implements AuditWriter {
         this.tableNameAudit = configuration.getDbTableNameAudit();
         this.tableNameParam = configuration.getDbTableNameParam();
         this.batchSize = configuration.getBatchSize();
+        this.paramLoggingEnabled = configuration.isDbTableParamLoggingEnabled();
         this.cleanupDays = configuration.getDbCleanupDays();
         this.applicationName = StringUtil.trim(configuration.getApplicationName(), 256);
         this.version = StringUtil.trim(configuration.getVersion(), 256);
@@ -158,7 +162,7 @@ public class DatabaseAuditWriter implements AuditWriter {
                                     String auditType = record.getType();
                                     if (auditType == null) {
                                         ps.setNull(4, Types.VARCHAR);
-                                    }  else {
+                                    } else {
                                         ps.setString(4, StringUtil.trim(record.getType(), 256));
                                     }
                                     ps.setTimestamp(5, new Timestamp(record.getTimestamp().getTime()));
@@ -185,6 +189,10 @@ public class DatabaseAuditWriter implements AuditWriter {
                                     return auditsToPersist.size();
                                 }
                             });
+                    if (!paramLoggingEnabled) {
+                        logger.debug("Audit log batch insert succeeded, audit record count: {}, audit param is disabled", insertCountsLog.length);
+                        continue;
+                    }
                     final int[] insertCountsParam = jdbcTemplate.batchUpdate(insertAuditParam,
                             new BatchPreparedStatementSetter() {
                                 public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -201,6 +209,7 @@ public class DatabaseAuditWriter implements AuditWriter {
                                         ps.setString(4, StringUtil.trim(jsonUtil.serializeObject(value), 4000));
                                     }
                                 }
+
                                 public int getBatchSize() {
                                     return paramsToPersist.size();
                                 }
@@ -211,6 +220,7 @@ public class DatabaseAuditWriter implements AuditWriter {
                 }
             }
         }
+
     }
 
     @Override

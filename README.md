@@ -210,7 +210,7 @@ Non-blocking methods provide an `onError` consumer for custom error handling.
 
 The `audit-base` project provides auditing functionality for easier investigation of issues. Audit records are stored in a database and can be easily queried. The auditing library also handles removal of old audit records.
 
-The audit library requires two database tables. The DDL is available for the following databases:
+The audit library requires one database table `audit_log` and optionally the second table `audit_params` for logging detail parameters. The DDL is available for the following databases:
 - [DDL for MySQL](./docs/sql/mysql/create_schema.sql)
 - [DDL for Oracle](./docs/sql/oracle/create_schema.sql)
 - [DDL for PostgreSQL](./docs/sql/postgresql/create_schema.sql)
@@ -229,6 +229,7 @@ The following properties can be configured in case the default configuration nee
 - `audit.db.cleanup.days` - audit records older than specified number of days are deleted (default: `365`) 
 - `audit.db.table.log.name` - name of audit log database table (default: `audit_log`)
 - `audit.db.table.param.name` - name of audit parameters database table (default: `audit_param`)
+- `audit.db.table.param.enabled` - flag if logging params to parameters database is enabled (default: `false`)
 - `audit.db.batch.size` - database batch size (default: `1000`)  
 
 ### Audit Levels

@@ -219,7 +219,7 @@ public class DatabaseAudit implements Audit {
 
     @Override
     public boolean isLevelEnabled(@NonNull AuditLevel level) {
-        return configuration.getMinimumLevel().intValue() >= level.intValue();
+        return configuration.getMinimumLevel().intValue() <= level.intValue();
     }
 
     @Override

@@ -52,6 +52,9 @@ public class AuditConfiguration {
     @Value("${audit.db.table.log.name:audit_log}")
     private String dbTableNameAudit;
 
+    @Value("${audit.db.table.param.enabled:false}")
+    private boolean dbTableParamLoggingEnabled;
+
     @Value("${audit.db.table.param.name:audit_param}")
     private String dbTableNameParam;
 
@@ -151,5 +154,13 @@ public class AuditConfiguration {
      */
     public String getDbTableNameParam() {
         return dbTableNameParam;
+    }
+
+    /**
+     * Get enabled flag for detail logging to database table.
+     * @return Flag for detail logging into audit database.
+     */
+    public boolean isDbTableParamLoggingEnabled() {
+        return dbTableParamLoggingEnabled;
     }
 }

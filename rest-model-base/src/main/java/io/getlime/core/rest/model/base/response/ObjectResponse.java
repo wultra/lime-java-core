@@ -19,7 +19,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 /**
- * Generic response with status and object object of a custom class.
+ * Generic response with status and object of a custom class.
  *
  * @author Petr Dvorak, petr@wultra.com
  *

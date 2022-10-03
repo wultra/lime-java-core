@@ -32,6 +32,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DefaultDataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
@@ -647,6 +648,31 @@ class DefaultRestClientTest {
         restClient = new DefaultRestClient(config);
 
         testGetWithResponse();
+    }
+
+    @Test
+    void testRedirectShouldNotFollowByDefault() throws Exception {
+        RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        assertFalse(config.isFollowRedirectEnabled(), "Following HTTP redirects should be disabled by default");
+
+        restClient = new DefaultRestClient(config);
+
+        ResponseEntity<Response> responseEntity = restClient.get("/redirect", new ParameterizedTypeReference<Response>() {});
+        assertEquals(HttpStatus.FOUND, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void testRedirectShouldFollowWhenEnabled() throws Exception {
+        RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setFollowRedirectEnabled(true);
+
+        restClient = new DefaultRestClient(config);
+
+        ResponseEntity<Response> responseEntity = restClient.get("/redirect", new ParameterizedTypeReference<Response>() {});
+        assertNotNull(responseEntity.getBody());
+        assertEquals("OK", responseEntity.getBody().getStatus());
     }
 
     private static Object getField(final Object parentBean, String path) {

@@ -21,12 +21,15 @@ import com.wultra.core.rest.client.base.model.error.RestException;
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URI;
 import java.util.Enumeration;
 
 /**
@@ -156,6 +159,13 @@ public class TestRestController {
             response.setHeader(headerName, request.getHeader(headerName));
         }
         return new Response();
+    }
+
+    @GetMapping("/redirect")
+    public ResponseEntity<Void> testRedirect() {
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create("/api/test/response"))
+                .build();
     }
 
 }

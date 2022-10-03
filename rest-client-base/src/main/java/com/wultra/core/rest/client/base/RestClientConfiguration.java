@@ -83,6 +83,12 @@ public class RestClientConfiguration {
     // Custom filter
     private ExchangeFilterFunction filter;
 
+    // Handling responses settings
+    /**
+     * Enables/disables auto-redirect of HTTP 30x statuses
+     */
+    private boolean followRedirectEnabled = false;
+
     /**
      * Get base URL.
      * @return Base URL.
@@ -575,6 +581,23 @@ public class RestClientConfiguration {
      */
     public void setResponseTimeout(Duration responseTimeout) {
         this.responseTimeout = responseTimeout;
+    }
+
+    /**
+     * Get whether following of redirections is enabled.
+     * @return Whether following of redirections is enabled.
+     */
+    public boolean isFollowRedirectEnabled() {
+        return followRedirectEnabled;
+    }
+
+    /**
+     * Sets whether following of redirections is enabled
+     *
+     * @param followRedirectEnabled Whether following of redirections is enabled
+     */
+    public void setFollowRedirectEnabled(boolean followRedirectEnabled) {
+        this.followRedirectEnabled = followRedirectEnabled;
     }
 
 }

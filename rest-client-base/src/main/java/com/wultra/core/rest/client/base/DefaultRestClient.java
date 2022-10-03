@@ -111,7 +111,8 @@ public class DefaultRestClient implements RestClient {
         }
         final WebClient.Builder builder = WebClient.builder();
         final SslContext sslContext = SslUtils.prepareSslContext(config);
-        HttpClient httpClient = HttpClient.create();
+        HttpClient httpClient = HttpClient.create()
+                .followRedirect(config.isFollowRedirectEnabled());
         if (sslContext != null) {
             httpClient = httpClient.secure(sslContextSpec -> {
                 final SslProvider.Builder sslProviderBuilder = sslContextSpec.sslContext(sslContext);

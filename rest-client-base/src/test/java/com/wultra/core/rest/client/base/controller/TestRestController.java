@@ -161,7 +161,7 @@ public class TestRestController {
         return new Response();
     }
 
-    @GetMapping("/redirect")
+    @GetMapping("/redirect-to-response")
     public ResponseEntity<Void> testRedirect() {
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create("/api/test/response"))

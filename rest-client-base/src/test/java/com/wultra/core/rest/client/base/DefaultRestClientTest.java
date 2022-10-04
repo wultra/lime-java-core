@@ -658,7 +658,7 @@ class DefaultRestClientTest {
 
         restClient = new DefaultRestClient(config);
 
-        ResponseEntity<Response> responseEntity = restClient.get("/redirect", new ParameterizedTypeReference<Response>() {});
+        ResponseEntity<Response> responseEntity = restClient.get("/redirect-to-response", new ParameterizedTypeReference<Response>() {});
         assertEquals(HttpStatus.FOUND, responseEntity.getStatusCode());
     }
 
@@ -670,7 +670,7 @@ class DefaultRestClientTest {
 
         restClient = new DefaultRestClient(config);
 
-        ResponseEntity<Response> responseEntity = restClient.get("/redirect", new ParameterizedTypeReference<Response>() {});
+        ResponseEntity<Response> responseEntity = restClient.get("/redirect-to-response", new ParameterizedTypeReference<Response>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
     }

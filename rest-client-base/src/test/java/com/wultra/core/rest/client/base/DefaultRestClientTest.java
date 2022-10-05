@@ -532,6 +532,67 @@ class DefaultRestClientTest {
     }
 
     @Test
+    void testHeadWithResponse() throws RestClientException {
+        ResponseEntity<Response> responseEntity = restClient.head("/response", new ParameterizedTypeReference<Response>() {});
+        assertFalse(responseEntity.getHeaders().isEmpty());
+        assertNull(responseEntity.getBody());
+    }
+
+    @Test
+    void testHeadWithResponseObject() throws RestClientException {
+        Response response = restClient.headObject("/response");
+        assertNotNull(response);
+        assertEquals("OK", response.getStatus());
+    }
+
+    @Test
+    void testHeadWithResponseNonBlocking() throws RestClientException, InterruptedException {
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        Consumer<ResponseEntity<Response>> onSuccess = responseEntity -> {
+            assertNotNull(responseEntity);
+            assertNotNull(responseEntity.getHeaders());
+            assertFalse(responseEntity.getHeaders().isEmpty());
+            assertNull(responseEntity.getBody());
+            countDownLatch.countDown();
+        };
+        Consumer<Throwable> onError = error -> Assertions.fail(error.getMessage());
+        restClient.headNonBlocking("/response", new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
+        assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    void testHeadWithTestResponse() throws RestClientException {
+        ResponseEntity<TestResponse> responseEntity = restClient.head("/test-response", new ParameterizedTypeReference<TestResponse>() {});
+        assertNotNull(responseEntity.getHeaders());
+        assertFalse(responseEntity.getHeaders().isEmpty());
+        assertNull(responseEntity.getBody());
+    }
+
+    @Test
+    void testHeadWithObjectResponse() throws RestClientException {
+        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.head("/object-response", new ParameterizedTypeReference<ObjectResponse<TestResponse>>() {});
+        assertNotNull(responseEntity.getHeaders());
+        assertFalse(responseEntity.getHeaders().isEmpty());
+        assertNull(responseEntity.getBody());
+    }
+
+    @Test
+    void testHeadWithObjectResponseObject() throws RestClientException {
+        ObjectResponse<TestResponse> response = restClient.headObject("/object-response", TestResponse.class);
+        assertEquals("OK", response.getStatus());
+        assertNull(response.getResponseObject());
+    }
+
+    @Test
+    void testHeadWithFullUrl() throws RestClientException {
+        RestClientConfiguration config = prepareConfiguration();
+        restClient = new DefaultRestClient(config);
+        Response response = restClient.headObject("https://localhost:" + port + "/api/test/response");
+        assertNotNull(response);
+        assertEquals("OK", response.getStatus());
+    }
+
+    @Test
     void testPatchWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);

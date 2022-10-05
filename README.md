@@ -162,6 +162,10 @@ Once the rest client is initialized, you can use the following methods. Each met
 - `patch` - a blocking PATCH call with a generic request / response
 - `patchNonBlocking` - a non-blocking PATCH call with a generic request / response with `onSuccess` and `onError` consumers
 - `patchObject` - a blocking PATCH call with `ObjectRequest` / `ObjectResponse`
+- `head` - a blocking HEAD call with a generic request
+- `headNonBlocking` - a non-blocking HEAD call with a generic request with `onSuccess` and `onError` consumers
+- `headObject` - a blocking HEAD call with `ObjectRequest`
+
 - `delete` - a blocking DELETE call with a generic response
 - `deleteNonBlocking` - a non-blocking DELETE call with a generic response with `onSuccess` and `onError` consumers
 - `deleteObject` - a blocking DELETE call with `ObjectResponse`

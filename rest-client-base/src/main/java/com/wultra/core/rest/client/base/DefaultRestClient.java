@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -532,6 +533,78 @@ public class DefaultRestClient implements RestClient {
         ParameterizedTypeReference<ObjectResponse<T>> typeReference = getTypeReference(responseType);
         ResponseEntity<ObjectResponse<T>> responseEntity = patch(path, objectRequest, queryParams, headers, typeReference);
         return responseEntity.getBody();
+    }
+
+    @Override
+    public <T> ResponseEntity<T> head(String path, ParameterizedTypeReference<T> responseType) throws RestClientException {
+        return head(path, null, null, responseType);
+    }
+
+    @Override
+    public <T> ResponseEntity<T> head(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException {
+        try {
+            return buildUri(webClient.head(), path, queryParams)
+                    .headers(h -> {
+                        if (headers != null) {
+                            h.addAll(headers);
+                        }
+                    })
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
+                    .defaultIfEmpty(new ResponseEntity<>(HttpStatus.ACCEPTED))
+                    .block();
+        } catch (Exception ex) {
+            if (ex.getCause() instanceof RestClientException) {
+                // Throw exceptions created by REST client
+                throw (RestClientException) ex.getCause();
+            }
+            throw new RestClientException("HTTP HEAD request failed", ex);
+        }
+    }
+
+    @Override
+    public <T> void headNonBlocking(String path, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+        headNonBlocking(path, null, null, responseType, onSuccess, onError);
+    }
+
+    @Override
+    public <T> void headNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException {
+        try {
+            buildUri(webClient.head(), path, queryParams)
+                    .headers(h -> {
+                        if (headers != null) {
+                            h.addAll(headers);
+                        }
+                    })
+                    .accept(config.getAcceptType())
+                    .exchangeToMono(rs -> handleResponse(rs, responseType))
+                    .subscribe(onSuccess, onError);
+        } catch (Exception ex) {
+            throw new RestClientException("HTTP HEAD request failed", ex);
+        }
+    }
+
+    @Override
+    public Response headObject(String path) throws RestClientException {
+        head(path, new ParameterizedTypeReference<Response>(){});
+        return new Response();
+    }
+
+    @Override
+    public Response headObject(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers) throws RestClientException {
+        head(path, queryParams, headers, new ParameterizedTypeReference<Response>(){});
+        return new Response();
+    }
+
+    @Override
+    public <T> ObjectResponse<T> headObject(String path, Class<T> responseType) throws RestClientException {
+        return headObject(path, null, null, responseType);
+    }
+
+    @Override
+    public <T> ObjectResponse<T> headObject(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException {
+        ParameterizedTypeReference<ObjectResponse<T>> typeReference = getTypeReference(responseType);
+        head(path, queryParams, headers, typeReference);
+        return new ObjectResponse<>();
     }
 
     /**

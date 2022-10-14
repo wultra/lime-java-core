@@ -6,12 +6,10 @@
     <parent>
         <groupId>io.getlime.core</groupId>
         <artifactId>lime-java-core-parent</artifactId>
-        <version>1.5.2</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>1.6.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>rest-client-base</artifactId>
-    <version>1.5.2</version>
     <name>rest-client-base</name>
     <description>Default implementation of REST client</description>
     <packaging>jar</packaging>
@@ -49,7 +47,7 @@
         <dependency>
             <groupId>io.getlime.core</groupId>
             <artifactId>rest-model-base</artifactId>
-            <version>1.5.2</version>
+            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

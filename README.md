@@ -210,6 +210,54 @@ In case any HTTP error occurs during a blocking HTTP request execution, a `RestC
 
 Non-blocking methods provide an `onError` consumer for custom error handling.
 
+### Logging
+
+To enable request / response logging, set level of `com.wultra.core.rest.client.base.DefaultRestClient` to `TRACE`.
+
+#### Request Example
+
+```log
+2022-11-25 07:40:37.283 TRACE 53194 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : [4400ac35] REGISTERED
+2022-11-25 07:40:37.297 TRACE 53194 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : [4400ac35] CONNECT: localhost/127.0.0.1:50794
+2022-11-25 07:40:37.323 TRACE 53194 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : [4400ac35, L:/127.0.0.1:50795 - R:localhost/127.0.0.1:50794] ACTIVE
+2022-11-25 07:40:37.396 TRACE 53194 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : [4400ac35, L:/127.0.0.1:50795 - R:localhost/127.0.0.1:50794] READ COMPLETE
+2022-11-25 07:40:37.396 TRACE 53194 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : [4400ac35, L:/127.0.0.1:50795 - R:localhost/127.0.0.1:50794] READ COMPLETE
+2022-11-25 07:40:37.436 TRACE 53194 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : [4400ac35, L:/127.0.0.1:50795 - R:localhost/127.0.0.1:50794] USER_EVENT: SslHandshakeCompletionEvent(SUCCESS)
+2022-11-25 07:40:37.466 TRACE 53194 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : [4400ac35-1, L:/127.0.0.1:50795 - R:localhost/127.0.0.1:50794] WRITE: 212B POST /api/test/object-response HTTP/1.1
+user-agent: ReactorNetty/1.0.19
+host: localhost:50794
+Content-Type: application/json
+Accept: application/json
+Authorization: Basic dGVzdDp0ZXN0
+content-length: 45
+
+
+2022-11-25 07:40:37.466 TRACE 53194 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : [4400ac35-1, L:/127.0.0.1:50795 - R:localhost/127.0.0.1:50794] WRITE: 45B {"requestObject":{"request":"1669358437187"}}
+2022-11-25 07:40:37.466 TRACE 53194 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : [4400ac35-1, L:/127.0.0.1:50795 - R:localhost/127.0.0.1:50794] FLUSH
+2022-11-25 07:40:37.470 TRACE 53194 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : [4400ac35-1, L:/127.0.0.1:50795 - R:localhost/127.0.0.1:50794] READ COMPLETE
+```
+
+#### Response Example
+
+```log
+2022-11-25 07:35:07.393 TRACE 53095 --- [tor-http-nio-10] c.w.c.r.client.base.DefaultRestClient    : [9855567c-1, L:/127.0.0.1:50699 - R:localhost/127.0.0.1:50690] READ: 430B HTTP/1.1 200 
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+Strict-Transport-Security: max-age=31536000 ; includeSubDomains
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 25 Nov 2022 06:35:06 GMT
+
+3f
+{"status":"OK","responseObject":{"response":"object response"}}
+
+2022-11-25 07:35:07.393 TRACE 53095 --- [tor-http-nio-10] c.w.c.r.client.base.DefaultRestClient    : [9855567c-1, L:/127.0.0.1:50699 - R:localhost/127.0.0.1:50690] READ COMPLETE
+```
+
 ## Wultra Auditing Library
 
 The `audit-base` project provides auditing functionality for easier investigation of issues. Audit records are stored in a database and can be easily queried. The auditing library also handles removal of old audit records.

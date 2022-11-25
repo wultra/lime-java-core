@@ -53,7 +53,7 @@ import java.util.function.Consumer;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * REST client tests.
+ * Test for {@link DefaultRestClient}.
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */

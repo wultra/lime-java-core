@@ -15,7 +15,8 @@
  */
 package io.getlime.core.rest.model.base.entity;
 
-import jakarta.validation.constraints.NotBlank;
+
+import javax.validation.constraints.NotBlank;
 
 /**
  * Transport object for RESTful API representing an error instance.

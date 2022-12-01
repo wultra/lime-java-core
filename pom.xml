@@ -58,7 +58,7 @@
 		<jackson.version>2.13.3</jackson.version>
 		<h2.version>2.1.212</h2.version>
 		<slf4j-api.version>1.7.36</slf4j-api.version>
-		<jakarta-validation-api.version>3.0.1</jakarta-validation-api.version>
+		<jakarta-validation-api.version>2.0.2</jakarta-validation-api.version>
 
 	</properties>
 
@@ -198,6 +198,5 @@
 			</distributionManagement>
 		</profile>
 	</profiles>
-
 
 </project>

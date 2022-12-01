@@ -23,6 +23,7 @@ import io.getlime.core.rest.model.base.response.ErrorResponse;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
 import io.netty.channel.ChannelOption;
+import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -45,6 +46,7 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 import reactor.netty.transport.ProxyProvider;
+import reactor.netty.transport.logging.AdvancedByteBufFormat;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -113,6 +115,7 @@ public class DefaultRestClient implements RestClient {
         final WebClient.Builder builder = WebClient.builder();
         final SslContext sslContext = SslUtils.prepareSslContext(config);
         HttpClient httpClient = HttpClient.create()
+                .wiretap(this.getClass().getCanonicalName(), LogLevel.TRACE, AdvancedByteBufFormat.TEXTUAL)
                 .followRedirect(config.isFollowRedirectEnabled());
         if (sslContext != null) {
             httpClient = httpClient.secure(sslContextSpec -> {

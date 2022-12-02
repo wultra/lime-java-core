@@ -15,6 +15,7 @@
  */
 package com.wultra.core.rest.client.base;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.wultra.core.rest.client.base.util.SslUtils;
@@ -650,13 +651,14 @@ public class DefaultRestClient implements RestClient {
             if (clazz.isAssignableFrom(ObjectResponse.class)) {
                 try {
                     // Use an ObjectMapper to deserialize the error response
-                    ObjectMapper objectMapper = new ObjectMapper();
+                    final ObjectMapper objectMapper = new ObjectMapper()
+                            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
                     ErrorResponse errorResponse = objectMapper.readValue(rawResponse, ErrorResponse.class);
                     if (errorResponse != null) {
                         return Mono.error(new RestClientException("HTTP error occurred: " + response.statusCode(), response.statusCode(), rawResponse, rawResponseHeaders, errorResponse));
                     }
                 } catch (IOException ex) {
-                    // Exception is handled silently, ErrorResponse is not available, use a regular error with raw response
+                    logger.trace("Exception is handled silently, ErrorResponse is not available, use a regular error with raw response", ex);
                 }
             }
             return Mono.error(new RestClientException("HTTP error occurred: " + response.statusCode(), response.statusCode(), rawResponse, rawResponseHeaders));

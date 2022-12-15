@@ -58,6 +58,9 @@ public class AuditConfiguration {
     @Value("${audit.db.table.param.name:audit_param}")
     private String dbTableNameParam;
 
+    @Value("${spring.jpa.properties.hibernate.default_schema:}")
+    private String dbDefaultSchema;
+
     @Value("${audit.db.batch.size:1000}")
     private int batchSize;
 
@@ -149,6 +152,14 @@ public class AuditConfiguration {
     }
 
     /**
+     * Get default database schema.
+     * @return Default database schema.
+     */
+    public String getDbDefaultSchema() {
+        return dbDefaultSchema;
+    }
+
+    /**
      * Get database table name for audit parameters.
      * @return Database table name for audit parameters.
      */
@@ -163,4 +174,5 @@ public class AuditConfiguration {
     public boolean isDbTableParamLoggingEnabled() {
         return dbTableParamLoggingEnabled;
     }
+
 }

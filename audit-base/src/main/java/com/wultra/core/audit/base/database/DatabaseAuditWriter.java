@@ -31,6 +31,7 @@ import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
@@ -75,6 +76,8 @@ public class DatabaseAuditWriter implements AuditWriter {
     private String insertAuditLog;
     private String insertAuditParam;
 
+    private String dbSchema;
+
     private final JsonUtil jsonUtil = new JsonUtil();
 
     private final Object FLUSH_LOCK = new Object();
@@ -90,8 +93,9 @@ public class DatabaseAuditWriter implements AuditWriter {
     public DatabaseAuditWriter(AuditConfiguration configuration, JdbcTemplate jdbcTemplate) {
         this.queue = new LinkedBlockingDeque<>(configuration.getEventQueueSize());
         this.jdbcTemplate = jdbcTemplate;
-        this.tableNameAudit = configuration.getDbTableNameAudit();
-        this.tableNameParam = configuration.getDbTableNameParam();
+        this.dbSchema = configuration.getDbDefaultSchema();
+        this.tableNameAudit = addDbSchema(dbSchema, configuration.getDbTableNameAudit());
+        this.tableNameParam = addDbSchema(dbSchema, configuration.getDbTableNameParam());
         this.batchSize = configuration.getBatchSize();
         this.paramLoggingEnabled = configuration.isDbTableParamLoggingEnabled();
         this.cleanupDays = configuration.getDbCleanupDays();
@@ -99,6 +103,13 @@ public class DatabaseAuditWriter implements AuditWriter {
         this.version = StringUtil.trim(configuration.getVersion(), 256);
         this.buildTime = configuration.getBuildTime();
         prepareSqlInsertQueries();
+    }
+
+    private String addDbSchema(String dbSchema, String tableName) {
+        if (StringUtils.hasLength(this.dbSchema) && !tableName.contains(".")) {
+            return dbSchema + "." + tableName;
+        }
+        return tableName;
     }
 
     private void prepareSqlInsertQueries() {

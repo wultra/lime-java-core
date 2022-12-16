@@ -30,6 +30,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
@@ -56,6 +58,8 @@ public class DatabaseAuditWriter implements AuditWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseAuditWriter.class);
 
+    private static final String SPRING_FRAMEWORK_PACKAGE_PREFIX = "org.springframework";
+
     private final BlockingQueue<AuditRecord> queue;
     private final JdbcTemplate jdbcTemplate;
 
@@ -67,8 +71,12 @@ public class DatabaseAuditWriter implements AuditWriter {
     private final String version;
     private final Instant buildTime;
 
+    private final boolean paramLoggingEnabled;
+
     private String insertAuditLog;
     private String insertAuditParam;
+
+    private String dbSchema;
 
     private final JsonUtil jsonUtil = new JsonUtil();
 
@@ -77,21 +85,31 @@ public class DatabaseAuditWriter implements AuditWriter {
 
     /**
      * Service constructor.
+     *
      * @param configuration Audit configuration.
-     * @param jdbcTemplate Spring JDBC template.
+     * @param jdbcTemplate  Spring JDBC template.
      */
     @Autowired
     public DatabaseAuditWriter(AuditConfiguration configuration, JdbcTemplate jdbcTemplate) {
         this.queue = new LinkedBlockingDeque<>(configuration.getEventQueueSize());
         this.jdbcTemplate = jdbcTemplate;
-        this.tableNameAudit = configuration.getDbTableNameAudit();
-        this.tableNameParam = configuration.getDbTableNameParam();
+        this.dbSchema = configuration.getDbDefaultSchema();
+        this.tableNameAudit = addDbSchema(dbSchema, configuration.getDbTableNameAudit());
+        this.tableNameParam = addDbSchema(dbSchema, configuration.getDbTableNameParam());
         this.batchSize = configuration.getBatchSize();
+        this.paramLoggingEnabled = configuration.isDbTableParamLoggingEnabled();
         this.cleanupDays = configuration.getDbCleanupDays();
         this.applicationName = StringUtil.trim(configuration.getApplicationName(), 256);
         this.version = StringUtil.trim(configuration.getVersion(), 256);
         this.buildTime = configuration.getBuildTime();
         prepareSqlInsertQueries();
+    }
+
+    private String addDbSchema(String dbSchema, String tableName) {
+        if (StringUtils.hasLength(this.dbSchema) && !tableName.contains(".")) {
+            return dbSchema + "." + tableName;
+        }
+        return tableName;
     }
 
     private void prepareSqlInsertQueries() {
@@ -107,7 +125,10 @@ public class DatabaseAuditWriter implements AuditWriter {
 
     @Override
     public void write(AuditRecord auditRecord) {
-        auditRecord.setCallingClass(ClassUtil.getCallingClass(this.getClass().getPackage().getName()));
+        List<String> packageFilter = new ArrayList<>();
+        packageFilter.add(this.getClass().getPackage().getName());
+        packageFilter.add(SPRING_FRAMEWORK_PACKAGE_PREFIX);
+        auditRecord.setCallingClass(ClassUtil.getCallingClass(packageFilter));
         auditRecord.setThreadName(Thread.currentThread().getName());
         try {
             if (queue.remainingCapacity() == 0) {
@@ -120,6 +141,7 @@ public class DatabaseAuditWriter implements AuditWriter {
     }
 
     @Override
+    @Transactional
     public void flush() {
         if (jdbcTemplate.getDataSource() == null) {
             logger.error("Data source is not available");
@@ -151,7 +173,7 @@ public class DatabaseAuditWriter implements AuditWriter {
                                     String auditType = record.getType();
                                     if (auditType == null) {
                                         ps.setNull(4, Types.VARCHAR);
-                                    }  else {
+                                    } else {
                                         ps.setString(4, StringUtil.trim(record.getType(), 256));
                                     }
                                     ps.setTimestamp(5, new Timestamp(record.getTimestamp().getTime()));
@@ -178,6 +200,10 @@ public class DatabaseAuditWriter implements AuditWriter {
                                     return auditsToPersist.size();
                                 }
                             });
+                    if (!paramLoggingEnabled) {
+                        logger.debug("Audit log batch insert succeeded, audit record count: {}, audit param is disabled", insertCountsLog.length);
+                        continue;
+                    }
                     final int[] insertCountsParam = jdbcTemplate.batchUpdate(insertAuditParam,
                             new BatchPreparedStatementSetter() {
                                 public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -194,6 +220,7 @@ public class DatabaseAuditWriter implements AuditWriter {
                                         ps.setString(4, StringUtil.trim(jsonUtil.serializeObject(value), 4000));
                                     }
                                 }
+
                                 public int getBatchSize() {
                                     return paramsToPersist.size();
                                 }
@@ -204,9 +231,11 @@ public class DatabaseAuditWriter implements AuditWriter {
                 }
             }
         }
+
     }
 
     @Override
+    @Transactional
     public void cleanup() {
         if (jdbcTemplate.getDataSource() == null) {
             logger.error("Data source is not available");

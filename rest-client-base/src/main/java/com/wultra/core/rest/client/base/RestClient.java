@@ -493,4 +493,90 @@ public interface RestClient {
      */
     <T> ObjectResponse<T> patchObject(String path, ObjectRequest<?> objectRequest, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException;
 
+    /**
+     * Execute a blocking HTTP HEAD request.
+     * @param path Request path.
+     * @param responseType Parameterized response type.
+     * @param <T> Response type.
+     * @return HTTP HEAD response.
+     * @throws RestClientException Thrown in case HTTP HEAD request fails.
+     */
+    <T> ResponseEntity<T> head(String path, ParameterizedTypeReference<T> responseType) throws RestClientException;
+
+    /**
+     * Execute a blocking HTTP HEAD request with specified HTTP headers.
+     * @param path Request path.
+     * @param queryParams Query parameters.
+     * @param headers HTTP headers.
+     * @param responseType Parameterized response type.
+     * @param <T> Response type.
+     * @return HTTP HEAD response.
+     * @throws RestClientException Thrown in case HTTP HEAD request fails.
+     */
+    <T> ResponseEntity<T> head(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType) throws RestClientException;
+
+    /**
+     * Execute a non-blocking HTTP HEAD request.
+     * @param path Request path.
+     * @param responseType Parameterized response type.
+     * @param onSuccess Consumer used in case of success.
+     * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
+     * @throws RestClientException Thrown in case HTTP HEAD request fails.
+     */
+    <T> void headNonBlocking(String path, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+
+    /**
+     * Execute a non-blocking HTTP HEAD request with specified HTTP headers.
+     * @param path Request path.
+     * @param queryParams Query parameters.
+     * @param headers HTTP headers.
+     * @param responseType Parameterized response type.
+     * @param onSuccess Consumer used in case of success.
+     * @param onError Consumer used in case of failure.
+     * @param <T> Response type.
+     * @throws RestClientException Thrown in case HTTP HEAD request fails.
+     */
+    <T> void headNonBlocking(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> responseType, Consumer<ResponseEntity<T>> onSuccess, Consumer<Throwable> onError) throws RestClientException;
+
+    /**
+     * Execute a blocking HTTP HEAD request with ObjectRequest / Response types.
+     * @param path Request path.
+     * @return Response.
+     * @throws RestClientException Thrown in case HTTP HEAD request fails.
+     */
+    Response headObject(String path) throws RestClientException;
+
+    /**
+     * Execute a blocking HTTP HEAD request with ObjectRequest / Response types and specified query parameters and HTTP headers.
+     * @param path Request path.
+     * @param queryParams Query parameters.
+     * @param headers HTTP headers.
+     * @return Response.
+     * @throws RestClientException Thrown in case HTTP HEAD request fails.
+     */
+    Response headObject(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers) throws RestClientException;
+
+    /**
+     * Execute a blocking HTTP HEAD request with ObjectRequest / ObjectResponse types.
+     * @param path Request path.
+     * @param responseType Object response type.
+     * @param <T> Response type.
+     * @return Object response.
+     * @throws RestClientException Thrown in case HTTP HEAD request fails.
+     */
+    <T> ObjectResponse<T> headObject(String path, Class<T> responseType) throws RestClientException;
+
+    /**
+     * Execute a blocking HTTP HEAD request with ObjectRequest / ObjectResponse types and specified query parameters and HTTP headers.
+     * @param path Request path.
+     * @param queryParams Query parameters.
+     * @param headers HTTP headers.
+     * @param responseType Object response type.
+     * @param <T> Response type.
+     * @return Object response.
+     * @throws RestClientException Thrown in case HTTP HEAD request fails.
+     */
+    <T> ObjectResponse<T> headObject(String path, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, Class<T> responseType) throws RestClientException;
+
 }

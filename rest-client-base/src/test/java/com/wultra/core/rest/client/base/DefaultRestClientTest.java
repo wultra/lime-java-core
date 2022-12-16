@@ -32,6 +32,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DefaultDataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
@@ -52,7 +53,7 @@ import java.util.function.Consumer;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * REST client tests.
+ * Test for {@link DefaultRestClient}.
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
@@ -532,6 +533,67 @@ class DefaultRestClientTest {
     }
 
     @Test
+    void testHeadWithResponse() throws RestClientException {
+        ResponseEntity<Response> responseEntity = restClient.head("/response", new ParameterizedTypeReference<Response>() {});
+        assertFalse(responseEntity.getHeaders().isEmpty());
+        assertNull(responseEntity.getBody());
+    }
+
+    @Test
+    void testHeadWithResponseObject() throws RestClientException {
+        Response response = restClient.headObject("/response");
+        assertNotNull(response);
+        assertEquals("OK", response.getStatus());
+    }
+
+    @Test
+    void testHeadWithResponseNonBlocking() throws RestClientException, InterruptedException {
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        Consumer<ResponseEntity<Response>> onSuccess = responseEntity -> {
+            assertNotNull(responseEntity);
+            assertNotNull(responseEntity.getHeaders());
+            assertFalse(responseEntity.getHeaders().isEmpty());
+            assertNull(responseEntity.getBody());
+            countDownLatch.countDown();
+        };
+        Consumer<Throwable> onError = error -> Assertions.fail(error.getMessage());
+        restClient.headNonBlocking("/response", new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
+        assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    void testHeadWithTestResponse() throws RestClientException {
+        ResponseEntity<TestResponse> responseEntity = restClient.head("/test-response", new ParameterizedTypeReference<TestResponse>() {});
+        assertNotNull(responseEntity.getHeaders());
+        assertFalse(responseEntity.getHeaders().isEmpty());
+        assertNull(responseEntity.getBody());
+    }
+
+    @Test
+    void testHeadWithObjectResponse() throws RestClientException {
+        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.head("/object-response", new ParameterizedTypeReference<ObjectResponse<TestResponse>>() {});
+        assertNotNull(responseEntity.getHeaders());
+        assertFalse(responseEntity.getHeaders().isEmpty());
+        assertNull(responseEntity.getBody());
+    }
+
+    @Test
+    void testHeadWithObjectResponseObject() throws RestClientException {
+        ObjectResponse<TestResponse> response = restClient.headObject("/object-response", TestResponse.class);
+        assertEquals("OK", response.getStatus());
+        assertNull(response.getResponseObject());
+    }
+
+    @Test
+    void testHeadWithFullUrl() throws RestClientException {
+        RestClientConfiguration config = prepareConfiguration();
+        restClient = new DefaultRestClient(config);
+        Response response = restClient.headObject("https://localhost:" + port + "/api/test/response");
+        assertNotNull(response);
+        assertEquals("OK", response.getStatus());
+    }
+
+    @Test
     void testPatchWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
@@ -647,6 +709,31 @@ class DefaultRestClientTest {
         restClient = new DefaultRestClient(config);
 
         testGetWithResponse();
+    }
+
+    @Test
+    void testRedirectShouldNotFollowByDefault() throws Exception {
+        RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        assertFalse(config.isFollowRedirectEnabled(), "Following HTTP redirects should be disabled by default");
+
+        restClient = new DefaultRestClient(config);
+
+        ResponseEntity<Response> responseEntity = restClient.get("/redirect-to-response", new ParameterizedTypeReference<Response>() {});
+        assertEquals(HttpStatus.FOUND, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void testRedirectShouldFollowWhenEnabled() throws Exception {
+        RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setFollowRedirectEnabled(true);
+
+        restClient = new DefaultRestClient(config);
+
+        ResponseEntity<Response> responseEntity = restClient.get("/redirect-to-response", new ParameterizedTypeReference<Response>() {});
+        assertNotNull(responseEntity.getBody());
+        assertEquals("OK", responseEntity.getBody().getStatus());
     }
 
     private static Object getField(final Object parentBean, String path) {

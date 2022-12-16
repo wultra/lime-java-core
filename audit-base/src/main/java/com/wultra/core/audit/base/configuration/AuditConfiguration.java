@@ -52,8 +52,14 @@ public class AuditConfiguration {
     @Value("${audit.db.table.log.name:audit_log}")
     private String dbTableNameAudit;
 
+    @Value("${audit.db.table.param.enabled:false}")
+    private boolean dbTableParamLoggingEnabled;
+
     @Value("${audit.db.table.param.name:audit_param}")
     private String dbTableNameParam;
+
+    @Value("${spring.jpa.properties.hibernate.default_schema:}")
+    private String dbDefaultSchema;
 
     @Value("${audit.db.batch.size:1000}")
     private int batchSize;
@@ -146,10 +152,27 @@ public class AuditConfiguration {
     }
 
     /**
+     * Get default database schema.
+     * @return Default database schema.
+     */
+    public String getDbDefaultSchema() {
+        return dbDefaultSchema;
+    }
+
+    /**
      * Get database table name for audit parameters.
      * @return Database table name for audit parameters.
      */
     public String getDbTableNameParam() {
         return dbTableNameParam;
     }
+
+    /**
+     * Get enabled flag for detail logging to database table.
+     * @return Flag for detail logging into audit database.
+     */
+    public boolean isDbTableParamLoggingEnabled() {
+        return dbTableParamLoggingEnabled;
+    }
+
 }

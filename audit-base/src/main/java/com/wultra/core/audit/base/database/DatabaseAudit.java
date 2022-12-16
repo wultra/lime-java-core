@@ -21,6 +21,7 @@ import com.wultra.core.audit.base.configuration.AuditConfiguration;
 import com.wultra.core.audit.base.model.AuditDetail;
 import com.wultra.core.audit.base.model.AuditLevel;
 import com.wultra.core.audit.base.model.AuditRecord;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 @Service
+@Slf4j
 public class DatabaseAudit implements Audit {
 
     private final AuditWriter writer;
@@ -82,7 +84,7 @@ public class DatabaseAudit implements Audit {
             return;
         }
         final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.ERROR, detail.getType(), detail.getParam(), args);
-        writer.write(auditRecord);
+        write(auditRecord);
     }
 
     @Override
@@ -115,7 +117,7 @@ public class DatabaseAudit implements Audit {
             return;
         }
         final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.WARN, detail.getType(), detail.getParam(), args);
-        writer.write(auditRecord);
+        write(auditRecord);
     }
 
     @Override
@@ -148,7 +150,7 @@ public class DatabaseAudit implements Audit {
             return;
         }
         final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.INFO, detail.getType(), detail.getParam(), args);
-        writer.write(auditRecord);
+        write(auditRecord);
     }
 
     @Override
@@ -181,7 +183,7 @@ public class DatabaseAudit implements Audit {
             return;
         }
         final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.DEBUG, detail.getType(), detail.getParam(), args);
-        writer.write(auditRecord);
+        write(auditRecord);
     }
 
     @Override
@@ -214,12 +216,12 @@ public class DatabaseAudit implements Audit {
             return;
         }
         final AuditRecord auditRecord = new AuditRecord(message, AuditLevel.TRACE, detail.getType(), detail.getParam(), args);
-        writer.write(auditRecord);
+        write(auditRecord);
     }
 
     @Override
     public boolean isLevelEnabled(@NonNull AuditLevel level) {
-        return configuration.getMinimumLevel().intValue() >= level.intValue();
+        return configuration.getMinimumLevel().intValue() <= level.intValue();
     }
 
     @Override
@@ -247,7 +249,16 @@ public class DatabaseAudit implements Audit {
             return;
         }
         final AuditRecord auditRecord = new AuditRecord(message, level, detail.getType(), detail.getParam(), args);
-        writer.write(auditRecord);
+        write(auditRecord);
+    }
+
+    private void write(AuditRecord auditRecord) {
+        try {
+            writer.write(auditRecord);
+        } catch (Exception ex) {
+            logger.debug(ex.getMessage(), ex);
+            logger.warn("Audit failed, error: {}", ex.getMessage());
+        }
     }
 
     @Override

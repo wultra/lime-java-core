@@ -25,10 +25,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.test.context.jdbc.Sql;
 
-import javax.sql.rowset.serial.SerialClob;
 import java.sql.Timestamp;
 
-import static com.wultra.core.audit.base.util.TestUtil.clobToString;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = TestApplication.class, properties = {"audit.db.table.param.enabled=false"})
@@ -61,9 +59,9 @@ class AuditTest {
         assertEquals("test-application", rs.getString("application_name"));
         assertEquals("INFO", rs.getString("audit_level"));
         assertTrue(rs.getTimestamp("timestamp_created").after(timestampBeforeAudit));
-        assertEquals("test message", clobToString((SerialClob) rs.getObject("message")));
+        assertEquals("test message", rs.getObject("message"));
         assertNull(rs.getString("stack_trace"));
-        assertEquals("{}", clobToString((SerialClob) rs.getObject("param")));
+        assertEquals("{}", rs.getObject("param"));
         assertEquals("com.wultra.core.audit.base.AuditTest", rs.getString("calling_class"));
         assertEquals("main", rs.getString("thread_name"));
     }
@@ -79,9 +77,9 @@ class AuditTest {
         assertEquals("test-application", rs.getString("application_name"));
         assertEquals("WARN", rs.getString("audit_level"));
         assertTrue(rs.getTimestamp("timestamp_created").after(timestampBeforeAudit));
-        assertEquals("test message for warning", clobToString((SerialClob) rs.getObject("message")));
+        assertEquals("test message for warning", rs.getObject("message"));
         assertNull(rs.getString("stack_trace"));
-        assertEquals("{}", clobToString((SerialClob) rs.getObject("param")));
+        assertEquals("{}", rs.getObject("param"));
         assertEquals("com.wultra.core.audit.base.AuditTest", rs.getString("calling_class"));
         assertEquals("main", rs.getString("thread_name"));
     }
@@ -97,9 +95,9 @@ class AuditTest {
         assertEquals("test-application", rs.getString("application_name"));
         assertEquals("ERROR", rs.getString("audit_level"));
         assertTrue(rs.getTimestamp("timestamp_created").after(timestampBeforeAudit));
-        assertEquals("test message for error", clobToString((SerialClob) rs.getObject("message")));
+        assertEquals("test message for error", rs.getObject("message"));
         assertNull(rs.getString("stack_trace"));
-        assertEquals("{}", clobToString((SerialClob) rs.getObject("param")));
+        assertEquals("{}", rs.getObject("param"));
         assertEquals("com.wultra.core.audit.base.AuditTest", rs.getString("calling_class"));
         assertEquals("main", rs.getString("thread_name"));
     }
@@ -115,9 +113,9 @@ class AuditTest {
         assertEquals("test-application", rs.getString("application_name"));
         assertEquals("ERROR", rs.getString("audit_level"));
         assertTrue(rs.getTimestamp("timestamp_created").after(timestampBeforeAudit));
-        assertEquals("test message for error", clobToString((SerialClob) rs.getObject("message")));
+        assertEquals("test message for error", rs.getObject("message"));
         assertNull(rs.getString("stack_trace"));
-        assertEquals("{}", clobToString((SerialClob) rs.getObject("param")));
+        assertEquals("{}", rs.getObject("param"));
         assertEquals("com.wultra.core.audit.base.AuditTest", rs.getString("calling_class"));
         assertEquals("main", rs.getString("thread_name"));
     }
@@ -144,8 +142,8 @@ class AuditTest {
         audit.flush();
         final SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log");
         assertTrue(rs.next());
-        assertEquals("test exception", clobToString((SerialClob) rs.getObject("exception_message")));
-        assertTrue(clobToString((SerialClob) rs.getObject("stack_trace")).contains("java.lang.Exception: test exception\n"
+        assertEquals("test exception", rs.getObject("exception_message"));
+        assertTrue(rs.getObject("stack_trace").toString().contains("java.lang.Exception: test exception\n"
                 + "\tat com.wultra.core.audit.base.AuditTest.testAuditException"));
     }
 
@@ -156,7 +154,7 @@ class AuditTest {
         audit.flush();
         final SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log");
         assertTrue(rs.next());
-        assertEquals("test message with formatting", clobToString((SerialClob) rs.getObject("message")));
+        assertEquals("test message with formatting", rs.getObject("message"));
     }
 
     @Test
@@ -166,7 +164,7 @@ class AuditTest {
         audit.flush();
         final SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log");
         assertTrue(rs.next());
-        assertEquals("test message with more formatting", clobToString((SerialClob) rs.getObject("message")));
+        assertEquals("test message with more formatting", rs.getObject("message"));
     }
 
     @Test
@@ -176,7 +174,7 @@ class AuditTest {
         audit.flush();
         final SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log");
         assertTrue(rs.next());
-        assertEquals("test message with even more formatting", clobToString((SerialClob) rs.getObject("message")));
+        assertEquals("test message with even more formatting", rs.getObject("message"));
     }
 
     @Test
@@ -186,9 +184,9 @@ class AuditTest {
         audit.flush();
         final SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log");
         assertTrue(rs.next());
-        assertEquals("test message with more formatting and exception", clobToString((SerialClob) rs.getObject("message")));
-        assertEquals("test exception", clobToString((SerialClob) rs.getObject("exception_message")));
-        assertTrue(clobToString((SerialClob) rs.getObject("stack_trace")).contains("java.lang.Exception: test exception\n"
+        assertEquals("test message with more formatting and exception", rs.getObject("message"));
+        assertEquals("test exception", rs.getObject("exception_message"));
+        assertTrue(rs.getObject("stack_trace").toString().contains("java.lang.Exception: test exception\n"
                 + "\tat com.wultra.core.audit.base.AuditTest.testAuditFormattedMessageException"));
     }
 
@@ -199,7 +197,7 @@ class AuditTest {
         audit.flush();
         final SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM audit_log");
         assertTrue(rs.next());
-        assertEquals("test message with invalid formatting {}", clobToString((SerialClob) rs.getObject("message")));
+        assertEquals("test message with invalid formatting {}", rs.getObject("message"));
     }
 
     @Test

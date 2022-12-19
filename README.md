@@ -145,6 +145,7 @@ The following options are available for the builder:
 - `objectMapper` - custom object mapper for JSON serialization
 - `filter` - custom `ExchangeFilterFunction` for applying a filter during communication
 - `defaultHttpHeaders` - custom `HttpHeaders` to be added to all requests as default HTTP headers
+- `followRedirectEnabled` - whether HTTP redirect responses are followed by the client (default: false)
 
 ### Calling HTTP Methods Using REST Client
 
@@ -159,16 +160,15 @@ Once the rest client is initialized, you can use the following methods. Each met
 - `put` - a blocking PUT call with a generic request / response
 - `putNonBlocking` - a non-blocking PUT call with a generic request / response with `onSuccess` and `onError` consumers
 - `putObject` - a blocking PUT call with `ObjectRequest` / `ObjectResponse`
+- `delete` - a blocking DELETE call with a generic response
+- `deleteNonBlocking` - a non-blocking DELETE call with a generic response with `onSuccess` and `onError` consumers
+- `deleteObject` - a blocking DELETE call with `ObjectResponse`
 - `patch` - a blocking PATCH call with a generic request / response
 - `patchNonBlocking` - a non-blocking PATCH call with a generic request / response with `onSuccess` and `onError` consumers
 - `patchObject` - a blocking PATCH call with `ObjectRequest` / `ObjectResponse`
 - `head` - a blocking HEAD call with a generic request
 - `headNonBlocking` - a non-blocking HEAD call with a generic request with `onSuccess` and `onError` consumers
 - `headObject` - a blocking HEAD call with `ObjectRequest`
-
-- `delete` - a blocking DELETE call with a generic response
-- `deleteNonBlocking` - a non-blocking DELETE call with a generic response with `onSuccess` and `onError` consumers
-- `deleteObject` - a blocking DELETE call with `ObjectResponse`
 
 The `path` parameter specified in requests can be either:
 
@@ -283,6 +283,9 @@ The following properties can be configured in case the default configuration nee
 - `audit.db.table.param.name` - name of audit parameters database table (default: `audit_param`)
 - `audit.db.table.param.enabled` - flag if logging params to parameters database is enabled (default: `false`)
 - `audit.db.batch.size` - database batch size (default: `1000`)  
+
+You can configure database schema used by the auditing library using regular Spring JPA/Hibernate property in your application:
+- `spring.jpa.properties.hibernate.default_schema` - database database schema (default: none)
 
 ### Audit Levels
 

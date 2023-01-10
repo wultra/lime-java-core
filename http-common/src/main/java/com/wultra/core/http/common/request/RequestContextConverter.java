@@ -70,19 +70,21 @@ public final class RequestContextConverter {
 
     /**
      * Obtain the best-effort guess of the client IP address.
+     *
      * @param request HttpServletRequest instance.
      * @return Best-effort information about the client IP address.
      */
     private static String getClientIpAddress(final HttpServletRequest request) {
-        if (request == null) { // safety null check
-            return null;
-        }
         for (String header : HTTP_HEADERS_IP_ADDRESS) {
             final String ip = request.getHeader(header);
-            if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+            if (isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
                 return ip;
             }
         }
         return request.getRemoteAddr();
+    }
+
+    private static boolean isNotBlank(final String value) {
+        return !(value == null || value.trim().isEmpty());
     }
 }

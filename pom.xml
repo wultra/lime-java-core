@@ -44,6 +44,7 @@
 
 	<modules>
 		<module>audit-base</module>
+		<module>http-common</module>
 		<module>rest-model-base</module>
 		<module>rest-client-base</module>
 	</modules>

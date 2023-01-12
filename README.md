@@ -370,3 +370,17 @@ Auditing with parameters and type of audit message:
    param.put("operation_id", operationId);
    audit.info("an access message", AuditDetail.builder().type("ACCESS").params(param).build());
 ```
+
+
+## Wultra HTTP Common
+
+The `http-common` project provides common functionality for HTTP stack.
+
+
+### Features
+
+
+#### RequestContextConverter
+
+`RequestContextConverter` converts `HttpServletRequest` to a Wultra specific class `RequestContext`.
+This context object contains _user agent_ and best-effort guess of the _client IP address_.

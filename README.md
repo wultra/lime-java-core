@@ -147,6 +147,7 @@ The following options are available for the builder:
 - `defaultHttpHeaders` - custom `HttpHeaders` to be added to all requests as default HTTP headers
 - `followRedirectEnabled` - whether HTTP redirect responses are followed by the client (default: false)
 - `simpleLoggingEnabled` - whether simple one-line logging of HTTP method, URL and response status code is enabled (default: false)
+- `logErrorResponsesAsWarnings` - whether responses with error status codes are logged on WARN level in simple logging (default :true)
 
 ### Calling HTTP Methods Using REST Client
 

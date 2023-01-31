@@ -85,9 +85,14 @@ public class RestClientConfiguration {
 
     // Handling responses settings
     /**
-     * Enables/disables auto-redirect of HTTP 30x statuses
+     * Enables/disables auto-redirect of HTTP 30x statuses.
      */
     private boolean followRedirectEnabled = false;
+
+    /**
+     * Enables/disables simple one-line logging of HTTP requests and responses.
+     */
+    private boolean simpleLoggingEnabled = false;
 
     /**
      * Get base URL.
@@ -598,6 +603,22 @@ public class RestClientConfiguration {
      */
     public void setFollowRedirectEnabled(boolean followRedirectEnabled) {
         this.followRedirectEnabled = followRedirectEnabled;
+    }
+
+    /**
+     * Get whether simple one-line logging of HTTP requests and responses is enabled.
+     * @return Whether simple logging is enabled.
+     */
+    public boolean isSimpleLoggingEnabled() {
+        return simpleLoggingEnabled;
+    }
+
+    /**
+     * Set whether simple one-line logging of HTTP requests and responses is enabled.
+     * @param simpleLoggingEnabled Whether simple logging is enabled.
+     */
+    public void setSimpleLoggingEnabled(boolean simpleLoggingEnabled) {
+        this.simpleLoggingEnabled = simpleLoggingEnabled;
     }
 
 }

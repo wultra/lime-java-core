@@ -92,6 +92,7 @@ class DefaultRestClientTest {
         config.setHttpBasicAuthUsername("test");
         config.setHttpBasicAuthPassword("test");
         config.setResponseTimeout(Duration.ofSeconds(10));
+        config.setSimpleLoggingEnabled(true);
         return config;
     }
 

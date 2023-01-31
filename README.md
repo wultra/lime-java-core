@@ -219,14 +219,14 @@ You can enable simple one-line logging using `RestClientConfiguration`:
 config.setSimpleLoggingEnabled(true);
 ```
 
-The log messages use `INFO` and `WARN` levels based on status code:
+The log messages use `INFO` and `WARN` levels based on the status code:
 
 ```
 2023-01-31 12:09:14.014  INFO 64851 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : RestClient GET https://localhost:49728/api/test/response: 200 OK
 2023-01-31 12:09:15.367  WARN 64851 --- [ctor-http-nio-4] c.w.c.r.client.base.DefaultRestClient    : RestClient POST https://localhost:49728/api/test/error-response: 400 BAD_REQUEST
 ```
 
-You can disable logging on `WARN` level using:
+You can disable logging on `WARN` level, in this case log messages always use the `INFO` level:
 
 ```java
 config.setLogErrorResponsesAsWarnings(false);

@@ -180,10 +180,10 @@ public class DefaultRestClient implements RestClient {
                 return next.exchange(request)
                         .doOnNext(response -> {
                             final HttpStatus statusCode = response.statusCode();
-                            if (statusCode.is2xxSuccessful() || statusCode.is3xxRedirection()) {
-                                logger.info("{}: {}", requestLogMessage, statusCode);
-                            } else {
+                            if (statusCode.isError() && config.isLogErrorResponsesAsWarnings()) {
                                 logger.warn("{}: {}", requestLogMessage, statusCode);
+                            } else {
+                                logger.info("{}: {}", requestLogMessage, statusCode);
                             }
                         });
             });

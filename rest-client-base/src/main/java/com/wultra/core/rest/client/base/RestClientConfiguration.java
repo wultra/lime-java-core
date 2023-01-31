@@ -95,6 +95,11 @@ public class RestClientConfiguration {
     private boolean simpleLoggingEnabled = false;
 
     /**
+     * Enables/disables usage of WARNING level in simple one-line logging.
+     */
+    private boolean logErrorResponsesAsWarnings = true;
+
+    /**
      * Get base URL.
      * @return Base URL.
      */
@@ -619,6 +624,22 @@ public class RestClientConfiguration {
      */
     public void setSimpleLoggingEnabled(boolean simpleLoggingEnabled) {
         this.simpleLoggingEnabled = simpleLoggingEnabled;
+    }
+
+    /**
+     * Get whether error HTTP responses are logged as warnings.
+     * @return Whether error HTTP responses are logged as warnings.
+     */
+    public boolean isLogErrorResponsesAsWarnings() {
+        return logErrorResponsesAsWarnings;
+    }
+
+    /**
+     * Set whether error HTTP responses are logged as warnings.
+     * @param logErrorResponsesAsWarnings Whether error HTTP responses are logged as warnings.
+     */
+    public void setLogErrorResponsesAsWarnings(boolean logErrorResponsesAsWarnings) {
+        this.logErrorResponsesAsWarnings = logErrorResponsesAsWarnings;
     }
 
 }

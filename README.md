@@ -146,6 +146,7 @@ The following options are available for the builder:
 - `filter` - custom `ExchangeFilterFunction` for applying a filter during communication
 - `defaultHttpHeaders` - custom `HttpHeaders` to be added to all requests as default HTTP headers
 - `followRedirectEnabled` - whether HTTP redirect responses are followed by the client (default: false)
+- `simpleLoggingEnabled` - whether simple one-line logging of HTTP method, URL and response status code is enabled (default: false)
 
 ### Calling HTTP Methods Using REST Client
 
@@ -210,9 +211,30 @@ In case any HTTP error occurs during a blocking HTTP request execution, a `RestC
 
 Non-blocking methods provide an `onError` consumer for custom error handling.
 
-### Logging
+### Simple One-Line Logging
 
-To enable request / response logging, set level of `com.wultra.core.rest.client.base.DefaultRestClient` to `TRACE`.
+You can enable simple one-line logging using `RestClientConfiguration`:
+
+```java
+config.setSimpleLoggingEnabled(true);
+```
+
+The log messages use `INFO` and `WARN` levels based on status code:
+
+```
+2023-01-31 12:09:14.014  INFO 64851 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : RestClient GET https://localhost:49728/api/test/response: 200 OK
+2023-01-31 12:09:15.367  WARN 64851 --- [ctor-http-nio-4] c.w.c.r.client.base.DefaultRestClient    : RestClient POST https://localhost:49728/api/test/error-response: 400 BAD_REQUEST
+```
+
+You can disable logging on `WARN` level using:
+
+```java
+config.setLogErrorResponsesAsWarnings(false);
+```
+
+### Detailed Logging
+
+To enable detailed request / response logging, set level of `com.wultra.core.rest.client.base.DefaultRestClient` to `TRACE`.
 
 #### Request Example
 

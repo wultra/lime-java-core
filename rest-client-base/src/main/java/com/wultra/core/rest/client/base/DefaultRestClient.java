@@ -168,12 +168,25 @@ public class DefaultRestClient implements RestClient {
             builder.filter(ExchangeFilterFunctions
                     .basicAuthentication(config.getHttpBasicAuthUsername(), config.getHttpBasicAuthPassword()));
         }
-
         if (config.getFilter() != null) {
             builder.filter(config.getFilter());
         }
         if (config.getDefaultHttpHeaders() != null) {
             builder.defaultHeaders(httpHeaders -> httpHeaders.addAll(config.getDefaultHttpHeaders()));
+        }
+        if (config.isSimpleLoggingEnabled()) {
+            builder.filter((request, next) -> {
+                final String requestLogMessage = "RestClient " + request.method() + " " + request.url();
+                return next.exchange(request)
+                        .doOnNext(response -> {
+                            final HttpStatus statusCode = response.statusCode();
+                            if (config.isLogErrorResponsesAsWarnings() && statusCode.isError()) {
+                                logger.warn("{}: {}", requestLogMessage, statusCode);
+                            } else {
+                                logger.info("{}: {}", requestLogMessage, statusCode);
+                            }
+                        });
+            });
         }
 
         final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);

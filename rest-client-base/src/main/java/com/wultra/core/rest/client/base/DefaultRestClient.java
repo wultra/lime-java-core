@@ -180,7 +180,7 @@ public class DefaultRestClient implements RestClient {
                 return next.exchange(request)
                         .doOnNext(response -> {
                             final HttpStatus statusCode = response.statusCode();
-                            if (statusCode.isError() && config.isLogErrorResponsesAsWarnings()) {
+                            if (config.isLogErrorResponsesAsWarnings() && statusCode.isError()) {
                                 logger.warn("{}: {}", requestLogMessage, statusCode);
                             } else {
                                 logger.info("{}: {}", requestLogMessage, statusCode);

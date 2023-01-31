@@ -183,7 +183,7 @@ public class DefaultRestClient implements RestClient {
                             if (statusCode.is2xxSuccessful() || statusCode.is3xxRedirection()) {
                                 logger.info("{}: {}", requestLogMessage, statusCode);
                             } else {
-                                logger.warn(requestLogMessage + ": " + statusCode);
+                                logger.warn("{}: {}", requestLogMessage, statusCode);
                             }
                         });
             });

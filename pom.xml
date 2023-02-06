@@ -43,6 +43,7 @@
 	</developers>
 
 	<modules>
+		<module>annotations</module>
 		<module>audit-base</module>
 		<module>http-common</module>
 		<module>rest-model-base</module>

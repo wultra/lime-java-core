@@ -378,3 +378,13 @@ The `http-common` project provides common functionality for HTTP stack.
 
 `RequestContextConverter` converts `HttpServletRequest` to a Wultra specific class `RequestContext`.
 This context object contains _user agent_ and best-effort guess of the _client IP address_.
+
+
+## Wultra Annotations
+
+The `annotations` project provides common annotations.
+
+Right now, these annotations are available:
+
+- `PublicApi` - Marker for interfaces intended **to be called by extension**.
+- `PublicSpi` - Marker for interfaces intended **to be implemented by extensions** and called by core.

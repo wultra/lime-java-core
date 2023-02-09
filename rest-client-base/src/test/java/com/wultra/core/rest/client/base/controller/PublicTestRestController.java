@@ -24,7 +24,6 @@ import io.getlime.core.rest.model.base.response.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,9 +37,8 @@ import java.util.Enumeration;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 @RestController
-@RequestMapping("/api/test")
-@Secured("ROLE_TEST_USER")
-public class TestRestController {
+@RequestMapping("/public/api/test")
+public class PublicTestRestController {
 
     @GetMapping("/response")
     public Response testGetWithResponse() {
@@ -164,7 +162,7 @@ public class TestRestController {
     @GetMapping("/redirect-to-response")
     public ResponseEntity<Void> testRedirect() {
         return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create("/api/test/response"))
+                .location(URI.create("/public/api/test/response"))
                 .build();
     }
 

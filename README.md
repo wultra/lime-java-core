@@ -131,6 +131,9 @@ The following options are available for the builder:
 - `httpBasicAuth` - HTTP basic authentication (default: disabled)
   - `username` - username for HTTP basic authentication
   - `password` - password for HTTP basic authentication
+- `httpDigestAuth` - HTTP digest authentication (default: disabled)
+  - `username` - username for HTTP digest authentication
+  - `password` - password for HTTP digest authentication
 - `certificateAuth` - certificate authentication (default: disabled)
   - `useCustomKeyStore` - whether custom keystore should be used for certificate authentication (default: false)
   - `keyStoreLocation` - resource location of keystore (e.g. `file:/path_to_keystore`)

@@ -59,6 +59,11 @@ public class RestClientConfiguration {
     private String httpBasicAuthUsername;
     private String httpBasicAuthPassword;
 
+    // HTTP Digest Authentication
+    private boolean httpDigestAuthEnabled = false;
+    private String httpDigestAuthUsername;
+    private String httpDigestAuthPassword;
+
     // TLS client certificate authentication
     private boolean certificateAuthEnabled = false;
     private boolean useCustomKeyStore = false;
@@ -323,6 +328,54 @@ public class RestClientConfiguration {
      */
     public void setHttpBasicAuthPassword(String httpBasicAuthPassword) {
         this.httpBasicAuthPassword = httpBasicAuthPassword;
+    }
+
+    /**
+     * Get whether digest HTTP authentication is enabled.
+     * @return Whether digest HTTP authentication is enabled.
+     */
+    public boolean isHttpDigestAuthEnabled() {
+        return httpDigestAuthEnabled;
+    }
+
+    /**
+     * Set whether digest HTTP authentication is enabled.
+     * @param httpDigestAuthEnabled Whether digest HTTP authentication is enabled.
+     */
+    public void setHttpDigestAuthEnabled(boolean httpDigestAuthEnabled) {
+        this.httpDigestAuthEnabled = httpDigestAuthEnabled;
+    }
+
+    /**
+     * Get username for digest HTTP authentication.
+     * @return Username for digest HTTP authentication.
+     */
+    public String getHttpDigestAuthUsername() {
+        return httpDigestAuthUsername;
+    }
+
+    /**
+     * Set username for digest HTTP authentication.
+     * @param httpDigestAuthUsername Username for digest HTTP authentication.
+     */
+    public void setHttpDigestAuthUsername(String httpDigestAuthUsername) {
+        this.httpDigestAuthUsername = httpDigestAuthUsername;
+    }
+
+    /**
+     * Get password for digest HTTP authentication.
+     * @return Password for digest HTTP authentication.
+     */
+    public String getHttpDigestAuthPassword() {
+        return httpDigestAuthPassword;
+    }
+
+    /**
+     * Set password for digest HTTP authentication.
+     * @param httpDigestAuthPassword Password for digest HTTP authentication.
+     */
+    public void setHttpDigestAuthPassword(String httpDigestAuthPassword) {
+        this.httpDigestAuthPassword = httpDigestAuthPassword;
     }
 
     /**

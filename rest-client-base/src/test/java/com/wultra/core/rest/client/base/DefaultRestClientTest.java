@@ -27,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DefaultDataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
@@ -61,18 +61,27 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class DefaultRestClientTest {
 
+    private static final String PUBLIC_PATH = "/public/api/test";
+    private static final String PRIVATE_PATH = "/private/api/test";
+
     @LocalServerPort
     private int port;
 
     private RestClient restClient;
+
+    private String publicBaseUrl;
+    private String privateBaseUrl;
 
     // Timeout for synchronization of non-blocking calls using countdown latch
     private static final int SYNCHRONIZATION_TIMEOUT = 10000;
 
     @BeforeEach
     void initRestClient() throws RestClientException {
-        RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        final RestClientConfiguration config = prepareConfiguration();
+        final String baseUrl = "https://localhost:" + port;
+        publicBaseUrl = baseUrl + PUBLIC_PATH;
+        privateBaseUrl = baseUrl + PRIVATE_PATH;
+        config.setBaseUrl(publicBaseUrl);
         restClient = new DefaultRestClient(config);
     }
 
@@ -422,7 +431,7 @@ class DefaultRestClientTest {
     void testGetWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.getObject("https://localhost:" + port + "/api/test/response");
+        Response response = restClient.getObject(publicBaseUrl + "/response");
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
@@ -431,7 +440,7 @@ class DefaultRestClientTest {
     void testPostWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.postObject("https://localhost:" + port + "/api/test/response", null);
+        Response response = restClient.postObject(publicBaseUrl + "/response", null);
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
@@ -440,7 +449,7 @@ class DefaultRestClientTest {
     void testPutWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.putObject("https://localhost:" + port + "/api/test/response", null);
+        Response response = restClient.putObject(publicBaseUrl + "/response", null);
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
@@ -589,7 +598,7 @@ class DefaultRestClientTest {
     void testHeadWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.headObject("https://localhost:" + port + "/api/test/response");
+        Response response = restClient.headObject(publicBaseUrl + "/response");
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
@@ -598,7 +607,7 @@ class DefaultRestClientTest {
     void testPatchWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.patchObject("https://localhost:" + port + "/api/test/response", null);
+        Response response = restClient.patchObject(publicBaseUrl + "/response", null);
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
@@ -607,7 +616,7 @@ class DefaultRestClientTest {
     void testDeleteWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.deleteObject("https://localhost:" + port + "/api/test/response");
+        Response response = restClient.deleteObject(publicBaseUrl + "/response");
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
@@ -656,7 +665,7 @@ class DefaultRestClientTest {
         headers.set(headerName, headerVaue);
 
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         config.setDefaultHttpHeaders(headers);
         RestClient restClient = new DefaultRestClient(config);
 
@@ -681,7 +690,7 @@ class DefaultRestClientTest {
     @Test
     void testCustomKeyStoreTrustStoreBytes() throws Exception {
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         configureCustomKeyStore(config);
         configureCustomTrustStore(config);
 
@@ -693,7 +702,7 @@ class DefaultRestClientTest {
     @Test
     void testCustomKeyStoreBytes() throws Exception {
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         configureCustomKeyStore(config);
 
         restClient = new DefaultRestClient(config);
@@ -704,7 +713,7 @@ class DefaultRestClientTest {
     @Test
     void testCustomTrustStoreBytes() throws Exception {
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         configureCustomTrustStore(config);
 
         restClient = new DefaultRestClient(config);
@@ -715,7 +724,7 @@ class DefaultRestClientTest {
     @Test
     void testRedirectShouldNotFollowByDefault() throws Exception {
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         assertFalse(config.isFollowRedirectEnabled(), "Following HTTP redirects should be disabled by default");
 
         restClient = new DefaultRestClient(config);
@@ -727,7 +736,7 @@ class DefaultRestClientTest {
     @Test
     void testRedirectShouldFollowWhenEnabled() throws Exception {
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         config.setFollowRedirectEnabled(true);
 
         restClient = new DefaultRestClient(config);
@@ -735,6 +744,33 @@ class DefaultRestClientTest {
         ResponseEntity<Response> responseEntity = restClient.get("/redirect-to-response", new ParameterizedTypeReference<Response>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
+    }
+
+    @Test
+    void testGetWithResponseDigest() throws RestClientException {
+        final RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl(privateBaseUrl);
+        config.setHttpBasicAuthEnabled(false);
+        config.setHttpDigestAuthEnabled(true);
+        config.setHttpDigestAuthUsername("test-digest-user");
+        config.setHttpDigestAuthPassword("top-secret");
+        final RestClient restClient = new DefaultRestClient(config);
+
+        ResponseEntity<Response> responseEntity = restClient.get("/response", new ParameterizedTypeReference<Response>() {});
+        assertNotNull(responseEntity.getBody());
+        assertEquals("OK", responseEntity.getBody().getStatus());
+    }
+
+    @Test
+    void testGetWithResponseDigestAuthFailed() throws RestClientException {
+        final RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl(privateBaseUrl);
+        final RestClient restClient = new DefaultRestClient(config);
+
+        final RestClientException exception = assertThrows(RestClientException.class,
+                () -> restClient.get("/response", new ParameterizedTypeReference<Response>() {}));
+
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
     }
 
     private static Object getField(final Object parentBean, String path) {

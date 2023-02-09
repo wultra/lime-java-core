@@ -105,6 +105,7 @@ public class DefaultRestClient implements RestClient {
      * Initialize WebClient instance and configure it based on client configuration.
      */
     private void initializeWebClient() throws RestClientException {
+        validateConfiguration(config);
         if (config.getBaseUrl() != null) {
             try {
                 new URI(config.getBaseUrl());
@@ -164,9 +165,15 @@ public class DefaultRestClient implements RestClient {
                 .build();
         builder.exchangeStrategies(exchangeStrategies);
 
-        if (config.getHttpBasicAuthUsername() != null) {
+        if (config.isHttpBasicAuthEnabled() && config.getHttpBasicAuthUsername() != null) {
+            logger.info("Configuring HTTP Basic Authentication");
             builder.filter(ExchangeFilterFunctions
                     .basicAuthentication(config.getHttpBasicAuthUsername(), config.getHttpBasicAuthPassword()));
+        }
+        if (config.isHttpDigestAuthEnabled() && config.getHttpDigestAuthUsername() != null) {
+            logger.info("Configuring HTTP Digest Authentication");
+            builder.filter(DigestAuthenticationFilterFunction
+                    .digestAuthentication(config.getHttpDigestAuthUsername(), config.getHttpDigestAuthPassword()));
         }
         if (config.getFilter() != null) {
             builder.filter(config.getFilter());
@@ -191,6 +198,12 @@ public class DefaultRestClient implements RestClient {
 
         final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
+    }
+
+    private static void validateConfiguration(final RestClientConfiguration config) throws RestClientException {
+        if (config.isHttpBasicAuthEnabled() && config.isHttpDigestAuthEnabled()) {
+            throw new RestClientException("Both HTTP Basic and Digest authentication is enabled");
+        }
     }
 
     @Override
@@ -844,6 +857,16 @@ public class DefaultRestClient implements RestClient {
         }
 
         /**
+         * Configure HTTP digest authentication.
+         *
+         * @return Builder.
+         */
+        public HttpDigestAuthBuilder httpDigestAuth() {
+            config.setHttpDigestAuthEnabled(true);
+            return new HttpDigestAuthBuilder(this);
+        }
+
+        /**
          * Configure certificate authentication.
          * @return Builder.
          */
@@ -981,6 +1004,54 @@ public class DefaultRestClient implements RestClient {
          */
         public HttpBasicAuthBuilder password(String basicAuthPassword) {
             mainBuilder.config.setHttpBasicAuthPassword(basicAuthPassword);
+            return this;
+        }
+
+        /**
+         * Build the builder.
+         *
+         * @return Builder.
+         */
+        public Builder build() {
+            return mainBuilder;
+        }
+    }
+
+    /**
+     * HTTP digest authentication builder.
+     */
+    public static class HttpDigestAuthBuilder {
+
+        private final Builder mainBuilder;
+
+        /**
+         * HTTP digest authentication builder constructor.
+         *
+         * @param mainBuilder Parent builder.
+         */
+        private HttpDigestAuthBuilder(Builder mainBuilder) {
+            this.mainBuilder = mainBuilder;
+        }
+
+        /**
+         * Configure HTTP digest authentication username.
+         *
+         * @param digestAuthUsername HTTP digest authentication username.
+         * @return Builder.
+         */
+        public HttpDigestAuthBuilder username(String digestAuthUsername) {
+            mainBuilder.config.setHttpDigestAuthUsername(digestAuthUsername);
+            return this;
+        }
+
+        /**
+         * Configure HTTP digest authentication password.
+         *
+         * @param digestAuthPassword HTTP digest authentication password.
+         * @return Builder.
+         */
+        public HttpDigestAuthBuilder password(String digestAuthPassword) {
+            mainBuilder.config.setHttpDigestAuthPassword(digestAuthPassword);
             return this;
         }
 

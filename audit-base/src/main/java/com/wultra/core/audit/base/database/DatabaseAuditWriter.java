@@ -30,7 +30,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PreDestroy;
@@ -62,6 +62,7 @@ public class DatabaseAuditWriter implements AuditWriter {
 
     private final BlockingQueue<AuditRecord> queue;
     private final JdbcTemplate jdbcTemplate;
+    private final TransactionTemplate transactionTemplate;
 
     private final String tableNameAudit;
     private final String tableNameParam;
@@ -88,11 +89,17 @@ public class DatabaseAuditWriter implements AuditWriter {
      *
      * @param configuration Audit configuration.
      * @param jdbcTemplate  Spring JDBC template.
+     * @param transactionTemplate Transaction template.
      */
     @Autowired
-    public DatabaseAuditWriter(AuditConfiguration configuration, JdbcTemplate jdbcTemplate) {
+    public DatabaseAuditWriter(
+            final AuditConfiguration configuration,
+            final JdbcTemplate jdbcTemplate,
+            final TransactionTemplate transactionTemplate) {
+
         this.queue = new LinkedBlockingDeque<>(configuration.getEventQueueSize());
         this.jdbcTemplate = jdbcTemplate;
+        this.transactionTemplate = transactionTemplate;
         this.dbSchema = configuration.getDbDefaultSchema();
         this.tableNameAudit = addDbSchema(dbSchema, configuration.getDbTableNameAudit());
         this.tableNameParam = addDbSchema(dbSchema, configuration.getDbTableNameParam());
@@ -141,117 +148,126 @@ public class DatabaseAuditWriter implements AuditWriter {
     }
 
     @Override
-    @Transactional
     public void flush() {
+        if (transactionTemplate == null) {
+            logger.error("Transaction template is not available");
+            return;
+        }
         if (jdbcTemplate.getDataSource() == null) {
             logger.error("Data source is not available");
             return;
         }
 
         synchronized (FLUSH_LOCK) {
-            while (!queue.isEmpty()) {
-                try {
-                    final List<AuditRecord> auditsToPersist = new ArrayList<>(batchSize);
-                    final List<AuditParam> paramsToPersist = new ArrayList<>();
-                    for (int i = 0; i < batchSize; i++) {
-                        AuditRecord record = queue.take();
-                        auditsToPersist.add(record);
-                        for (Map.Entry<String, Object> entry : record.getParam().entrySet()) {
-                            paramsToPersist.add(new AuditParam(record.getId(), record.getTimestamp(), entry.getKey(), entry.getValue()));
+            transactionTemplate.executeWithoutResult(status -> {
+                while (!queue.isEmpty()) {
+                    try {
+                        final List<AuditRecord> auditsToPersist = new ArrayList<>(batchSize);
+                        final List<AuditParam> paramsToPersist = new ArrayList<>();
+                        for (int i = 0; i < batchSize; i++) {
+                            AuditRecord record = queue.take();
+                            auditsToPersist.add(record);
+                            for (Map.Entry<String, Object> entry : record.getParam().entrySet()) {
+                                paramsToPersist.add(new AuditParam(record.getId(), record.getTimestamp(), entry.getKey(), entry.getValue()));
+                            }
+                            if (queue.isEmpty()) {
+                                break;
+                            }
                         }
-                        if (queue.isEmpty()) {
-                            break;
+                        final int[] insertCountsLog = jdbcTemplate.batchUpdate(insertAuditLog,
+                                new BatchPreparedStatementSetter() {
+                                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                                        AuditRecord record = auditsToPersist.get(i);
+                                        ps.setString(1, record.getId());
+                                        ps.setString(2, applicationName);
+                                        ps.setString(3, record.getLevel().toString());
+                                        String auditType = record.getType();
+                                        if (auditType == null) {
+                                            ps.setNull(4, Types.VARCHAR);
+                                        } else {
+                                            ps.setString(4, StringUtil.trim(record.getType(), 256));
+                                        }
+                                        ps.setTimestamp(5, new Timestamp(record.getTimestamp().getTime()));
+                                        ps.setString(6, record.getMessage());
+                                        Throwable throwable = record.getThrowable();
+                                        if (throwable == null) {
+                                            ps.setNull(7, Types.VARCHAR);
+                                            ps.setNull(8, Types.VARCHAR);
+                                        } else {
+                                            StringWriter sw = new StringWriter();
+                                            PrintWriter pw = new PrintWriter(sw);
+                                            throwable.printStackTrace(pw);
+                                            ps.setString(7, throwable.getMessage());
+                                            ps.setString(8, sw.toString());
+                                        }
+                                        ps.setString(9, jsonUtil.serializeMap(record.getParam()));
+                                        ps.setString(10, StringUtil.trim(record.getCallingClass().getName(), 256));
+                                        ps.setString(11, StringUtil.trim(record.getThreadName(), 256));
+                                        ps.setString(12, version);
+                                        ps.setTimestamp(13, new Timestamp(buildTime.toEpochMilli()));
+                                    }
+
+                                    public int getBatchSize() {
+                                        return auditsToPersist.size();
+                                    }
+                                });
+                        if (!paramLoggingEnabled) {
+                            logger.debug("Audit log batch insert succeeded, audit record count: {}, audit param is disabled", insertCountsLog.length);
+                            continue;
                         }
-                    }
-                    final int[] insertCountsLog = jdbcTemplate.batchUpdate(insertAuditLog,
-                            new BatchPreparedStatementSetter() {
-                                public void setValues(PreparedStatement ps, int i) throws SQLException {
-                                    AuditRecord record = auditsToPersist.get(i);
-                                    ps.setString(1, record.getId());
-                                    ps.setString(2, applicationName);
-                                    ps.setString(3, record.getLevel().toString());
-                                    String auditType = record.getType();
-                                    if (auditType == null) {
-                                        ps.setNull(4, Types.VARCHAR);
-                                    } else {
-                                        ps.setString(4, StringUtil.trim(record.getType(), 256));
+                        final int[] insertCountsParam = jdbcTemplate.batchUpdate(insertAuditParam,
+                                new BatchPreparedStatementSetter() {
+                                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                                        AuditParam record = paramsToPersist.get(i);
+                                        ps.setString(1, record.getAuditLogId());
+                                        ps.setTimestamp(2, new Timestamp(record.getTimestamp().getTime()));
+                                        ps.setString(3, StringUtil.trim(record.getKey(), 256));
+                                        Object value = record.getValue();
+                                        if (value == null) {
+                                            ps.setNull(4, Types.VARCHAR);
+                                        } else if (value instanceof CharSequence) {
+                                            ps.setString(4, StringUtil.trim(value.toString(), 4000));
+                                        } else {
+                                            ps.setString(4, StringUtil.trim(jsonUtil.serializeObject(value), 4000));
+                                        }
                                     }
-                                    ps.setTimestamp(5, new Timestamp(record.getTimestamp().getTime()));
-                                    ps.setString(6, record.getMessage());
-                                    Throwable throwable = record.getThrowable();
-                                    if (throwable == null) {
-                                        ps.setNull(7, Types.VARCHAR);
-                                        ps.setNull(8, Types.VARCHAR);
-                                    } else {
-                                        StringWriter sw = new StringWriter();
-                                        PrintWriter pw = new PrintWriter(sw);
-                                        throwable.printStackTrace(pw);
-                                        ps.setString(7, throwable.getMessage());
-                                        ps.setString(8, sw.toString());
-                                    }
-                                    ps.setString(9, jsonUtil.serializeMap(record.getParam()));
-                                    ps.setString(10, StringUtil.trim(record.getCallingClass().getName(), 256));
-                                    ps.setString(11, StringUtil.trim(record.getThreadName(), 256));
-                                    ps.setString(12, version);
-                                    ps.setTimestamp(13, new Timestamp(buildTime.toEpochMilli()));
-                                }
 
-                                public int getBatchSize() {
-                                    return auditsToPersist.size();
-                                }
-                            });
-                    if (!paramLoggingEnabled) {
-                        logger.debug("Audit log batch insert succeeded, audit record count: {}, audit param is disabled", insertCountsLog.length);
-                        continue;
-                    }
-                    final int[] insertCountsParam = jdbcTemplate.batchUpdate(insertAuditParam,
-                            new BatchPreparedStatementSetter() {
-                                public void setValues(PreparedStatement ps, int i) throws SQLException {
-                                    AuditParam record = paramsToPersist.get(i);
-                                    ps.setString(1, record.getAuditLogId());
-                                    ps.setTimestamp(2, new Timestamp(record.getTimestamp().getTime()));
-                                    ps.setString(3, StringUtil.trim(record.getKey(), 256));
-                                    Object value = record.getValue();
-                                    if (value == null) {
-                                        ps.setNull(4, Types.VARCHAR);
-                                    } else if (value instanceof CharSequence) {
-                                        ps.setString(4, StringUtil.trim(value.toString(), 4000));
-                                    } else {
-                                        ps.setString(4, StringUtil.trim(jsonUtil.serializeObject(value), 4000));
+                                    public int getBatchSize() {
+                                        return paramsToPersist.size();
                                     }
-                                }
-
-                                public int getBatchSize() {
-                                    return paramsToPersist.size();
-                                }
-                            });
-                    logger.debug("Audit log batch insert succeeded, audit record count: {}, audit param count: {}", insertCountsLog.length, insertCountsParam.length);
-                } catch (InterruptedException ex) {
-                    logger.warn(ex.getMessage(), ex);
+                                });
+                        logger.debug("Audit log batch insert succeeded, audit record count: {}, audit param count: {}", insertCountsLog.length, insertCountsParam.length);
+                    } catch (InterruptedException ex) {
+                        logger.warn(ex.getMessage(), ex);
+                    }
                 }
-            }
+            });
         }
-
     }
 
     @Override
-    @Transactional
     public void cleanup() {
+        if (transactionTemplate == null) {
+            logger.error("Transaction template is not available");
+            return;
+        }
         if (jdbcTemplate.getDataSource() == null) {
             logger.error("Data source is not available");
             return;
         }
         final LocalDateTime cleanupLimit = LocalDateTime.now().minusDays(cleanupDays);
         synchronized (CLEANUP_LOCK) {
-            jdbcTemplate.execute("DELETE FROM " + tableNameAudit + " WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
-                ps.setTimestamp(1, Timestamp.valueOf(cleanupLimit));
-                return ps.execute();
+            transactionTemplate.executeWithoutResult(status -> {
+                jdbcTemplate.execute("DELETE FROM " + tableNameAudit + " WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
+                    ps.setTimestamp(1, Timestamp.valueOf(cleanupLimit));
+                    return ps.execute();
+                });
+                jdbcTemplate.execute("DELETE FROM " + tableNameParam + " WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
+                    ps.setTimestamp(1, Timestamp.valueOf(cleanupLimit));
+                    return ps.execute();
+                });
+                logger.debug("Audit records older than {} were deleted", cleanupLimit);
             });
-            jdbcTemplate.execute("DELETE FROM " + tableNameParam + " WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
-                ps.setTimestamp(1, Timestamp.valueOf(cleanupLimit));
-                return ps.execute();
-            });
-            logger.debug("Audit records older than {} were deleted", cleanupLimit);
         }
     }
 

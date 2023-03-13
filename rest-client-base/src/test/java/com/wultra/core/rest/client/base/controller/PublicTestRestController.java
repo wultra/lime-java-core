@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Enumeration;
 
 /**
@@ -81,6 +82,12 @@ public class PublicTestRestController {
     @PostMapping(value = "/multipart-request-response", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ObjectResponse<TestResponse> testPostWithMultipartRequestAndResponse(@RequestPart TestRequest request) {
         TestResponse testResponse = new TestResponse(request.getRequest());
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PostMapping("/object-response-large")
+    public ObjectResponse<TestResponse> testPostWithLargeServerResponse() {
+        TestResponse testResponse = new TestResponse(Arrays.toString(new byte[10 * 1024 * 1024]));
         return new ObjectResponse<>(testResponse);
     }
 

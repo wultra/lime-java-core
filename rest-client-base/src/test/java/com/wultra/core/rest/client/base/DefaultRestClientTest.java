@@ -15,6 +15,9 @@
  */
 package com.wultra.core.rest.client.base;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import ch.qos.logback.classic.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wultra.core.rest.client.base.model.TestRequest;
@@ -26,6 +29,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
@@ -46,6 +50,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -655,6 +660,23 @@ class DefaultRestClientTest {
         assertNotNull(responseEntity.getBody().getResponseObject());
         assertEquals("OK", responseEntity.getBody().getStatus());
         assertEquals(requestData, responseEntity.getBody().getResponseObject().getResponse());
+    }
+
+    @Test
+    void testPostWithLargeServerResponse() {
+        Logger defaultRestClientLogger = (Logger) LoggerFactory.getLogger(DefaultRestClient.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        defaultRestClientLogger.addAppender(listAppender);
+
+        final RestClientException exception = assertThrows(RestClientException.class,
+                () -> restClient.post("/object-response-large", null, new ParameterizedTypeReference<Response>() {
+                }));
+
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertFalse(logsList.isEmpty());
+        assertEquals(1, logsList.stream().filter(logEvent -> logEvent.getMessage().equals("Error while retrieving large server response.")).count());
+        assertNotNull(exception.getMessage());
     }
 
     @Test

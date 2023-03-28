@@ -22,6 +22,7 @@ import com.wultra.core.audit.base.model.AuditRecord;
 import com.wultra.core.audit.base.util.ClassUtil;
 import com.wultra.core.audit.base.util.JsonUtil;
 import com.wultra.core.audit.base.util.StringUtil;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.PreparedStatement;

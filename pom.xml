@@ -109,6 +109,40 @@
 				<artifactId>maven-deploy-plugin</artifactId>
 				<version>3.1.1</version>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-banned-dependencies</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<bannedDependencies>
+									<excludes>
+										<!-- Force switching to Jakarta EE -->
+										<exclude>javax.*</exclude>
+										<!-- already on application server or servlet container -->
+										<exclude>jakarta.servlet:jakarta.servlet-api:*</exclude>
+										<exclude>jakarta.servlet.jsp:jakarta.servlet.jsp-api:*</exclude>
+										<!-- replaced by jakarta -->
+										<exclude>com.sun.mail</exclude>
+										<exclude>com.sun.xml.bind</exclude>
+									</excludes>
+									<includes>
+										<!-- Jakarta API are allowed to be provided -->
+										<include>jakarta.*:*:jar:*:provided</include>
+										<!-- Not yet migrated to Jakarta -->
+										<include>javax.cache:*</include>
+									</includes>
+								</bannedDependencies>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 

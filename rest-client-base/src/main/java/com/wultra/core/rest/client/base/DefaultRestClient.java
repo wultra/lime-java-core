@@ -25,7 +25,6 @@ import io.getlime.core.rest.model.base.response.Response;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
-import org.jetbrains.annotations.NotNull;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -644,7 +643,7 @@ public class DefaultRestClient implements RestClient {
     private <T> ParameterizedTypeReference<ObjectResponse<T>> getTypeReference(Class<T> responseType) {
         return new ParameterizedTypeReference<>() {
             @Override
-            public @NotNull Type getType() {
+            public Type getType() {
                 return TypeFactory.defaultInstance().constructParametricType(ObjectResponse.class, responseType);
             }
         };

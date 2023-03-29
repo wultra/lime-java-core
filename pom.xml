@@ -57,7 +57,6 @@
 
 		<!-- Dependencies -->
 		<spring-boot.version>3.0.5</spring-boot.version>
-		<jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
 		<findbugs-annotations.version>3.0.1</findbugs-annotations.version>
 	</properties>
 

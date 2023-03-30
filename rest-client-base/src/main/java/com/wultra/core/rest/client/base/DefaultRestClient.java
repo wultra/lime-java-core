@@ -30,10 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.ClientCodecConfigurer;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
@@ -186,7 +183,7 @@ public class DefaultRestClient implements RestClient {
                 final String requestLogMessage = "RestClient " + request.method() + " " + request.url();
                 return next.exchange(request)
                         .doOnNext(response -> {
-                            final HttpStatus statusCode = response.statusCode();
+                            final HttpStatusCode statusCode = response.statusCode();
                             if (config.isLogErrorResponsesAsWarnings() && statusCode.isError()) {
                                 logger.warn("{}: {}", requestLogMessage, statusCode);
                             } else {
@@ -644,7 +641,7 @@ public class DefaultRestClient implements RestClient {
      * @return Parameterized type reference of ObjectResponse.
      */
     private <T> ParameterizedTypeReference<ObjectResponse<T>> getTypeReference(Class<T> responseType) {
-        return new ParameterizedTypeReference<ObjectResponse<T>>(){
+        return new ParameterizedTypeReference<>() {
             @Override
             public Type getType() {
                 return TypeFactory.defaultInstance().constructParametricType(ObjectResponse.class, responseType);

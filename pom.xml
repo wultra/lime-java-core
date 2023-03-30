@@ -52,11 +52,12 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>8</maven.compiler.source>
-		<maven.compiler.target>8</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 
 		<!-- Dependencies -->
-		<spring-boot.version>2.7.10</spring-boot.version>
+		<spring-boot.version>3.0.5</spring-boot.version>
+		<findbugs-annotations.version>3.0.1</findbugs-annotations.version>
 	</properties>
 
 	<dependencyManagement>
@@ -107,6 +108,40 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<version>3.1.1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-banned-dependencies</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<bannedDependencies>
+									<excludes>
+										<!-- Force switching to Jakarta EE -->
+										<exclude>javax.*</exclude>
+										<!-- already on application server or servlet container -->
+										<exclude>jakarta.servlet:jakarta.servlet-api:*</exclude>
+										<exclude>jakarta.servlet.jsp:jakarta.servlet.jsp-api:*</exclude>
+										<!-- replaced by jakarta -->
+										<exclude>com.sun.mail</exclude>
+										<exclude>com.sun.xml.bind</exclude>
+									</excludes>
+									<includes>
+										<!-- Jakarta API are allowed to be provided -->
+										<include>jakarta.*:*:jar:*:provided</include>
+										<!-- Not yet migrated to Jakarta -->
+										<include>javax.cache:*</include>
+									</includes>
+								</bannedDependencies>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

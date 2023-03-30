@@ -15,11 +15,12 @@
  */
 package com.wultra.core.rest.client.base.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.DigestAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.DigestAuthenticationFilter;
 
@@ -31,19 +32,9 @@ import java.util.UUID;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 @Configuration
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
     private static final String ENTRY_POINT_KEY = UUID.randomUUID().toString();
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .exceptionHandling(e -> e.authenticationEntryPoint(authenticationEntryPoint()))
-                .addFilter(digestAuthenticationFilter())
-                .authorizeRequests()
-                    .antMatchers("/private/**").authenticated()
-                    .anyRequest().permitAll();
-    }
 
     private DigestAuthenticationEntryPoint authenticationEntryPoint() {
         final DigestAuthenticationEntryPoint entryPoint = new DigestAuthenticationEntryPoint();
@@ -60,8 +51,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return filter;
     }
 
-    @Override
-    protected UserDetailsService userDetailsService() {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http.csrf().disable()
+                .exceptionHandling(e -> e.authenticationEntryPoint(authenticationEntryPoint()))
+                .addFilter(digestAuthenticationFilter())
+                .authorizeHttpRequests()
+                .requestMatchers("/private/**").authenticated()
+                .anyRequest().permitAll()
+                .and().build();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
         return username -> User.builder()
                 .username("test-digest-user")
                 .password("top-secret")

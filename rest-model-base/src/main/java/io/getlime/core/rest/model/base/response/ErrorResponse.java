@@ -17,8 +17,8 @@ package io.getlime.core.rest.model.base.response;
 
 import io.getlime.core.rest.model.base.entity.Error;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Class representing an error response.

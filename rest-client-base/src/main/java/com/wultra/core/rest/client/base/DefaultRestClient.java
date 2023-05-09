@@ -50,6 +50,7 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -149,14 +150,14 @@ public class DefaultRestClient implements RestClient {
             });
         }
 
-        final ObjectMapper objectMapper = config.getObjectMapper();
+        final Optional<ObjectMapper> objectMapperOptional = createObjectMapper(config);
         final ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
                 .codecs(configurer -> {
                     ClientCodecConfigurer.ClientDefaultCodecs defaultCodecs = configurer.defaultCodecs();
-                    if (objectMapper != null) {
+                    objectMapperOptional.ifPresent(objectMapper -> {
                         defaultCodecs.jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON));
                         defaultCodecs.jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON));
-                    }
+                    });
                     defaultCodecs.maxInMemorySize(config.getMaxInMemorySize());
                 })
                 .build();
@@ -195,6 +196,19 @@ public class DefaultRestClient implements RestClient {
 
         final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
+    }
+
+    private static Optional<ObjectMapper> createObjectMapper(final RestClientConfiguration config) {
+        final RestClientConfiguration.JacksonConfiguration jacksonConfiguration = config.getJacksonConfiguration();
+        if (jacksonConfiguration == null) {
+            return Optional.empty();
+        }
+        logger.debug("Configuring object mapper");
+        final ObjectMapper objectMapper = new ObjectMapper();
+        jacksonConfiguration.getDeserialization().forEach(objectMapper::configure);
+        jacksonConfiguration.getSerialization().forEach(objectMapper::configure);
+
+        return Optional.of(objectMapper);
     }
 
     private static void validateConfiguration(final RestClientConfiguration config) throws RestClientException {
@@ -870,16 +884,6 @@ public class DefaultRestClient implements RestClient {
         public CertificateAuthBuilder certificateAuth() {
             config.setCertificateAuthEnabled(true);
             return new CertificateAuthBuilder(this);
-        }
-
-        /**
-         * Configure Object Mapper.
-         * @param objectMapper Object Mapper.
-         * @return Builder.
-         */
-        public Builder objectMapper(ObjectMapper objectMapper) {
-            config.setObjectMapper(objectMapper);
-            return this;
         }
 
         /**

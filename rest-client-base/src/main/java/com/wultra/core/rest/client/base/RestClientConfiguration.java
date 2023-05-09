@@ -15,7 +15,10 @@
  */
 package com.wultra.core.rest.client.base;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
@@ -23,9 +26,12 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * REST client configuration.
+ * This class is safe to use as {@code org.springframework.boot.context.properties.ConfigurationProperties}.
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
@@ -79,8 +85,7 @@ public class RestClientConfiguration {
     private String trustStoreLocation;
     private String trustStorePassword;
 
-    // Custom object mapper
-    private ObjectMapper objectMapper;
+    private JacksonConfiguration jacksonConfiguration;
 
     // Custom default HTTP headers
     private HttpHeaders defaultHttpHeaders;
@@ -563,19 +568,19 @@ public class RestClientConfiguration {
     }
 
     /**
-     * Get the object mapper.
+     * Get the jackson configuration.
      * @return Object mapper.
      */
-    public ObjectMapper getObjectMapper() {
-        return objectMapper;
+    public JacksonConfiguration getJacksonConfiguration() {
+        return jacksonConfiguration;
     }
 
     /**
-     * Set the object mapper.
-     * @param objectMapper Object mapper.
+     * Set the jackson configuration.
+     * @param jacksonConfiguration jacksonConfiguration.
      */
-    public void setObjectMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public void setJacksonConfiguration(JacksonConfiguration jacksonConfiguration) {
+        this.jacksonConfiguration = jacksonConfiguration;
     }
 
     /**
@@ -695,4 +700,17 @@ public class RestClientConfiguration {
         this.logErrorResponsesAsWarnings = logErrorResponsesAsWarnings;
     }
 
+    @Getter
+    @Setter
+    public static class JacksonConfiguration {
+        /**
+         * Jackson on/off features that affect the way Java objects are serialized.
+         */
+        private final Map<SerializationFeature, Boolean> serialization = new EnumMap<>(SerializationFeature.class);
+
+        /**
+         * Jackson on/off features that affect the way Java objects are deserialized.
+         */
+        private final Map<DeserializationFeature, Boolean> deserialization = new EnumMap<>(DeserializationFeature.class);
+    }
 }

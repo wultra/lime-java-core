@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * SSL certificate utilities.
@@ -107,8 +106,8 @@ public class SslUtils {
                         throw new RestClientException("Invalid or missing key with alias: " + config.getKeyAlias());
                     }
                     final X509Certificate[] x509CertificateChain = Arrays.stream(certChain)
-                            .map(certificate -> (X509Certificate) certificate)
-                            .collect(Collectors.toList())
+                            .map(X509Certificate.class::cast)
+                            .toList()
                             .toArray(new X509Certificate[certChain.length]);
                     sslContextBuilder.keyManager(privateKey, config.getKeyStorePassword(), x509CertificateChain);
                 }

@@ -18,86 +18,15 @@ package com.wultra.core.audit.base.model;
 import org.springframework.lang.NonNull;
 
 import java.util.Date;
-import java.util.Objects;
 
 /**
  * Audit parameter model class.
  *
+ * @param auditLogId Audit log identifier.
+ * @param timestamp  Timestamp when audit record was created.
+ * @param key        Parameter key.
+ * @param value      Parameter value.
  * @author Roman Strobl, roman.strobl@wultra.com
  */
-public class AuditParam {
-
-    private final String auditLogId;
-    private final Date timestamp;
-    private final String key;
-    private final Object value;
-
-    /**
-     * Audit parameter constructor.
-     * @param auditLogId Audit log identifier.
-     * @param timestamp Timestamp when audit record was created.
-     * @param key Parameter key.
-     * @param value Parameter value.
-     */
-    public AuditParam(@NonNull String auditLogId, @NonNull Date timestamp, @NonNull String key, Object value) {
-        this.auditLogId = auditLogId;
-        this.timestamp = timestamp;
-        this.key = key;
-        this.value = value;
-    }
-
-    /**
-     * Get audit log identifier.
-     * @return Audit log identifier.
-     */
-    public String getAuditLogId() {
-        return auditLogId;
-    }
-
-    /**
-     * Get audit timestamp.
-     * @return Audit timestamp.
-     */
-    public Date getTimestamp() {
-        return timestamp;
-    }
-
-    /**
-     * Get parameter key.
-     * @return Parameter key.
-     */
-    public String getKey() {
-        return key;
-    }
-
-    /**
-     * Get parameter value.
-     * @return Parameter value.
-     */
-    public Object getValue() {
-        return value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AuditParam that = (AuditParam) o;
-        return auditLogId.equals(that.auditLogId) && timestamp.equals(that.timestamp) && key.equals(that.key) && Objects.equals(value, that.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(auditLogId, timestamp, key, value);
-    }
-
-    @Override
-    public String toString() {
-        return "AuditParam{" +
-                "auditLogId='" + auditLogId + '\'' +
-                ", timestamp=" + timestamp +
-                ", key='" + key + '\'' +
-                ", value=" + value +
-                '}';
-    }
+public record AuditParam(@NonNull String auditLogId, @NonNull Date timestamp, @NonNull String key, Object value) {
 }

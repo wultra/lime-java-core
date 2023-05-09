@@ -37,39 +37,27 @@ public final class ClassUtil {
      * @param packageFilter Packages to filter out when resolving calling class.
      * @return Calling class.
      */
-    public static Class<?> getCallingClass(final List<String> packageFilter) {
+    public static String getCallingClass(final List<String> packageFilter) {
         final StackTraceElement[] trace = Thread.currentThread().getStackTrace();
 
         for (final StackTraceElement t : trace) {
-            final Class<?> clazz = fechClass(t);
-            if (clazz == null || clazz.isAssignableFrom(Thread.class) || clazz.isAssignableFrom(ClassUtil.class)) {
+            final String className = t.getClassName();
+            if (Thread.class.getName().equals(className) || ClassUtil.class.getName().equals(className)) {
                 continue;
             }
-            if (!packageMatches(clazz.getPackage().getName(), packageFilter)) {
-                return clazz;
+            if (!packageMatches(className, packageFilter)) {
+                return className;
             }
         }
-        return trace[trace.length - 1].getClass();
+        return trace[trace.length - 1].getClassName();
     }
 
-    private static Class<?> fechClass(final StackTraceElement t) {
-        final String className = t.getClassName();
-
-        try {
-            return Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            logger.warn("Unable to create class for name: {}, {}", className, e.getMessage());
-            logger.debug("Unable to create class for name: {}", className, e);
-            return null;
-        }
-    }
-
-    private static boolean packageMatches(String pkg, List<String> packageFilter) {
+    private static boolean packageMatches(final String className, List<String> packageFilter) {
         if (packageFilter == null) {
             return false;
         }
         for (final String pf : packageFilter) {
-            if (pkg.startsWith(pf)) {
+            if (className.startsWith(pf)) {
                 return true;
             }
         }

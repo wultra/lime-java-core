@@ -201,7 +201,7 @@ public class DatabaseAuditWriter implements AuditWriter {
                                             ps.setString(8, sw.toString());
                                         }
                                         ps.setString(9, jsonUtil.serializeMap(record.getParam()));
-                                        ps.setString(10, StringUtil.trim(record.getCallingClass().getName(), 256));
+                                        ps.setString(10, StringUtil.trim(record.getCallingClass(), 256));
                                         ps.setString(11, StringUtil.trim(record.getThreadName(), 256));
                                         ps.setString(12, version);
                                         ps.setTimestamp(13, new Timestamp(buildTime.toEpochMilli()));

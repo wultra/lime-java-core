@@ -38,7 +38,7 @@ public class AuditRecord {
     private final Map<String, Object> param;
     private String message;
     private Throwable throwable;
-    private Class<?> callingClass;
+    private String callingClass;
     private String threadName;
 
     /**
@@ -125,18 +125,18 @@ public class AuditRecord {
     }
 
     /**
-     * Get calling class.
-     * @return Calling class.
+     * Get calling class name.
+     * @return Calling class name.
      */
-    public Class<?> getCallingClass() {
+    public String getCallingClass() {
         return callingClass;
     }
 
     /**
-     * Set calling class.
-     * @param callingClass Calling class.
+     * Set calling class name.
+     * @param callingClass Calling class name.
      */
-    public void setCallingClass(Class<?> callingClass) {
+    public void setCallingClass(final String callingClass) {
         this.callingClass = callingClass;
     }
 

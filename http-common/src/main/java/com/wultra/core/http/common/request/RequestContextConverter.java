@@ -17,8 +17,6 @@ package com.wultra.core.http.common.request;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,7 +31,7 @@ public final class RequestContextConverter {
      * List of HTTP headers that may contain the actual IP address
      * when hidden behind a proxy component.
      */
-    private static final List<String> HTTP_HEADERS_IP_ADDRESS = Collections.unmodifiableList(Arrays.asList(
+    private static final List<String> HTTP_HEADERS_IP_ADDRESS = List.of(
             "X-Forwarded-For",
             "Proxy-Client-IP",
             "WL-Proxy-Client-IP",
@@ -45,7 +43,7 @@ public final class RequestContextConverter {
             "HTTP_FORWARDED",
             "HTTP_VIA",
             "REMOTE_ADDR"
-    ));
+    );
 
     private static final String HTTP_HEADER_USER_AGENT = "User-Agent";
 

@@ -77,7 +77,7 @@ public class DatabaseAuditWriter implements AuditWriter {
     private String insertAuditLog;
     private String insertAuditParam;
 
-    private String dbSchema;
+    private final String dbSchema;
 
     private final JsonUtil jsonUtil = new JsonUtil();
 
@@ -219,10 +219,10 @@ public class DatabaseAuditWriter implements AuditWriter {
                                 new BatchPreparedStatementSetter() {
                                     public void setValues(PreparedStatement ps, int i) throws SQLException {
                                         AuditParam record = paramsToPersist.get(i);
-                                        ps.setString(1, record.getAuditLogId());
-                                        ps.setTimestamp(2, new Timestamp(record.getTimestamp().getTime()));
-                                        ps.setString(3, StringUtil.trim(record.getKey(), 256));
-                                        Object value = record.getValue();
+                                        ps.setString(1, record.auditLogId());
+                                        ps.setTimestamp(2, new Timestamp(record.timestamp().getTime()));
+                                        ps.setString(3, StringUtil.trim(record.key(), 256));
+                                        Object value = record.value();
                                         if (value == null) {
                                             ps.setNull(4, Types.VARCHAR);
                                         } else if (value instanceof CharSequence) {

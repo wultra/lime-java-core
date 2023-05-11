@@ -145,7 +145,9 @@ The following options are available for the builder:
   - `trustStoreLocation` - resource location of truststore (e.g. `file:/path_to_truststore`)
   - `trustStorePassword` - truststore password
   - `trustStoreBytes` - byte data with truststore (alternative configuration way to `trustStoreLocation`)
-- `objectMapper` - custom object mapper for JSON serialization
+- `jacksonProperties` - jackson properties for custom object mapper
+  - `serialization` - Jackson on/off features that affect the way Java objects are serialized.
+  - `deserialization` - Jackson on/off features that affect the way Java objects are deserialized, e.g. `FAIL_ON_UNKNOWN_PROPERTIES=true`
 - `filter` - custom `ExchangeFilterFunction` for applying a filter during communication
 - `defaultHttpHeaders` - custom `HttpHeaders` to be added to all requests as default HTTP headers
 - `followRedirectEnabled` - whether HTTP redirect responses are followed by the client (default: false)

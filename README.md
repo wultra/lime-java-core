@@ -145,6 +145,7 @@ The following options are available for the builder:
   - `trustStoreLocation` - resource location of truststore (e.g. `file:/path_to_truststore`)
   - `trustStorePassword` - truststore password
   - `trustStoreBytes` - byte data with truststore (alternative configuration way to `trustStoreLocation`)
+- `modules` - jackson modules  
 - `jacksonProperties` - jackson properties for custom object mapper
   - `serialization` - Jackson on/off features that affect the way Java objects are serialized.
   - `deserialization` - Jackson on/off features that affect the way Java objects are deserialized, e.g. `FAIL_ON_UNKNOWN_PROPERTIES=true`

@@ -15,6 +15,7 @@
  */
 package com.wultra.core.rest.client.base;
 
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.wultra.core.rest.client.base.util.SslUtils;
@@ -50,7 +51,7 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -64,6 +65,7 @@ public class DefaultRestClient implements RestClient {
 
     private WebClient webClient;
     private final RestClientConfiguration config;
+    private final Collection<Module> modules;
 
     /**
      * Construct default REST client without any additional configuration.
@@ -73,6 +75,7 @@ public class DefaultRestClient implements RestClient {
     public DefaultRestClient(String baseUrl) throws RestClientException {
         this.config = new RestClientConfiguration();
         this.config.setBaseUrl(baseUrl);
+        this.modules = Collections.emptyList();
         // Use default WebClient settings
         initializeWebClient();
     }
@@ -80,11 +83,13 @@ public class DefaultRestClient implements RestClient {
     /**
      * Construct default REST client with specified configuration.
      * @param config REST client configuration.
+     * @param modules jackson modules
      * @throws RestClientException Thrown in case client initialization fails.
      */
-    public DefaultRestClient(RestClientConfiguration config) throws RestClientException {
+    public DefaultRestClient(final RestClientConfiguration config, final Module... modules) throws RestClientException {
         // Use WebClient configuration from the config constructor parameter
         this.config = config;
+        this.modules = modules == null ? Collections.emptyList() : Arrays.asList(modules);
         initializeWebClient();
     }
 
@@ -93,9 +98,10 @@ public class DefaultRestClient implements RestClient {
      * @param builder REST client builder.
      * @throws RestClientException Thrown in case client initialization fails.
      */
-    private DefaultRestClient(Builder builder) throws RestClientException {
+    private DefaultRestClient(final Builder builder) throws RestClientException {
         // Use WebClient settings from the builder
         this.config = builder.config;
+        this.modules = builder.modules;
         initializeWebClient();
     }
 
@@ -150,7 +156,7 @@ public class DefaultRestClient implements RestClient {
             });
         }
 
-        final Optional<ObjectMapper> objectMapperOptional = createObjectMapper(config);
+        final Optional<ObjectMapper> objectMapperOptional = createObjectMapper(config, modules);
         final ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
                 .codecs(configurer -> {
                     ClientCodecConfigurer.ClientDefaultCodecs defaultCodecs = configurer.defaultCodecs();
@@ -198,15 +204,19 @@ public class DefaultRestClient implements RestClient {
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
     }
 
-    private static Optional<ObjectMapper> createObjectMapper(final RestClientConfiguration config) {
+    private static Optional<ObjectMapper> createObjectMapper(final RestClientConfiguration config, Collection<Module> modules) {
         final RestClientConfiguration.JacksonConfiguration jacksonConfiguration = config.getJacksonConfiguration();
-        if (jacksonConfiguration == null) {
+        if (jacksonConfiguration == null && modules.isEmpty()) {
             return Optional.empty();
         }
+
         logger.debug("Configuring object mapper");
         final ObjectMapper objectMapper = new ObjectMapper();
-        jacksonConfiguration.getDeserialization().forEach(objectMapper::configure);
-        jacksonConfiguration.getSerialization().forEach(objectMapper::configure);
+        if (jacksonConfiguration != null) {
+            jacksonConfiguration.getDeserialization().forEach(objectMapper::configure);
+            jacksonConfiguration.getSerialization().forEach(objectMapper::configure);
+        }
+        objectMapper.registerModules(modules);
 
         return Optional.of(objectMapper);
     }
@@ -773,11 +783,14 @@ public class DefaultRestClient implements RestClient {
 
         private final RestClientConfiguration config;
 
+        private final Collection<Module> modules;
+
         /**
          * Construct new builder with given base URL.
          */
         public Builder() {
             config = new RestClientConfiguration();
+            modules = new HashSet<>();
         }
 
         /**
@@ -903,6 +916,25 @@ public class DefaultRestClient implements RestClient {
          */
         public Builder filter(ExchangeFilterFunction filter) {
             config.setFilter(filter);
+            return this;
+        }
+
+        /**
+         * Configure jackson.
+         * @return JacksonConfigurationBuilder.
+         */
+        public Builder jacksonConfiguration(RestClientConfiguration.JacksonConfiguration jacksonConfiguration) {
+            config.setJacksonConfiguration(jacksonConfiguration);
+            return this;
+        }
+
+        /**
+         * Configure jackson modules.
+         * @param modules Jackson modules.
+         * @return Builder.
+         */
+        public Builder modules(Collection<Module> modules) {
+            modules.addAll(modules);
             return this;
         }
 

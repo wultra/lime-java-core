@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.http.*;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.ClientCodecConfigurer;
@@ -320,6 +321,13 @@ public class DefaultRestClient implements RestClient {
                 // Throw exceptions created by REST client
                 throw (RestClientException) ex.getCause();
             }
+
+            if (ex instanceof DataBufferLimitException) {
+                // Log error for large server response for closer inspection
+                logger.warn("Error while retrieving large server response.", ex);
+            }
+
+
             throw new RestClientException("HTTP POST request failed", ex);
         }
     }

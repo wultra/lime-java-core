@@ -24,8 +24,11 @@ import io.getlime.core.rest.model.base.response.ErrorResponse;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.epoll.EpollChannelOption;
+import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
+import jdk.net.ExtendedSocketOptions;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,6 +141,10 @@ public class DefaultRestClient implements RestClient {
                     ChannelOption.CONNECT_TIMEOUT_MILLIS,
                     config.getConnectionTimeout());
         }
+        if (config.isKeepAliveEnabled()) {
+            httpClient = configureKeepAlive(httpClient, config);
+        }
+
         final Duration responseTimeout = config.getResponseTimeout();
         if (responseTimeout != null) {
             logger.debug("Setting response timeout {}", responseTimeout);
@@ -203,6 +210,27 @@ public class DefaultRestClient implements RestClient {
 
         final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
+    }
+
+    private static HttpClient configureKeepAlive(final HttpClient httpClient, final RestClientConfiguration config) throws RestClientException {
+        final Duration keepAliveIdle = config.getKeepAliveIdle();
+        final Duration keepAliveInterval = config.getKeepAliveInterval();
+        final Integer keepAliveCount = config.getKeepAliveCount();
+        logger.info("Configuring Keep-Alive, idle={}, interval={}, count={}", keepAliveIdle, keepAliveInterval, keepAliveCount);
+        if (keepAliveIdle == null || keepAliveInterval == null || keepAliveCount == null) {
+            throw new RestClientException("All Keep-Alive properties must be specified.");
+        }
+
+        final int keepIdleSeconds = Math.toIntExact(keepAliveIdle.toSeconds());
+        final int keepIntervalSeconds = Math.toIntExact(keepAliveInterval.toSeconds());
+
+        return httpClient.option(ChannelOption.SO_KEEPALIVE, true)
+                .option(NioChannelOption.of(ExtendedSocketOptions.TCP_KEEPIDLE), keepIdleSeconds)
+                .option(NioChannelOption.of(ExtendedSocketOptions.TCP_KEEPINTERVAL), keepIntervalSeconds)
+                .option(NioChannelOption.of(ExtendedSocketOptions.TCP_KEEPCOUNT), keepAliveCount)
+                .option(EpollChannelOption.TCP_KEEPIDLE, keepIdleSeconds)
+                .option(EpollChannelOption.TCP_KEEPINTVL, keepIntervalSeconds)
+                .option(EpollChannelOption.TCP_KEEPCNT, keepAliveCount);
     }
 
     /**
@@ -892,6 +920,46 @@ public class DefaultRestClient implements RestClient {
          */
         public Builder maxLifeTime(Duration maxLifeTime) {
             config.setMaxLifeTime(maxLifeTime);
+            return this;
+        }
+
+        /**
+         * Configure Keep-Alive probe.
+         * @param keepAliveEnabled Keep-Alive enabled.
+         * @return Builder.
+         */
+        public Builder keepAliveEnabled(boolean keepAliveEnabled) {
+            config.setKeepAliveEnabled(keepAliveEnabled);
+            return this;
+        }
+
+        /**
+         * Configure Keep-Alive idle interval.
+         * @param keepAliveIdle Keep-Alive idle interval.
+         * @return Builder.
+         */
+        public Builder keepAliveIdle(Duration keepAliveIdle) {
+            config.setKeepAliveIdle(keepAliveIdle);
+            return this;
+        }
+
+        /**
+         * Configure Keep-Alive retransmission interval.
+         * @param keepAliveInterval Keep-Alive retransmission interval.
+         * @return Builder.
+         */
+        public Builder keepAliveInterval(Duration keepAliveInterval) {
+            config.setKeepAliveInterval(keepAliveInterval);
+            return this;
+        }
+
+        /**
+         * Configure Keep-Alive retransmission limit.
+         * @param keepAliveCount Keep-Alive retransmission limit.
+         * @return Builder.
+         */
+        public Builder keepAliveCount(Integer keepAliveCount) {
+            config.setKeepAliveCount(keepAliveCount);
             return this;
         }
 

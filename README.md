@@ -126,6 +126,8 @@ The following options are available for the builder:
   - `username` - proxy username
   - `password` - proxy password
 - `connectionTimeout` - connection timeout in milliseconds (default: 5000 ms)
+- `maxIdleTime` - ConnectionProvider max idle time. (default: no max idle time)
+- `maxLifeTime` - ConnectionProvider max life time. (default: no max life time)
 - `acceptInvalidSslCertificate` - whether invalid SSL certificate is accepted (default: false)
 - `maxInMemorySize` - maximum in memory request size (default: 1048576 bytes)
 - `httpBasicAuth` - HTTP basic authentication (default: disabled)

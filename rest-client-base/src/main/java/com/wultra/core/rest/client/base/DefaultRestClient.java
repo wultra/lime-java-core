@@ -42,6 +42,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.*;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.resources.ConnectionProvider;
 import reactor.netty.tcp.SslProvider;
 import reactor.netty.transport.ProxyProvider;
 import reactor.netty.transport.logging.AdvancedByteBufFormat;
@@ -119,7 +120,7 @@ public class DefaultRestClient implements RestClient {
         }
         final WebClient.Builder builder = WebClient.builder();
         final SslContext sslContext = SslUtils.prepareSslContext(config);
-        HttpClient httpClient = HttpClient.create()
+        HttpClient httpClient = createHttpClient(config)
                 .wiretap(this.getClass().getCanonicalName(), LogLevel.TRACE, AdvancedByteBufFormat.TEXTUAL)
                 .followRedirect(config.isFollowRedirectEnabled());
         if (sslContext != null) {
@@ -202,6 +203,29 @@ public class DefaultRestClient implements RestClient {
 
         final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
+    }
+
+    /**
+     * Create HttpClient with default HttpConnectionProvider or custom one, if specified in the given config.
+     * @param config Config to create connection provider if specified.
+     * @return Http client.
+     */
+    private static HttpClient createHttpClient(final RestClientConfiguration config) {
+        final Duration maxIdleTime = config.getMaxIdleTime();
+        final Duration maxLifeTime = config.getMaxLifeTime();
+        if (maxIdleTime != null || maxLifeTime != null) {
+            logger.info("Configuring custom connection provider, maxIdleTime={}, maxLifeTime={}", maxIdleTime, maxLifeTime);
+            final ConnectionProvider.Builder providerBuilder = ConnectionProvider.builder("custom");
+            if (maxIdleTime != null) {
+                providerBuilder.maxIdleTime(maxIdleTime);
+            }
+            if (maxLifeTime != null) {
+                providerBuilder.maxLifeTime(maxLifeTime);
+            }
+            return HttpClient.create(providerBuilder.build());
+        } else {
+            return HttpClient.create();
+        }
     }
 
     private static Optional<ObjectMapper> createObjectMapper(final RestClientConfiguration config, Collection<Module> modules) {
@@ -848,6 +872,26 @@ public class DefaultRestClient implements RestClient {
          */
         public Builder connectionTimeout(Integer connectionTimeout) {
             config.setConnectionTimeout(connectionTimeout);
+            return this;
+        }
+
+        /**
+         * Configure ConnectionProvider max idle time. {@code Null} means no max idle time.
+         * @param maxIdleTime Max idle time.
+         * @return Builder.
+         */
+        public Builder maxIdleTime(final Duration maxIdleTime) {
+            config.setMaxIdleTime(maxIdleTime);
+            return this;
+        }
+
+        /**
+         * Configure ConnectionProvider max life time. {@code Null} means no max life time.
+         * @param maxLifeTime Max life time.
+         * @return Builder.
+         */
+        public Builder maxLifeTime(Duration maxLifeTime) {
+            config.setMaxLifeTime(maxLifeTime);
             return this;
         }
 

@@ -53,6 +53,9 @@ public class RestClientConfiguration {
     private Integer connectionTimeout = 5000;
     private Duration responseTimeout;
 
+    private Duration maxIdleTime;
+    private Duration maxLifeTime;
+
     // TLS certificate settings
     private boolean acceptInvalidSslCertificate = false;
     private Duration handshakeTimeout;
@@ -253,6 +256,44 @@ public class RestClientConfiguration {
      */
     public void setConnectionTimeout(Integer connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
+    }
+
+    /**
+     * Get max idle time.
+     *
+     * @return Max idle time.
+     */
+    public Duration getMaxIdleTime() {
+        return maxIdleTime;
+    }
+
+    /**
+     * Set the options to use for configuring ConnectionProvider max idle time.
+     * {@code Null} means no max idle time.
+     *
+     * @param maxIdleTime Max idle time.
+     */
+    public void setMaxIdleTime(Duration maxIdleTime) {
+        this.maxIdleTime = maxIdleTime;
+    }
+
+    /**
+     * Get max life time.
+     *
+     * @return Max life time.
+     */
+    public Duration getMaxLifeTime() {
+        return maxLifeTime;
+    }
+
+    /**
+     * Set the options to use for configuring ConnectionProvider max life time.
+     * {@code Null} means no max life time.
+     *
+     * @param maxLifeTime Max life time.
+     */
+    public void setMaxLifeTime(Duration maxLifeTime) {
+        this.maxLifeTime = maxLifeTime;
     }
 
     /**

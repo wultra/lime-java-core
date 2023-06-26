@@ -23,8 +23,11 @@ import io.getlime.core.rest.model.base.response.ErrorResponse;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.epoll.EpollChannelOption;
+import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
+import jdk.net.ExtendedSocketOptions;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +47,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.*;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.resources.ConnectionProvider;
 import reactor.netty.tcp.SslProvider;
 import reactor.netty.transport.ProxyProvider;
 import reactor.netty.transport.logging.AdvancedByteBufFormat;
@@ -114,7 +118,7 @@ public class DefaultRestClient implements RestClient {
         }
         final WebClient.Builder builder = WebClient.builder();
         final SslContext sslContext = SslUtils.prepareSslContext(config);
-        HttpClient httpClient = HttpClient.create()
+        HttpClient httpClient = createHttpClient(config)
                 .wiretap(this.getClass().getCanonicalName(), LogLevel.TRACE, AdvancedByteBufFormat.TEXTUAL)
                 .followRedirect(config.isFollowRedirectEnabled());
         if (sslContext != null) {
@@ -132,6 +136,10 @@ public class DefaultRestClient implements RestClient {
                     ChannelOption.CONNECT_TIMEOUT_MILLIS,
                     config.getConnectionTimeout());
         }
+        if (config.isKeepAliveEnabled()) {
+            httpClient = configureKeepAlive(httpClient, config);
+        }
+
         final Duration responseTimeout = config.getResponseTimeout();
         if (responseTimeout != null) {
             logger.debug("Setting response timeout {}", responseTimeout);
@@ -178,6 +186,50 @@ public class DefaultRestClient implements RestClient {
 
         final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
+    }
+
+    private static HttpClient configureKeepAlive(final HttpClient httpClient, final RestClientConfiguration config) throws RestClientException {
+        final Duration keepAliveIdle = config.getKeepAliveIdle();
+        final Duration keepAliveInterval = config.getKeepAliveInterval();
+        final Integer keepAliveCount = config.getKeepAliveCount();
+        logger.info("Configuring Keep-Alive, idle={}, interval={}, count={}", keepAliveIdle, keepAliveInterval, keepAliveCount);
+        if (keepAliveIdle == null || keepAliveInterval == null || keepAliveCount == null) {
+            throw new RestClientException("All Keep-Alive properties must be specified.");
+        }
+
+        final int keepIdleSeconds = Math.toIntExact(keepAliveIdle.toSeconds());
+        final int keepIntervalSeconds = Math.toIntExact(keepAliveInterval.toSeconds());
+
+        return httpClient.option(ChannelOption.SO_KEEPALIVE, true)
+                .option(NioChannelOption.of(ExtendedSocketOptions.TCP_KEEPIDLE), keepIdleSeconds)
+                .option(NioChannelOption.of(ExtendedSocketOptions.TCP_KEEPINTERVAL), keepIntervalSeconds)
+                .option(NioChannelOption.of(ExtendedSocketOptions.TCP_KEEPCOUNT), keepAliveCount)
+                .option(EpollChannelOption.TCP_KEEPIDLE, keepIdleSeconds)
+                .option(EpollChannelOption.TCP_KEEPINTVL, keepIntervalSeconds)
+                .option(EpollChannelOption.TCP_KEEPCNT, keepAliveCount);
+    }
+
+    /**
+     * Create HttpClient with default HttpConnectionProvider or custom one, if specified in the given config.
+     * @param config Config to create connection provider if specified.
+     * @return Http client.
+     */
+    private static HttpClient createHttpClient(final RestClientConfiguration config) {
+        final Duration maxIdleTime = config.getMaxIdleTime();
+        final Duration maxLifeTime = config.getMaxLifeTime();
+        if (maxIdleTime != null || maxLifeTime != null) {
+            logger.info("Configuring custom connection provider, maxIdleTime={}, maxLifeTime={}", maxIdleTime, maxLifeTime);
+            final ConnectionProvider.Builder providerBuilder = ConnectionProvider.builder("custom");
+            if (maxIdleTime != null) {
+                providerBuilder.maxIdleTime(maxIdleTime);
+            }
+            if (maxLifeTime != null) {
+                providerBuilder.maxLifeTime(maxLifeTime);
+            }
+            return HttpClient.create(providerBuilder.build());
+        } else {
+            return HttpClient.create();
+        }
     }
 
     @Override
@@ -798,6 +850,66 @@ public class DefaultRestClient implements RestClient {
          */
         public Builder connectionTimeout(Integer connectionTimeout) {
             config.setConnectionTimeout(connectionTimeout);
+            return this;
+        }
+
+        /**
+         * Configure ConnectionProvider max idle time. {@code Null} means no max idle time.
+         * @param maxIdleTime Max idle time.
+         * @return Builder.
+         */
+        public Builder maxIdleTime(final Duration maxIdleTime) {
+            config.setMaxIdleTime(maxIdleTime);
+            return this;
+        }
+
+        /**
+         * Configure ConnectionProvider max life time. {@code Null} means no max life time.
+         * @param maxLifeTime Max life time.
+         * @return Builder.
+         */
+        public Builder maxLifeTime(Duration maxLifeTime) {
+            config.setMaxLifeTime(maxLifeTime);
+            return this;
+        }
+
+        /**
+         * Configure Keep-Alive probe.
+         * @param keepAliveEnabled Keep-Alive enabled.
+         * @return Builder.
+         */
+        public Builder keepAliveEnabled(boolean keepAliveEnabled) {
+            config.setKeepAliveEnabled(keepAliveEnabled);
+            return this;
+        }
+
+        /**
+         * Configure Keep-Alive idle interval.
+         * @param keepAliveIdle Keep-Alive idle interval.
+         * @return Builder.
+         */
+        public Builder keepAliveIdle(Duration keepAliveIdle) {
+            config.setKeepAliveIdle(keepAliveIdle);
+            return this;
+        }
+
+        /**
+         * Configure Keep-Alive retransmission interval.
+         * @param keepAliveInterval Keep-Alive retransmission interval.
+         * @return Builder.
+         */
+        public Builder keepAliveInterval(Duration keepAliveInterval) {
+            config.setKeepAliveInterval(keepAliveInterval);
+            return this;
+        }
+
+        /**
+         * Configure Keep-Alive retransmission limit.
+         * @param keepAliveCount Keep-Alive retransmission limit.
+         * @return Builder.
+         */
+        public Builder keepAliveCount(Integer keepAliveCount) {
+            config.setKeepAliveCount(keepAliveCount);
             return this;
         }
 

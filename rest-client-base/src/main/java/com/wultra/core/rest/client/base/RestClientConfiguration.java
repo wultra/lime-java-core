@@ -47,6 +47,14 @@ public class RestClientConfiguration {
     private Integer connectionTimeout = 5000;
     private Duration responseTimeout;
 
+    private Duration maxIdleTime;
+    private Duration maxLifeTime;
+
+    private boolean keepAliveEnabled;
+    private Duration keepAliveIdle;
+    private Duration keepAliveInterval;
+    private Integer keepAliveCount;
+
     // TLS certificate settings
     private boolean acceptInvalidSslCertificate = false;
     private Duration handshakeTimeout;
@@ -233,6 +241,108 @@ public class RestClientConfiguration {
      */
     public void setConnectionTimeout(Integer connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
+    }
+
+    /**
+     * Get max idle time.
+     *
+     * @return Max idle time.
+     */
+    public Duration getMaxIdleTime() {
+        return maxIdleTime;
+    }
+
+    /**
+     * Set the options to use for configuring ConnectionProvider max idle time.
+     * {@code Null} means no max idle time.
+     *
+     * @param maxIdleTime Max idle time.
+     */
+    public void setMaxIdleTime(Duration maxIdleTime) {
+        this.maxIdleTime = maxIdleTime;
+    }
+
+    /**
+     * Get max life time.
+     *
+     * @return Max life time.
+     */
+    public Duration getMaxLifeTime() {
+        return maxLifeTime;
+    }
+
+    /**
+     * Set the options to use for configuring ConnectionProvider max life time.
+     * {@code Null} means no max life time.
+     *
+     * @param maxLifeTime Max life time.
+     */
+    public void setMaxLifeTime(Duration maxLifeTime) {
+        this.maxLifeTime = maxLifeTime;
+    }
+
+    /**
+     * Return whether Keep-Alive is enabled.
+     * @return {@code True} if keep-alive enabled-
+     */
+    public boolean isKeepAliveEnabled() {
+        return keepAliveEnabled;
+    }
+
+    /**
+     * Set whether Keep-Alive is enabled
+     * @param keepAliveEnabled Keep-Alive.
+     */
+    public void setKeepAliveEnabled(boolean keepAliveEnabled) {
+        this.keepAliveEnabled = keepAliveEnabled;
+    }
+
+    /**
+     * Get Keep-Alive idle time.
+     * @return Keep-Alive idle time.
+     */
+    public Duration getKeepAliveIdle() {
+        return keepAliveIdle;
+    }
+
+    /**
+     * Set Keep-Alive idle time.
+     * @param keepAliveIdle Keep-Alive idle time.
+     */
+    public void setKeepAliveIdle(Duration keepAliveIdle) {
+        this.keepAliveIdle = keepAliveIdle;
+    }
+
+    /**
+     * Get Keep-Alive retransmission interval time.
+     * @return Keep-Alive retransmission interval time.
+     */
+    public Duration getKeepAliveInterval() {
+        return keepAliveInterval;
+    }
+
+    /**
+     * Set Keep-Alive retransmission interval time.
+     * @param keepAliveInterval Keep-Alive retransmission interval time.
+     */
+    public void setKeepAliveInterval(Duration keepAliveInterval) {
+        this.keepAliveInterval = keepAliveInterval;
+    }
+
+    /**
+     * Get Keep-Alive retransmission limit.
+     * @return Keep-Alive retransmission limit.
+     */
+    public Integer getKeepAliveCount() {
+        return keepAliveCount;
+    }
+
+    /**
+     * Set Keep-Alive retransmission limit.
+     * @param keepAliveCount Keep-Alive retransmission limit.
+     */
+    public void setKeepAliveCount(Integer keepAliveCount) {
+        this.keepAliveCount = keepAliveCount;
     }
 
     /**

@@ -324,7 +324,7 @@ public class DefaultRestClient implements RestClient {
 
             if (ex instanceof DataBufferLimitException) {
                 // Log error for large server response for closer inspection
-                logger.warn("Error while retrieving large server response.", ex);
+                logger.warn("Error while retrieving large server response", ex);
             }
 
 

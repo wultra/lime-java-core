@@ -15,6 +15,10 @@
  */
 package com.wultra.core.rest.client.base;
 
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import ch.qos.logback.classic.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wultra.core.rest.client.base.model.TestRequest;
@@ -49,6 +53,7 @@ import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -656,6 +661,25 @@ class DefaultRestClientTest {
         assertEquals("OK", responseEntity.getBody().getStatus());
         assertEquals(requestData, responseEntity.getBody().getResponseObject().getResponse());
     }
+
+    @Test
+    void testPostWithLargeServerResponse() {
+        final Logger defaultRestClientLogger = (Logger) LoggerFactory.getLogger(DefaultRestClient.class);
+        final ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        defaultRestClientLogger.addAppender(listAppender);
+
+        final RestClientException exception = assertThrows(RestClientException.class,
+                () -> restClient.post("/object-response-large", null, new ParameterizedTypeReference<Response>() {
+                }));
+
+        final List<ILoggingEvent> logsList = listAppender.list;
+        assertFalse(logsList.isEmpty());
+        assertEquals(1, logsList.stream().filter(
+                logEvent -> logEvent.getMessage().equals("Error while retrieving large server response")).count());
+        assertNotNull(exception.getMessage());
+    }
+
 
     @Test
     void testDefaultHttpHeaders() throws RestClientException {

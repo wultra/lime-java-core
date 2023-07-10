@@ -676,7 +676,7 @@ class DefaultRestClientTest {
         final List<ILoggingEvent> logsList = listAppender.list;
         assertFalse(logsList.isEmpty());
         assertEquals(1, logsList.stream().filter(
-                logEvent -> logEvent.getMessage().equals("Error while retrieving large server response.")).count());
+                logEvent -> logEvent.getMessage().equals("Error while retrieving large server response")).count());
         assertNotNull(exception.getMessage());
     }
 

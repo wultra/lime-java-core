@@ -904,6 +904,16 @@ public class DefaultRestClient implements RestClient {
         }
 
         /**
+         * Configure response timeout. {@code Null} means no response timeout.
+         * @param responseTimeout Response timeout.
+         * @return Builder.
+         */
+        public Builder responseTimeout(final Duration responseTimeout) {
+            config.setResponseTimeout(responseTimeout);
+            return this;
+        }
+
+        /**
          * Configure ConnectionProvider max idle time. {@code Null} means no max idle time.
          * @param maxIdleTime Max idle time.
          * @return Builder.

@@ -51,6 +51,7 @@ public class RestClientConfiguration {
 
     // HTTP connection timeout
     private Integer connectionTimeout = 5000;
+        Duration duration = Duration.ofSeconds(connectionTimeout);
     private Duration responseTimeout;
 
     private Duration maxIdleTime;

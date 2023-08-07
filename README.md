@@ -126,6 +126,7 @@ The following options are available for the builder:
   - `username` - proxy username
   - `password` - proxy password
 - `connectionTimeout` - connection timeout in milliseconds (default: 5000 ms)
+- `responseTimeout` - Maximum duration allowed between each network-level read operations. (default: no timeout)
 - `maxIdleTime` - ConnectionProvider max idle time. (default: no max idle time)
 - `maxLifeTime` - ConnectionProvider max life time. (default: no max life time)
 - `keepAliveEnabled` - Keep-Alive probe feature flag (default: false)

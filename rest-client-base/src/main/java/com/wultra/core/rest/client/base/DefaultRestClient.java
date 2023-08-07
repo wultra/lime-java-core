@@ -140,7 +140,7 @@ public class DefaultRestClient implements RestClient {
         if (config.getConnectionTimeout() != null) {
             httpClient = httpClient.option(
                     ChannelOption.CONNECT_TIMEOUT_MILLIS,
-                    config.getConnectionTimeout());
+                    Math.toIntExact(config.getConnectionTimeout().toMillis()));
         }
         if (config.isKeepAliveEnabled()) {
             httpClient = configureKeepAlive(httpClient, config);
@@ -906,10 +906,11 @@ public class DefaultRestClient implements RestClient {
          * @param connectionTimeout Connection timeout.
          * @return Builder.
          */
-        public Builder connectionTimeout(Integer connectionTimeout) {
+        public Builder connectionTimeout(Duration connectionTimeout) {
             config.setConnectionTimeout(connectionTimeout);
             return this;
         }
+
 
         /**
          * Configure response timeout. {@code Null} means no response timeout.

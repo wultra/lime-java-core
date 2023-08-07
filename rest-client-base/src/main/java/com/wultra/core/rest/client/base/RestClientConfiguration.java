@@ -50,7 +50,7 @@ public class RestClientConfiguration {
     private String proxyPassword;
 
     // HTTP connection timeout
-    private Integer connectionTimeout = 5000;
+    private Duration connectionTimeout = Duration.ofMillis(5000);
     private Duration responseTimeout;
 
     private Duration maxIdleTime;
@@ -250,18 +250,19 @@ public class RestClientConfiguration {
      *
      * @return Connection timeout.
      */
-    public Integer getConnectionTimeout() {
+    public Duration getConnectionTimeout() {
         return connectionTimeout;
     }
 
     /**
-     * Set connection timeout in milliseconds.
+     * Set connection timeout.
      *
-     * @param connectionTimeout Connection timeout in milliseconds.
+     * @param connectionTimeout Connection timeout as a Duration object.
      */
-    public void setConnectionTimeout(Integer connectionTimeout) {
+    public void setConnectionTimeout(Duration connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
     }
+
 
     /**
      * Get max idle time.

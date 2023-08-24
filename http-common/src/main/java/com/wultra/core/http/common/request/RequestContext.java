@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Wultra s.r.o.
+ * Copyright 2023 Wultra s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.wultra.core.audit.base.model;
+package com.wultra.core.http.common.request;
 
-import org.springframework.lang.NonNull;
-
-import java.util.Date;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
- * Audit parameter model class.
+ * Context of the HTTP request.
  *
- * @param auditLogId Audit log identifier.
- * @param timestamp  Timestamp when audit record was created.
- * @param key        Parameter key.
- * @param value      Parameter value.
- * @author Roman Strobl, roman.strobl@wultra.com
+ * @author Petr Dvorak, petr@wultra.com
+ * @author Lubos Racansky, lubos.racansky@wultra.com
  */
-public record AuditParam(@NonNull String auditLogId, @NonNull Date timestamp, @NonNull String key, Object value) {
+@Builder
+@Getter
+@ToString
+@EqualsAndHashCode
+public class RequestContext {
+
+    private String ipAddress;
+    private String userAgent;
+
 }

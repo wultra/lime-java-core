@@ -15,7 +15,10 @@
  */
 package com.wultra.core.rest.client.base;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
@@ -23,9 +26,12 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * REST client configuration.
+ * This class is safe to use as {@code org.springframework.boot.context.properties.ConfigurationProperties}.
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
@@ -44,8 +50,16 @@ public class RestClientConfiguration {
     private String proxyPassword;
 
     // HTTP connection timeout
-    private Integer connectionTimeout = 5000;
+    private Duration connectionTimeout = Duration.ofMillis(5000);
     private Duration responseTimeout;
+
+    private Duration maxIdleTime;
+    private Duration maxLifeTime;
+
+    private boolean keepAliveEnabled;
+    private Duration keepAliveIdle;
+    private Duration keepAliveInterval;
+    private Integer keepAliveCount;
 
     // TLS certificate settings
     private boolean acceptInvalidSslCertificate = false;
@@ -58,6 +72,11 @@ public class RestClientConfiguration {
     private boolean httpBasicAuthEnabled = false;
     private String httpBasicAuthUsername;
     private String httpBasicAuthPassword;
+
+    // HTTP Digest Authentication
+    private boolean httpDigestAuthEnabled = false;
+    private String httpDigestAuthUsername;
+    private String httpDigestAuthPassword;
 
     // TLS client certificate authentication
     private boolean certificateAuthEnabled = false;
@@ -74,8 +93,7 @@ public class RestClientConfiguration {
     private String trustStoreLocation;
     private String trustStorePassword;
 
-    // Custom object mapper
-    private ObjectMapper objectMapper;
+    private JacksonConfiguration jacksonConfiguration;
 
     // Custom default HTTP headers
     private HttpHeaders defaultHttpHeaders;
@@ -85,9 +103,19 @@ public class RestClientConfiguration {
 
     // Handling responses settings
     /**
-     * Enables/disables auto-redirect of HTTP 30x statuses
+     * Enables/disables auto-redirect of HTTP 30x statuses.
      */
     private boolean followRedirectEnabled = false;
+
+    /**
+     * Enables/disables simple one-line logging of HTTP requests and responses.
+     */
+    private boolean simpleLoggingEnabled = false;
+
+    /**
+     * Enables/disables usage of WARNING level in simple one-line logging.
+     */
+    private boolean logErrorResponsesAsWarnings = true;
 
     /**
      * Get base URL.
@@ -222,17 +250,120 @@ public class RestClientConfiguration {
      *
      * @return Connection timeout.
      */
-    public Integer getConnectionTimeout() {
+    public Duration getConnectionTimeout() {
         return connectionTimeout;
     }
 
     /**
-     * Set connection timeout in milliseconds.
+     * Set connection timeout.
      *
-     * @param connectionTimeout Connection timeout in milliseconds.
+     * @param connectionTimeout Connection timeout as a Duration object.
      */
-    public void setConnectionTimeout(Integer connectionTimeout) {
+    public void setConnectionTimeout(Duration connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
+    }
+
+
+    /**
+     * Get max idle time.
+     *
+     * @return Max idle time.
+     */
+    public Duration getMaxIdleTime() {
+        return maxIdleTime;
+    }
+
+    /**
+     * Set the options to use for configuring ConnectionProvider max idle time.
+     * {@code Null} means no max idle time.
+     *
+     * @param maxIdleTime Max idle time.
+     */
+    public void setMaxIdleTime(Duration maxIdleTime) {
+        this.maxIdleTime = maxIdleTime;
+    }
+
+    /**
+     * Get max life time.
+     *
+     * @return Max life time.
+     */
+    public Duration getMaxLifeTime() {
+        return maxLifeTime;
+    }
+
+    /**
+     * Set the options to use for configuring ConnectionProvider max life time.
+     * {@code Null} means no max life time.
+     *
+     * @param maxLifeTime Max life time.
+     */
+    public void setMaxLifeTime(Duration maxLifeTime) {
+        this.maxLifeTime = maxLifeTime;
+    }
+
+    /**
+     * Return whether Keep-Alive is enabled.
+     * @return {@code True} if keep-alive enabled-
+     */
+    public boolean isKeepAliveEnabled() {
+        return keepAliveEnabled;
+    }
+
+    /**
+     * Set whether Keep-Alive is enabled
+     * @param keepAliveEnabled Keep-Alive.
+     */
+    public void setKeepAliveEnabled(boolean keepAliveEnabled) {
+        this.keepAliveEnabled = keepAliveEnabled;
+    }
+
+    /**
+     * Get Keep-Alive idle time.
+     * @return Keep-Alive idle time.
+     */
+    public Duration getKeepAliveIdle() {
+        return keepAliveIdle;
+    }
+
+    /**
+     * Set Keep-Alive idle time.
+     * @param keepAliveIdle Keep-Alive idle time.
+     */
+    public void setKeepAliveIdle(Duration keepAliveIdle) {
+        this.keepAliveIdle = keepAliveIdle;
+    }
+
+    /**
+     * Get Keep-Alive retransmission interval time.
+     * @return Keep-Alive retransmission interval time.
+     */
+    public Duration getKeepAliveInterval() {
+        return keepAliveInterval;
+    }
+
+    /**
+     * Set Keep-Alive retransmission interval time.
+     * @param keepAliveInterval Keep-Alive retransmission interval time.
+     */
+    public void setKeepAliveInterval(Duration keepAliveInterval) {
+        this.keepAliveInterval = keepAliveInterval;
+    }
+
+    /**
+     * Get Keep-Alive retransmission limit.
+     * @return Keep-Alive retransmission limit.
+     */
+    public Integer getKeepAliveCount() {
+        return keepAliveCount;
+    }
+
+    /**
+     * Set Keep-Alive retransmission limit.
+     * @param keepAliveCount Keep-Alive retransmission limit.
+     */
+    public void setKeepAliveCount(Integer keepAliveCount) {
+        this.keepAliveCount = keepAliveCount;
     }
 
     /**
@@ -313,6 +444,54 @@ public class RestClientConfiguration {
      */
     public void setHttpBasicAuthPassword(String httpBasicAuthPassword) {
         this.httpBasicAuthPassword = httpBasicAuthPassword;
+    }
+
+    /**
+     * Get whether digest HTTP authentication is enabled.
+     * @return Whether digest HTTP authentication is enabled.
+     */
+    public boolean isHttpDigestAuthEnabled() {
+        return httpDigestAuthEnabled;
+    }
+
+    /**
+     * Set whether digest HTTP authentication is enabled.
+     * @param httpDigestAuthEnabled Whether digest HTTP authentication is enabled.
+     */
+    public void setHttpDigestAuthEnabled(boolean httpDigestAuthEnabled) {
+        this.httpDigestAuthEnabled = httpDigestAuthEnabled;
+    }
+
+    /**
+     * Get username for digest HTTP authentication.
+     * @return Username for digest HTTP authentication.
+     */
+    public String getHttpDigestAuthUsername() {
+        return httpDigestAuthUsername;
+    }
+
+    /**
+     * Set username for digest HTTP authentication.
+     * @param httpDigestAuthUsername Username for digest HTTP authentication.
+     */
+    public void setHttpDigestAuthUsername(String httpDigestAuthUsername) {
+        this.httpDigestAuthUsername = httpDigestAuthUsername;
+    }
+
+    /**
+     * Get password for digest HTTP authentication.
+     * @return Password for digest HTTP authentication.
+     */
+    public String getHttpDigestAuthPassword() {
+        return httpDigestAuthPassword;
+    }
+
+    /**
+     * Set password for digest HTTP authentication.
+     * @param httpDigestAuthPassword Password for digest HTTP authentication.
+     */
+    public void setHttpDigestAuthPassword(String httpDigestAuthPassword) {
+        this.httpDigestAuthPassword = httpDigestAuthPassword;
     }
 
     /**
@@ -500,19 +679,19 @@ public class RestClientConfiguration {
     }
 
     /**
-     * Get the object mapper.
+     * Get the jackson configuration.
      * @return Object mapper.
      */
-    public ObjectMapper getObjectMapper() {
-        return objectMapper;
+    public JacksonConfiguration getJacksonConfiguration() {
+        return jacksonConfiguration;
     }
 
     /**
-     * Set the object mapper.
-     * @param objectMapper Object mapper.
+     * Set the jackson configuration.
+     * @param jacksonConfiguration jacksonConfiguration.
      */
-    public void setObjectMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public void setJacksonConfiguration(JacksonConfiguration jacksonConfiguration) {
+        this.jacksonConfiguration = jacksonConfiguration;
     }
 
     /**
@@ -600,4 +779,49 @@ public class RestClientConfiguration {
         this.followRedirectEnabled = followRedirectEnabled;
     }
 
+    /**
+     * Get whether simple one-line logging of HTTP requests and responses is enabled.
+     * @return Whether simple logging is enabled.
+     */
+    public boolean isSimpleLoggingEnabled() {
+        return simpleLoggingEnabled;
+    }
+
+    /**
+     * Set whether simple one-line logging of HTTP requests and responses is enabled.
+     * @param simpleLoggingEnabled Whether simple logging is enabled.
+     */
+    public void setSimpleLoggingEnabled(boolean simpleLoggingEnabled) {
+        this.simpleLoggingEnabled = simpleLoggingEnabled;
+    }
+
+    /**
+     * Get whether error HTTP responses are logged as warnings.
+     * @return Whether error HTTP responses are logged as warnings.
+     */
+    public boolean isLogErrorResponsesAsWarnings() {
+        return logErrorResponsesAsWarnings;
+    }
+
+    /**
+     * Set whether error HTTP responses are logged as warnings.
+     * @param logErrorResponsesAsWarnings Whether error HTTP responses are logged as warnings.
+     */
+    public void setLogErrorResponsesAsWarnings(boolean logErrorResponsesAsWarnings) {
+        this.logErrorResponsesAsWarnings = logErrorResponsesAsWarnings;
+    }
+
+    @Getter
+    @Setter
+    public static class JacksonConfiguration {
+        /**
+         * Jackson on/off features that affect the way Java objects are serialized.
+         */
+        private final Map<SerializationFeature, Boolean> serialization = new EnumMap<>(SerializationFeature.class);
+
+        /**
+         * Jackson on/off features that affect the way Java objects are deserialized.
+         */
+        private final Map<DeserializationFeature, Boolean> deserialization = new EnumMap<>(DeserializationFeature.class);
+    }
 }

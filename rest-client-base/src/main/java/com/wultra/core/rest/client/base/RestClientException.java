@@ -17,7 +17,7 @@ package com.wultra.core.rest.client.base;
 
 import io.getlime.core.rest.model.base.response.ErrorResponse;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 /**
  * REST client exception.
@@ -29,7 +29,7 @@ public class RestClientException extends Exception {
     /**
      * HTTP status.
      */
-    private HttpStatus statusCode;
+    private HttpStatusCode statusCode;
 
     /**
      * Raw response.
@@ -70,7 +70,7 @@ public class RestClientException extends Exception {
      * @param response Raw response.
      * @param responseHeaders Response HTTP headers.
      */
-    public RestClientException(String message, HttpStatus statusCode, String response, HttpHeaders responseHeaders) {
+    public RestClientException(String message, HttpStatusCode statusCode, String response, HttpHeaders responseHeaders) {
         super(message);
         this.statusCode = statusCode;
         this.response = response;
@@ -85,7 +85,7 @@ public class RestClientException extends Exception {
      * @param responseHeaders Response HTTP headers.
      * @param errorResponse Error response.
      */
-    public RestClientException(String message, HttpStatus statusCode, String response, HttpHeaders responseHeaders, ErrorResponse errorResponse) {
+    public RestClientException(String message, HttpStatusCode statusCode, String response, HttpHeaders responseHeaders, ErrorResponse errorResponse) {
         super(message);
         this.statusCode = statusCode;
         this.response = response;
@@ -97,7 +97,7 @@ public class RestClientException extends Exception {
      * Get HTTP status code.
      * @return HTTP status code.
      */
-    public HttpStatus getStatusCode() {
+    public HttpStatusCode getStatusCode() {
         return statusCode;
     }
 

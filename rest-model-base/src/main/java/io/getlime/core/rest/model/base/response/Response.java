@@ -16,7 +16,7 @@
 package io.getlime.core.rest.model.base.response;
 
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * Simple status only response object.

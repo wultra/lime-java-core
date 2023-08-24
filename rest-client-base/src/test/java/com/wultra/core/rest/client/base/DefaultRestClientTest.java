@@ -15,6 +15,10 @@
  */
 package com.wultra.core.rest.client.base;
 
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import ch.qos.logback.classic.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wultra.core.rest.client.base.model.TestRequest;
@@ -27,7 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DefaultDataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
@@ -49,6 +53,7 @@ import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,18 +66,27 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class DefaultRestClientTest {
 
+    private static final String PUBLIC_PATH = "/public/api/test";
+    private static final String PRIVATE_PATH = "/private/api/test";
+
     @LocalServerPort
     private int port;
 
     private RestClient restClient;
+
+    private String publicBaseUrl;
+    private String privateBaseUrl;
 
     // Timeout for synchronization of non-blocking calls using countdown latch
     private static final int SYNCHRONIZATION_TIMEOUT = 10000;
 
     @BeforeEach
     void initRestClient() throws RestClientException {
-        RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        final RestClientConfiguration config = prepareConfiguration();
+        final String baseUrl = "https://localhost:" + port;
+        publicBaseUrl = baseUrl + PUBLIC_PATH;
+        privateBaseUrl = baseUrl + PRIVATE_PATH;
+        config.setBaseUrl(publicBaseUrl);
         restClient = new DefaultRestClient(config);
     }
 
@@ -92,12 +106,13 @@ class DefaultRestClientTest {
         config.setHttpBasicAuthUsername("test");
         config.setHttpBasicAuthPassword("test");
         config.setResponseTimeout(Duration.ofSeconds(10));
+        config.setSimpleLoggingEnabled(true);
         return config;
     }
 
     @Test
     void testGetWithResponse() throws RestClientException {
-        ResponseEntity<Response> responseEntity = restClient.get("/response", new ParameterizedTypeReference<Response>() {});
+        final ResponseEntity<Response> responseEntity = restClient.get("/response", new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
     }
@@ -119,20 +134,20 @@ class DefaultRestClientTest {
             countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assertions.fail(error.getMessage());
-        restClient.getNonBlocking("/response", new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
+        restClient.getNonBlocking("/response", new ParameterizedTypeReference<>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
     @Test
     void testGetWithTestResponse() throws RestClientException {
-        ResponseEntity<TestResponse> responseEntity = restClient.get("/test-response", new ParameterizedTypeReference<TestResponse>() {});
+        final ResponseEntity<TestResponse> responseEntity = restClient.get("/test-response", new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("test response", responseEntity.getBody().getResponse());
     }
 
     @Test
     void testGetWithObjectResponse() throws RestClientException {
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.get("/object-response", new ParameterizedTypeReference<ObjectResponse<TestResponse>>() {});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.get("/object-response", new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
         assertEquals("object response", responseEntity.getBody().getResponseObject().getResponse());
@@ -147,7 +162,7 @@ class DefaultRestClientTest {
 
     @Test
     void testPostWithResponse() throws RestClientException {
-        ResponseEntity<Response> responseEntity = restClient.post("/response", null, new ParameterizedTypeReference<Response>() {});
+        final ResponseEntity<Response> responseEntity = restClient.post("/response", null, new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
     }
@@ -169,20 +184,20 @@ class DefaultRestClientTest {
             countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assertions.fail(error.getMessage());
-        restClient.postNonBlocking("/response", null, new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
+        restClient.postNonBlocking("/response", null, new ParameterizedTypeReference<>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
     @Test
     void testPostWithTestResponse() throws RestClientException {
-        ResponseEntity<TestResponse> responseEntity = restClient.post("/test-response", null, new ParameterizedTypeReference<TestResponse>() {});
+        final ResponseEntity<TestResponse> responseEntity = restClient.post("/test-response", null, new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("test response", responseEntity.getBody().getResponse());
     }
 
     @Test
     void testPostWithObjectResponse() throws RestClientException {
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.post("/object-response", null, new ParameterizedTypeReference<ObjectResponse<TestResponse>>() {});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.post("/object-response", null, new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
         assertEquals("object response", responseEntity.getBody().getResponseObject().getResponse());
@@ -199,7 +214,7 @@ class DefaultRestClientTest {
     void testPostWithObjectRequestResponse() throws RestClientException {
         String requestData = String.valueOf(System.currentTimeMillis());
         ObjectRequest<TestRequest> request = new ObjectRequest<>(new TestRequest(requestData));
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.post("/object-request-response", request, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.post("/object-request-response", request, new ParameterizedTypeReference<>(){});
         assertNotNull(responseEntity);
         assertNotNull(responseEntity.getBody());
         assertNotNull(responseEntity.getBody().getResponseObject());
@@ -229,13 +244,13 @@ class DefaultRestClientTest {
             countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assertions.fail(error.getMessage());
-        restClient.postNonBlocking("/object-request-response", request, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}, onSuccess, onError);
+        restClient.postNonBlocking("/object-request-response", request, new ParameterizedTypeReference<>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
     @Test
     void testPutWithResponse() throws RestClientException {
-        ResponseEntity<Response> responseEntity = restClient.put("/response", null, new ParameterizedTypeReference<Response>() {});
+        final ResponseEntity<Response> responseEntity = restClient.put("/response", null, new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
     }
@@ -257,20 +272,20 @@ class DefaultRestClientTest {
             countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assertions.fail(error.getMessage());
-        restClient.putNonBlocking("/response", null, new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
+        restClient.putNonBlocking("/response", null, new ParameterizedTypeReference<>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
     @Test
     void testPutWithTestResponse() throws RestClientException {
-        ResponseEntity<TestResponse> responseEntity = restClient.put("/test-response", null, new ParameterizedTypeReference<TestResponse>() {});
+        final ResponseEntity<TestResponse> responseEntity = restClient.put("/test-response", null, new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("test response", responseEntity.getBody().getResponse());
     }
 
     @Test
     void testPutWithObjectResponse() throws RestClientException {
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.put("/object-response", null, new ParameterizedTypeReference<ObjectResponse<TestResponse>>() {});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.put("/object-response", null, new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
         assertEquals("object response", responseEntity.getBody().getResponseObject().getResponse());
@@ -287,7 +302,7 @@ class DefaultRestClientTest {
     void testPutWithObjectRequestResponse() throws RestClientException {
         String requestData = String.valueOf(System.currentTimeMillis());
         ObjectRequest<TestRequest> request = new ObjectRequest<>(new TestRequest(requestData));
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.put("/object-request-response", request, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.put("/object-request-response", request, new ParameterizedTypeReference<>(){});
         assertNotNull(responseEntity);
         assertNotNull(responseEntity.getBody());
         assertNotNull(responseEntity.getBody().getResponseObject());
@@ -317,13 +332,13 @@ class DefaultRestClientTest {
             countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assertions.fail(error.getMessage());
-        restClient.putNonBlocking("/object-request-response", request, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}, onSuccess, onError);
+        restClient.putNonBlocking("/object-request-response", request, new ParameterizedTypeReference<>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
     @Test
     void testDeleteWithResponse() throws RestClientException {
-        ResponseEntity<Response> responseEntity = restClient.delete("/response", new ParameterizedTypeReference<Response>() {});
+        final ResponseEntity<Response> responseEntity = restClient.delete("/response", new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
     }
@@ -345,20 +360,20 @@ class DefaultRestClientTest {
             countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assertions.fail(error.getMessage());
-        restClient.deleteNonBlocking("/response", new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
+        restClient.deleteNonBlocking("/response", new ParameterizedTypeReference<>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
     @Test
     void testDeleteWithTestResponse() throws RestClientException {
-        ResponseEntity<TestResponse> responseEntity = restClient.delete("/test-response", new ParameterizedTypeReference<TestResponse>() {});
+        final ResponseEntity<TestResponse> responseEntity = restClient.delete("/test-response", new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("test response", responseEntity.getBody().getResponse());
     }
 
     @Test
     void testDeleteWithObjectResponse() throws RestClientException {
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.delete("/object-response", new ParameterizedTypeReference<ObjectResponse<TestResponse>>() {});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.delete("/object-response", new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
         assertEquals("object response", responseEntity.getBody().getResponseObject().getResponse());
@@ -413,7 +428,7 @@ class DefaultRestClientTest {
             assertEquals("Test message", ex.getErrorResponse().getResponseObject().getMessage());
             countDownLatch.countDown();
         };
-        restClient.postNonBlocking("/error-response", null, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}, onSuccess, onError);
+        restClient.postNonBlocking("/error-response", null, new ParameterizedTypeReference<>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
@@ -421,7 +436,7 @@ class DefaultRestClientTest {
     void testGetWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.getObject("https://localhost:" + port + "/api/test/response");
+        Response response = restClient.getObject(publicBaseUrl + "/response");
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
@@ -430,7 +445,7 @@ class DefaultRestClientTest {
     void testPostWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.postObject("https://localhost:" + port + "/api/test/response", null);
+        Response response = restClient.postObject(publicBaseUrl + "/response", null);
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
@@ -439,14 +454,14 @@ class DefaultRestClientTest {
     void testPutWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.putObject("https://localhost:" + port + "/api/test/response", null);
+        Response response = restClient.putObject(publicBaseUrl + "/response", null);
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
 
     @Test
     void testPatchWithResponse() throws RestClientException {
-        ResponseEntity<Response> responseEntity = restClient.patch("/response", null, new ParameterizedTypeReference<Response>() {});
+        final ResponseEntity<Response> responseEntity = restClient.patch("/response", null, new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
     }
@@ -468,20 +483,20 @@ class DefaultRestClientTest {
             countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assertions.fail(error.getMessage());
-        restClient.patchNonBlocking("/response", null, new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
+        restClient.patchNonBlocking("/response", null, new ParameterizedTypeReference<>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
     @Test
     void testPatchWithTestResponse() throws RestClientException {
-        ResponseEntity<TestResponse> responseEntity = restClient.patch("/test-response", null, new ParameterizedTypeReference<TestResponse>() {});
+        final ResponseEntity<TestResponse> responseEntity = restClient.patch("/test-response", null, new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("test response", responseEntity.getBody().getResponse());
     }
 
     @Test
     void testPatchWithObjectResponse() throws RestClientException {
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.patch("/object-response", null, new ParameterizedTypeReference<ObjectResponse<TestResponse>>() {});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.patch("/object-response", null, new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
         assertEquals("object response", responseEntity.getBody().getResponseObject().getResponse());
@@ -498,7 +513,7 @@ class DefaultRestClientTest {
     void testPatchWithObjectRequestResponse() throws RestClientException {
         String requestData = String.valueOf(System.currentTimeMillis());
         ObjectRequest<TestRequest> request = new ObjectRequest<>(new TestRequest(requestData));
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.patch("/object-request-response", request, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.patch("/object-request-response", request, new ParameterizedTypeReference<>(){});
         assertNotNull(responseEntity);
         assertNotNull(responseEntity.getBody());
         assertNotNull(responseEntity.getBody().getResponseObject());
@@ -528,13 +543,13 @@ class DefaultRestClientTest {
             countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assertions.fail(error.getMessage());
-        restClient.patchNonBlocking("/object-request-response", request, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){}, onSuccess, onError);
+        restClient.patchNonBlocking("/object-request-response", request, new ParameterizedTypeReference<>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
     @Test
     void testHeadWithResponse() throws RestClientException {
-        ResponseEntity<Response> responseEntity = restClient.head("/response", new ParameterizedTypeReference<Response>() {});
+        final ResponseEntity<Response> responseEntity = restClient.head("/response", new ParameterizedTypeReference<>() {});
         assertFalse(responseEntity.getHeaders().isEmpty());
         assertNull(responseEntity.getBody());
     }
@@ -557,13 +572,13 @@ class DefaultRestClientTest {
             countDownLatch.countDown();
         };
         Consumer<Throwable> onError = error -> Assertions.fail(error.getMessage());
-        restClient.headNonBlocking("/response", new ParameterizedTypeReference<Response>(){}, onSuccess, onError);
+        restClient.headNonBlocking("/response", new ParameterizedTypeReference<>(){}, onSuccess, onError);
         assertTrue(countDownLatch.await(SYNCHRONIZATION_TIMEOUT, TimeUnit.MILLISECONDS));
     }
 
     @Test
     void testHeadWithTestResponse() throws RestClientException {
-        ResponseEntity<TestResponse> responseEntity = restClient.head("/test-response", new ParameterizedTypeReference<TestResponse>() {});
+        final ResponseEntity<TestResponse> responseEntity = restClient.head("/test-response", new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getHeaders());
         assertFalse(responseEntity.getHeaders().isEmpty());
         assertNull(responseEntity.getBody());
@@ -571,7 +586,7 @@ class DefaultRestClientTest {
 
     @Test
     void testHeadWithObjectResponse() throws RestClientException {
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.head("/object-response", new ParameterizedTypeReference<ObjectResponse<TestResponse>>() {});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.head("/object-response", new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getHeaders());
         assertFalse(responseEntity.getHeaders().isEmpty());
         assertNull(responseEntity.getBody());
@@ -588,7 +603,7 @@ class DefaultRestClientTest {
     void testHeadWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.headObject("https://localhost:" + port + "/api/test/response");
+        Response response = restClient.headObject(publicBaseUrl + "/response");
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
@@ -597,7 +612,7 @@ class DefaultRestClientTest {
     void testPatchWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.patchObject("https://localhost:" + port + "/api/test/response", null);
+        Response response = restClient.patchObject(publicBaseUrl + "/response", null);
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
@@ -606,7 +621,7 @@ class DefaultRestClientTest {
     void testDeleteWithFullUrl() throws RestClientException {
         RestClientConfiguration config = prepareConfiguration();
         restClient = new DefaultRestClient(config);
-        Response response = restClient.deleteObject("https://localhost:" + port + "/api/test/response");
+        Response response = restClient.deleteObject(publicBaseUrl + "/response");
         assertNotNull(response);
         assertEquals("OK", response.getStatus());
     }
@@ -620,7 +635,7 @@ class DefaultRestClientTest {
         DefaultDataBufferFactory factory = new DefaultDataBufferFactory();
         DefaultDataBuffer dataBuffer = factory.wrap(ByteBuffer.wrap(data));
         Object dataBufferFlux = Flux.just(dataBuffer);
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.post("/object-request-response", dataBufferFlux, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity = restClient.post("/object-request-response", dataBufferFlux, new ParameterizedTypeReference<>(){});
         assertNotNull(responseEntity);
         assertNotNull(responseEntity.getBody());
         assertNotNull(responseEntity.getBody().getResponseObject());
@@ -638,14 +653,33 @@ class DefaultRestClientTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity =
-                restClient.post("/multipart-request-response", bodyBuilder.build(), null, headers, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity =
+                restClient.post("/multipart-request-response", bodyBuilder.build(), null, headers, new ParameterizedTypeReference<>(){});
         assertNotNull(responseEntity);
         assertNotNull(responseEntity.getBody());
         assertNotNull(responseEntity.getBody().getResponseObject());
         assertEquals("OK", responseEntity.getBody().getStatus());
         assertEquals(requestData, responseEntity.getBody().getResponseObject().getResponse());
     }
+
+    @Test
+    void testPostWithLargeServerResponse() {
+        final Logger defaultRestClientLogger = (Logger) LoggerFactory.getLogger(DefaultRestClient.class);
+        final ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        defaultRestClientLogger.addAppender(listAppender);
+
+        final RestClientException exception = assertThrows(RestClientException.class,
+                () -> restClient.post("/object-response-large", null, new ParameterizedTypeReference<Response>() {
+                }));
+
+        final List<ILoggingEvent> logsList = listAppender.list;
+        assertFalse(logsList.isEmpty());
+        assertEquals(1, logsList.stream().filter(
+                logEvent -> logEvent.getMessage().equals("Error while retrieving large server response")).count());
+        assertNotNull(exception.getMessage());
+    }
+
 
     @Test
     void testDefaultHttpHeaders() throws RestClientException {
@@ -655,12 +689,12 @@ class DefaultRestClientTest {
         headers.set(headerName, headerVaue);
 
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         config.setDefaultHttpHeaders(headers);
         RestClient restClient = new DefaultRestClient(config);
 
-        ResponseEntity<ObjectResponse<TestResponse>> responseEntity =
-                restClient.post("/request-headers-response", null, new ParameterizedTypeReference<ObjectResponse<TestResponse>>(){});
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity =
+                restClient.post("/request-headers-response", null, new ParameterizedTypeReference<>(){});
         assertTrue(responseEntity.getHeaders().containsKey(headerName));
         assertEquals(headerVaue, responseEntity.getHeaders().getFirst(headerName));
     }
@@ -680,7 +714,7 @@ class DefaultRestClientTest {
     @Test
     void testCustomKeyStoreTrustStoreBytes() throws Exception {
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         configureCustomKeyStore(config);
         configureCustomTrustStore(config);
 
@@ -692,7 +726,7 @@ class DefaultRestClientTest {
     @Test
     void testCustomKeyStoreBytes() throws Exception {
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         configureCustomKeyStore(config);
 
         restClient = new DefaultRestClient(config);
@@ -703,7 +737,7 @@ class DefaultRestClientTest {
     @Test
     void testCustomTrustStoreBytes() throws Exception {
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         configureCustomTrustStore(config);
 
         restClient = new DefaultRestClient(config);
@@ -714,26 +748,53 @@ class DefaultRestClientTest {
     @Test
     void testRedirectShouldNotFollowByDefault() throws Exception {
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         assertFalse(config.isFollowRedirectEnabled(), "Following HTTP redirects should be disabled by default");
 
         restClient = new DefaultRestClient(config);
 
-        ResponseEntity<Response> responseEntity = restClient.get("/redirect-to-response", new ParameterizedTypeReference<Response>() {});
+        final ResponseEntity<Response> responseEntity = restClient.get("/redirect-to-response", new ParameterizedTypeReference<>() {});
         assertEquals(HttpStatus.FOUND, responseEntity.getStatusCode());
     }
 
     @Test
     void testRedirectShouldFollowWhenEnabled() throws Exception {
         RestClientConfiguration config = prepareConfiguration();
-        config.setBaseUrl("https://localhost:" + port + "/api/test");
+        config.setBaseUrl(publicBaseUrl);
         config.setFollowRedirectEnabled(true);
 
         restClient = new DefaultRestClient(config);
 
-        ResponseEntity<Response> responseEntity = restClient.get("/redirect-to-response", new ParameterizedTypeReference<Response>() {});
+        final ResponseEntity<Response> responseEntity = restClient.get("/redirect-to-response", new ParameterizedTypeReference<>() {});
         assertNotNull(responseEntity.getBody());
         assertEquals("OK", responseEntity.getBody().getStatus());
+    }
+
+    @Test
+    void testGetWithResponseDigest() throws RestClientException {
+        final RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl(privateBaseUrl);
+        config.setHttpBasicAuthEnabled(false);
+        config.setHttpDigestAuthEnabled(true);
+        config.setHttpDigestAuthUsername("test-digest-user");
+        config.setHttpDigestAuthPassword("top-secret");
+        final RestClient restClient = new DefaultRestClient(config);
+
+        final ResponseEntity<Response> responseEntity = restClient.get("/response", new ParameterizedTypeReference<>() {});
+        assertNotNull(responseEntity.getBody());
+        assertEquals("OK", responseEntity.getBody().getStatus());
+    }
+
+    @Test
+    void testGetWithResponseDigestAuthFailed() throws RestClientException {
+        final RestClientConfiguration config = prepareConfiguration();
+        config.setBaseUrl(privateBaseUrl);
+        final RestClient restClient = new DefaultRestClient(config);
+
+        final RestClientException exception = assertThrows(RestClientException.class,
+                () -> restClient.get("/response", new ParameterizedTypeReference<Response>() {}));
+
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
     }
 
     private static Object getField(final Object parentBean, String path) {

@@ -47,13 +47,9 @@ public class AuditFactory {
      * @return Audit interface.
      */
     public Audit getAudit() {
-        switch (configuration.getStorageType()) {
-            case DATABASE:
-                return databaseAudit;
-
-            default:
-                throw new IllegalStateException("Unsupported storage type: " + configuration.getStorageType());
-        }
+        return switch (configuration.getStorageType()) {
+            case DATABASE -> databaseAudit;
+        };
     }
 
 }

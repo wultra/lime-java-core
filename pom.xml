@@ -8,7 +8,7 @@
 	<description>Wultra - Core Java Libraries</description>
 	<groupId>io.getlime.core</groupId>
 	<artifactId>lime-java-core-parent</artifactId>
-	<version>1.6.0</version>
+	<version>1.7.0</version>
 	<packaging>pom</packaging>
 
 	<inceptionYear>2017</inceptionYear>
@@ -43,19 +43,21 @@
 	</developers>
 
 	<modules>
+		<module>annotations</module>
 		<module>audit-base</module>
+		<module>http-common</module>
 		<module>rest-model-base</module>
 		<module>rest-client-base</module>
 	</modules>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>8</maven.compiler.source>
-		<maven.compiler.target>8</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 
 		<!-- Dependencies -->
-		<spring-boot.version>2.6.14</spring-boot.version>
-		<h2.version>2.1.214</h2.version>
+		<spring-boot.version>3.1.2</spring-boot.version>
+		<findbugs-annotations.version>3.0.1</findbugs-annotations.version>
 	</properties>
 
 	<dependencyManagement>
@@ -70,12 +72,20 @@
 		</dependencies>
 	</dependencyManagement>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.2.1</version>
+				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -89,7 +99,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.4.1</version>
+				<version>3.5.0</version>
 				<configuration>
 					<failOnError>false</failOnError>
 				</configuration>
@@ -105,7 +115,41 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-banned-dependencies</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<bannedDependencies>
+									<excludes>
+										<!-- Force switching to Jakarta EE -->
+										<exclude>javax.*</exclude>
+										<!-- already on application server or servlet container -->
+										<exclude>jakarta.servlet:jakarta.servlet-api:*</exclude>
+										<exclude>jakarta.servlet.jsp:jakarta.servlet.jsp-api:*</exclude>
+										<!-- replaced by jakarta -->
+										<exclude>com.sun.mail</exclude>
+										<exclude>com.sun.xml.bind</exclude>
+									</excludes>
+									<includes>
+										<!-- Jakarta API are allowed to be provided -->
+										<include>jakarta.*:*:jar:*:provided</include>
+										<!-- Not yet migrated to Jakarta -->
+										<include>javax.cache:*</include>
+									</includes>
+								</bannedDependencies>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

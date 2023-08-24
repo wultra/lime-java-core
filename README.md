@@ -126,11 +126,21 @@ The following options are available for the builder:
   - `username` - proxy username
   - `password` - proxy password
 - `connectionTimeout` - connection timeout in milliseconds (default: 5000 ms)
+- `responseTimeout` - Maximum duration allowed between each network-level read operations. (default: no timeout)
+- `maxIdleTime` - ConnectionProvider max idle time. (default: no max idle time)
+- `maxLifeTime` - ConnectionProvider max life time. (default: no max life time)
+- `keepAliveEnabled` - Keep-Alive probe feature flag (default: false)
+- `keepAliveIdle` - Keep-Alive idle time
+- `keepAliveInterval` - Keep-Alive retransmission interval time
+- `keepAliveCount` - Keep-Alive retransmission limit
 - `acceptInvalidSslCertificate` - whether invalid SSL certificate is accepted (default: false)
 - `maxInMemorySize` - maximum in memory request size (default: 1048576 bytes)
 - `httpBasicAuth` - HTTP basic authentication (default: disabled)
   - `username` - username for HTTP basic authentication
   - `password` - password for HTTP basic authentication
+- `httpDigestAuth` - HTTP digest authentication (default: disabled)
+  - `username` - username for HTTP digest authentication
+  - `password` - password for HTTP digest authentication
 - `certificateAuth` - certificate authentication (default: disabled)
   - `useCustomKeyStore` - whether custom keystore should be used for certificate authentication (default: false)
   - `keyStoreLocation` - resource location of keystore (e.g. `file:/path_to_keystore`)
@@ -142,9 +152,15 @@ The following options are available for the builder:
   - `trustStoreLocation` - resource location of truststore (e.g. `file:/path_to_truststore`)
   - `trustStorePassword` - truststore password
   - `trustStoreBytes` - byte data with truststore (alternative configuration way to `trustStoreLocation`)
-- `objectMapper` - custom object mapper for JSON serialization
+- `modules` - jackson modules  
+- `jacksonProperties` - jackson properties for custom object mapper
+  - `serialization` - Jackson on/off features that affect the way Java objects are serialized.
+  - `deserialization` - Jackson on/off features that affect the way Java objects are deserialized, e.g. `FAIL_ON_UNKNOWN_PROPERTIES=true`
 - `filter` - custom `ExchangeFilterFunction` for applying a filter during communication
 - `defaultHttpHeaders` - custom `HttpHeaders` to be added to all requests as default HTTP headers
+- `followRedirectEnabled` - whether HTTP redirect responses are followed by the client (default: false)
+- `simpleLoggingEnabled` - whether simple one-line logging of HTTP method, URL and response status code is enabled (default: false)
+- `logErrorResponsesAsWarnings` - whether responses with error status codes are logged on WARN level in simple logging (default: true)
 
 ### Calling HTTP Methods Using REST Client
 
@@ -159,16 +175,15 @@ Once the rest client is initialized, you can use the following methods. Each met
 - `put` - a blocking PUT call with a generic request / response
 - `putNonBlocking` - a non-blocking PUT call with a generic request / response with `onSuccess` and `onError` consumers
 - `putObject` - a blocking PUT call with `ObjectRequest` / `ObjectResponse`
+- `delete` - a blocking DELETE call with a generic response
+- `deleteNonBlocking` - a non-blocking DELETE call with a generic response with `onSuccess` and `onError` consumers
+- `deleteObject` - a blocking DELETE call with `ObjectResponse`
 - `patch` - a blocking PATCH call with a generic request / response
 - `patchNonBlocking` - a non-blocking PATCH call with a generic request / response with `onSuccess` and `onError` consumers
 - `patchObject` - a blocking PATCH call with `ObjectRequest` / `ObjectResponse`
 - `head` - a blocking HEAD call with a generic request
 - `headNonBlocking` - a non-blocking HEAD call with a generic request with `onSuccess` and `onError` consumers
 - `headObject` - a blocking HEAD call with `ObjectRequest`
-
-- `delete` - a blocking DELETE call with a generic response
-- `deleteNonBlocking` - a non-blocking DELETE call with a generic response with `onSuccess` and `onError` consumers
-- `deleteObject` - a blocking DELETE call with `ObjectResponse`
 
 The `path` parameter specified in requests can be either:
 
@@ -210,9 +225,30 @@ In case any HTTP error occurs during a blocking HTTP request execution, a `RestC
 
 Non-blocking methods provide an `onError` consumer for custom error handling.
 
-### Logging
+### Simple One-Line Logging
 
-To enable request / response logging, set level of `com.wultra.core.rest.client.base.DefaultRestClient` to `TRACE`.
+You can enable simple one-line logging using `RestClientConfiguration`:
+
+```java
+config.setSimpleLoggingEnabled(true);
+```
+
+The log messages use `INFO` and `WARN` levels based on the status code:
+
+```
+2023-01-31 12:09:14.014  INFO 64851 --- [ctor-http-nio-2] c.w.c.r.client.base.DefaultRestClient    : RestClient GET https://localhost:49728/api/test/response: 200 OK
+2023-01-31 12:09:15.367  WARN 64851 --- [ctor-http-nio-4] c.w.c.r.client.base.DefaultRestClient    : RestClient POST https://localhost:49728/api/test/error-response: 400 BAD_REQUEST
+```
+
+You can disable logging on `WARN` level, in this case log messages always use the `INFO` level:
+
+```java
+config.setLogErrorResponsesAsWarnings(false);
+```
+
+### Detailed Logging
+
+To enable detailed request / response logging, set level of `com.wultra.core.rest.client.base.DefaultRestClient` to `TRACE`.
 
 #### Request Example
 
@@ -283,6 +319,9 @@ The following properties can be configured in case the default configuration nee
 - `audit.db.table.param.name` - name of audit parameters database table (default: `audit_param`)
 - `audit.db.table.param.enabled` - flag if logging params to parameters database is enabled (default: `false`)
 - `audit.db.batch.size` - database batch size (default: `1000`)  
+
+You can configure database schema used by the auditing library using regular Spring JPA/Hibernate property in your application:
+- `spring.jpa.properties.hibernate.default_schema` - database database schema (default: none)
 
 ### Audit Levels
 
@@ -361,3 +400,27 @@ Auditing with parameters and type of audit message:
    param.put("operation_id", operationId);
    audit.info("an access message", AuditDetail.builder().type("ACCESS").params(param).build());
 ```
+
+
+## Wultra HTTP Common
+
+The `http-common` project provides common functionality for HTTP stack.
+
+
+### Features
+
+
+#### RequestContextConverter
+
+`RequestContextConverter` converts `HttpServletRequest` to a Wultra specific class `RequestContext`.
+This context object contains _user agent_ and best-effort guess of the _client IP address_.
+
+
+## Wultra Annotations
+
+The `annotations` project provides common annotations.
+
+Right now, these annotations are available:
+
+- `PublicApi` - Marker for interfaces intended **to be called by extension**.
+- `PublicSpi` - Marker for interfaces intended **to be implemented by extensions** and called by core.

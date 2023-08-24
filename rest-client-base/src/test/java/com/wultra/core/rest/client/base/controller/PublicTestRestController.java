@@ -24,12 +24,12 @@ import io.getlime.core.rest.model.base.response.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Enumeration;
 
 /**
@@ -38,9 +38,8 @@ import java.util.Enumeration;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 @RestController
-@RequestMapping("/api/test")
-@Secured("ROLE_TEST_USER")
-public class TestRestController {
+@RequestMapping("/public/api/test")
+public class PublicTestRestController {
 
     @GetMapping("/response")
     public Response testGetWithResponse() {
@@ -83,6 +82,12 @@ public class TestRestController {
     @PostMapping(value = "/multipart-request-response", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ObjectResponse<TestResponse> testPostWithMultipartRequestAndResponse(@RequestPart TestRequest request) {
         TestResponse testResponse = new TestResponse(request.getRequest());
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PostMapping("/object-response-large")
+    public ObjectResponse<TestResponse> testPostWithLargeServerResponse() {
+        TestResponse testResponse = new TestResponse(Arrays.toString(new byte[10 * 1024 * 1024]));
         return new ObjectResponse<>(testResponse);
     }
 
@@ -164,7 +169,7 @@ public class TestRestController {
     @GetMapping("/redirect-to-response")
     public ResponseEntity<Void> testRedirect() {
         return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create("/api/test/response"))
+                .location(URI.create("/public/api/test/response"))
                 .build();
     }
 

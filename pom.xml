@@ -45,6 +45,7 @@
 	<modules>
 		<module>annotations</module>
 		<module>audit-base</module>
+		<module>bom</module>
 		<module>http-common</module>
 		<module>rest-model-base</module>
 		<module>rest-client-base</module>

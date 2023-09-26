@@ -16,6 +16,7 @@
 package com.wultra.core.http.common.headers;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,7 +26,8 @@ import java.util.regex.Pattern;
  *
  * @author Petr Dvorak, petr@wultra.com
  */
-public class UserAgent {
+@Slf4j
+public final class UserAgent {
 
     @Data
     public static class Device {
@@ -40,20 +42,24 @@ public class UserAgent {
         private String model;
     }
 
-    private static final String USER_AGENT_TEMPLATE_PREFIX_V1 = "^PowerAuthNetworking/(?<networkVersion>[0-9]+\\.[0-9]+\\.[0-9]+).*";
-    private static final String USER_AGENT_TEMPLATE_V1 = "^PowerAuthNetworking/(?<networkVersion>[0-9]+\\.[0-9]+\\.[0-9]+) " +
+    private UserAgent() {
+    }
+
+    private static final Pattern patternPrefix = Pattern.compile("^PowerAuthNetworking/(?<networkVersion>[0-9]+\\.[0-9]+\\.[0-9]+).*");
+    private static final Pattern patternV1 = Pattern.compile("^PowerAuthNetworking/(?<networkVersion>[0-9]+\\.[0-9]+\\.[0-9]+) " +
             "\\((?<language>[a-zA-Z]{2}); (?<connection>[a-zA-Z0-9]+)\\) " +
             "(?<product>[a-zA-Z0-9-_.]+)/(?<version>[0-9.]+) .*" +
-            "\\((?<platform>[^;]+); (?<os>[^/]+)/(?<osVersion>[^;]+); (?<model>[^)]+)\\)$";
+            "\\((?<platform>[^;]+); (?<os>[^/]+)/(?<osVersion>[^;]+); (?<model>[^)]+)\\)$");
 
     public static Device parse(String userAgent) {
         // Identify if the user agent is ours and in what version
-        final Pattern patternPrefix = Pattern.compile(USER_AGENT_TEMPLATE_PREFIX_V1);
+        logger.debug("Parsing user agent value: {}", userAgent);
         final Matcher matcherPrefix = patternPrefix.matcher(userAgent);
         if (!matcherPrefix.matches()) {
             return null;
         }
         final String networkVersion = matcherPrefix.group("networkVersion");
+        logger.debug("Declared networkVersion: {}", networkVersion);
         if (!networkVersion.startsWith("1.")) { // simplistic matching for current v1.x clients
             return null;
         }
@@ -71,8 +77,7 @@ public class UserAgent {
      * @return Parsed device info, or null if the user agent header cannot be parsed.
      */
     private static Device parseUserAgentV1(String userAgent) {
-        final Pattern pattern = Pattern.compile(USER_AGENT_TEMPLATE_V1);
-        final Matcher matcher = pattern.matcher(userAgent);
+        final Matcher matcher = patternV1.matcher(userAgent);
         if (matcher.matches()) {
             final Device device = new Device();
             device.setNetworkVersion(matcher.group("networkVersion"));
@@ -86,6 +91,7 @@ public class UserAgent {
             device.setModel(matcher.group("model"));
             return device;
         }
+        logger.debug("The user agent value does not match v1 client format");
         return null;
     }
 

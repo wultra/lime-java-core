@@ -18,6 +18,8 @@ package io.getlime.core.rest.model.base.request;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Simple class representing a request with an object.
@@ -26,6 +28,8 @@ import jakarta.validation.constraints.NotNull;
  *
  * @param <T> Type of the request object.
  */
+@ToString
+@EqualsAndHashCode
 public class ObjectRequest<T> {
 
     @Valid

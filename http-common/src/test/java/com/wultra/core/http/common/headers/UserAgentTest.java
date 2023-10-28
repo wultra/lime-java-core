@@ -15,9 +15,13 @@
  */
 package com.wultra.core.http.common.headers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,21 +33,92 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class UserAgentTest {
 
+    private static final String[] USER_AGENTS = new String[] {
+            "PowerAuthNetworking/1.1.7 (en; cellular) com.wultra.app.Mobile-Token.wultra_test/2.0.0 (Apple; iOS/16.6.1; iphone12,3)",
+            "PowerAuthNetworking/1.2.1 (uk; wifi) com.wultra.android.mtoken.gdnexttest/1.0.0-gdnexttest (samsung; Android/13; SM-A047F)",
+            "PowerAuthNetworking/1.1.7 (en; unknown) com.wultra.app.MobileToken.wtest/2.0.0 (Apple; iOS/16.6.1; iphone10,6)",
+            "PowerAuthNetworking/1.1.7 (en; wifi) com.wultra.app.MobileToken.wtest/2.0.0 (Apple; iOS/16.7.1; iphone10,6)"
+    };
+
+    private static final String DEVICES = """
+            [
+                {
+                    "networkVersion": "1.1.7",
+                    "language": "en",
+                    "connection": "cellular",
+                    "product": "com.wultra.app.Mobile-Token.wultra_test",
+                    "version": "2.0.0",
+                    "platform": "Apple",
+                    "os": "iOS",
+                    "osVersion": "16.6.1",
+                    "model": "iphone12,3"
+                },
+                {
+                    "networkVersion": "1.2.1",
+                    "language": "uk",
+                    "connection": "wifi",
+                    "product": "com.wultra.android.mtoken.gdnexttest",
+                    "version": "1.0.0-gdnexttest",
+                    "platform": "samsung",
+                    "os": "Android",
+                    "osVersion": "13",
+                    "model": "SM-A047F"
+                },
+                {
+                    "networkVersion": "1.1.7",
+                    "language": "en",
+                    "connection": "unknown",
+                    "product": "com.wultra.app.MobileToken.wtest",
+                    "version": "2.0.0",
+                    "platform": "Apple",
+                    "os": "iOS",
+                    "osVersion": "16.6.1",
+                    "model": "iphone10,6"
+                },
+                {
+                    "networkVersion": "1.1.7",
+                    "language": "en",
+                    "connection": "wifi",
+                    "product": "com.wultra.app.MobileToken.wtest",
+                    "version": "2.0.0",
+                    "platform": "Apple",
+                    "os": "iOS",
+                    "osVersion": "16.7.1",
+                    "model": "iphone10,6"
+                }
+            ]
+            """;
+
     @Test
     void parse() {
-        final String sample = "PowerAuthNetworking/1.1.7 (en; cellular) com.wultra.app.Mobile-Token.wultra_test/2.0.0 (Apple; iOS/16.6.1; iphone12,3)";
-        final Optional<UserAgent.Device> deviceOptional = UserAgent.parse(sample);
-        assertTrue(deviceOptional.isPresent());
+        final UserAgent.Device[] expectedDevices = readDevices();
+        for (int i = 0; i < USER_AGENTS.length; i++) {
+            final Optional<UserAgent.Device> deviceOptional = UserAgent.parse(USER_AGENTS[i]);
+            assertTrue(deviceOptional.isPresent());
 
         final UserAgent.Device device = deviceOptional.get();
-        assertEquals("1.1.7", device.getNetworkVersion());
-        assertEquals("en", device.getLanguage());
-        assertEquals("cellular", device.getConnection());
-        assertEquals("com.wultra.app.Mobile-Token.wultra_test", device.getProduct());
-        assertEquals("2.0.0", device.getVersion());
-        assertEquals("Apple", device.getPlatform());
-        assertEquals("iOS", device.getOs());
-        assertEquals("16.6.1", device.getOsVersion());
-        assertEquals("iphone12,3", device.getModel());
+            final UserAgent.Device expectedDevice = expectedDevices[i];
+            assertEquals(expectedDevice, device);
+        }
+        //printCurrentDevices(devices);
+    }
+
+    private static UserAgent.Device[] readDevices() {
+        try {
+            final ObjectMapper om = new ObjectMapper();
+            return om.readValue(UserAgentTest.DEVICES, UserAgent.Device[].class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void printCurrentDevices(List<UserAgent.Device> devices) {
+        try {
+            final ObjectMapper om = new ObjectMapper();
+            final String s = om.writeValueAsString(devices);
+            System.out.println(s);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -49,7 +49,7 @@ public final class UserAgent {
     private static final Pattern patternPrefix = Pattern.compile("^PowerAuthNetworking/(?<networkVersion>[0-9]+\\.[0-9]+\\.[0-9]+).*");
     private static final Pattern patternV1 = Pattern.compile("^PowerAuthNetworking/(?<networkVersion>[0-9]+\\.[0-9]+\\.[0-9]+) " +
             "\\((?<language>[a-zA-Z]{2}); (?<connection>[a-zA-Z0-9]+)\\) " +
-            "(?<product>[a-zA-Z0-9-_.]+)/(?<version>[0-9.]+) .*" +
+            "(?<product>[a-zA-Z0-9-_.]+)/(?<version>[0-9.]+(-[^ ]*)?) .*" +
             "\\((?<platform>[^;]+); (?<os>[^/]+)/(?<osVersion>[^;]+); (?<model>[^)]+)\\)$");
 
     /**

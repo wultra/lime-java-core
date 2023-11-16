@@ -18,6 +18,7 @@ package com.wultra.core.http.common.headers;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,22 +52,27 @@ public final class UserAgent {
             "(?<product>[a-zA-Z0-9-_.]+)/(?<version>[0-9.]+) .*" +
             "\\((?<platform>[^;]+); (?<os>[^/]+)/(?<osVersion>[^;]+); (?<model>[^)]+)\\)$");
 
-    public static Device parse(String userAgent) {
+    /**
+     * Parse client user from the HTTP header value.
+     *
+     * @param userAgent User-Agent Header String
+     * @return Parsed device info, or empty if the user agent header cannot be parsed.
+     */
+    public static Optional<Device> parse(String userAgent) {
         // Identify if the user agent is ours and in what version
         logger.debug("Parsing user agent value: {}", userAgent);
         final Matcher matcherPrefix = patternPrefix.matcher(userAgent);
         if (!matcherPrefix.matches()) {
-            return null;
+            return Optional.empty();
         }
         final String networkVersion = matcherPrefix.group("networkVersion");
         logger.debug("Declared networkVersion: {}", networkVersion);
         if (!networkVersion.startsWith("1.")) { // simplistic matching for current v1.x clients
-            return null;
+            return Optional.empty();
         }
 
         // Parse the device object
         return parseUserAgentV1(userAgent);
-
     }
 
     /**
@@ -74,9 +80,9 @@ public final class UserAgent {
      * when new versions with another formats will be eventually introduced.
      *
      * @param userAgent User-Agent Header String
-     * @return Parsed device info, or null if the user agent header cannot be parsed.
+     * @return Parsed device info, or empty if the user agent header cannot be parsed.
      */
-    private static Device parseUserAgentV1(String userAgent) {
+    private static Optional<Device> parseUserAgentV1(String userAgent) {
         final Matcher matcher = patternV1.matcher(userAgent);
         if (matcher.matches()) {
             final Device device = new Device();
@@ -89,10 +95,10 @@ public final class UserAgent {
             device.setOs(matcher.group("os"));
             device.setOsVersion(matcher.group("osVersion"));
             device.setModel(matcher.group("model"));
-            return device;
+            return Optional.of(device);
         }
         logger.debug("The user agent value does not match v1 client format");
-        return null;
+        return Optional.empty();
     }
 
 }

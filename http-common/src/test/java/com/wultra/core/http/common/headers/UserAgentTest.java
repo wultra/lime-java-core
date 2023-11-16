@@ -17,8 +17,10 @@ package com.wultra.core.http.common.headers;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test for the user agent parser.
@@ -30,8 +32,10 @@ class UserAgentTest {
     @Test
     void parse() {
         final String sample = "PowerAuthNetworking/1.1.7 (en; cellular) com.wultra.app.Mobile-Token.wultra_test/2.0.0 (Apple; iOS/16.6.1; iphone12,3)";
-        final UserAgent.Device device = UserAgent.parse(sample);
-        assertNotNull(device);
+        final Optional<UserAgent.Device> deviceOptional = UserAgent.parse(sample);
+        assertTrue(deviceOptional.isPresent());
+
+        final UserAgent.Device device = deviceOptional.get();
         assertEquals("1.1.7", device.getNetworkVersion());
         assertEquals("en", device.getLanguage());
         assertEquals("cellular", device.getConnection());

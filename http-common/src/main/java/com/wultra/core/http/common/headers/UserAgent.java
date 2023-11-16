@@ -18,8 +18,6 @@ package com.wultra.core.http.common.headers;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,10 +30,7 @@ import java.util.regex.Pattern;
 public final class UserAgent {
 
     @Data
-    public static class Device implements Serializable {
-
-        @Serial
-        private static final long serialVersionUID = -1710283885057764817L;
+    public static class Device {
         private String networkVersion;
         private String language;
         private String connection;

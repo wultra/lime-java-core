@@ -58,6 +58,8 @@
 
 		<!-- Dependencies -->
 		<spring-boot.version>3.1.6</spring-boot.version>
+		<!--  TODO (racansky, 2023-12-08) temporarily override the version 1.4.11 from spring boot version because of CVE  -->
+		<logback.version>1.4.14</logback.version>
 		<findbugs-annotations.version>3.0.1</findbugs-annotations.version>
 	</properties>
 
@@ -69,6 +71,18 @@
 				<version>${spring-boot.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+
+			<!--  TODO (racansky, 2023-12-08) temporarily override the version 1.4.11 from spring boot version because of CVE  -->
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-core</artifactId>
+				<version>${logback.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

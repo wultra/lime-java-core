@@ -48,8 +48,8 @@ public final class UserAgent {
         throw new IllegalStateException("Should not be instantiated");
     }
 
-    private static final Pattern PATTERN_PREFIX = Pattern.compile("(^PowerAuthNetworking|.*PowerAuth2)/(?<networkVersion>\\d+\\.\\d+\\.\\d+).*");
-    private static final Pattern PATTERN_V1 = Pattern.compile("(^PowerAuthNetworking|.*PowerAuth2)/(?<networkVersion>\\d+\\.\\d+\\.\\d+) " +
+    private static final Pattern PATTERN_PREFIX = Pattern.compile("((^PowerAuthNetworking)|.*PowerAuth2)/(?<networkVersion>\\d+\\.\\d+\\.\\d+).*");
+    private static final Pattern PATTERN_V1 = Pattern.compile("((^PowerAuthNetworking)|.*PowerAuth2)/(?<networkVersion>\\d+\\.\\d+\\.\\d+) " +
             "(\\((?<language>[a-zA-Z]{2}); (?<connection>[a-zA-Z0-9]+)\\) )?" +
             "((?<product>[a-zA-Z0-9-_.]+)/(?<version>[0-9.]+(-[^ ]*)?) )?" +
             "(\\(((?<platform>[^;]+); )?(?<os>[^/ ]+)[/ ](?<osVersion>[^;,]+)[;,] (?<model>[^)]+)\\))?.*");

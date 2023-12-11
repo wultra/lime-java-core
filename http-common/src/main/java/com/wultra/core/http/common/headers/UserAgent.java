@@ -44,15 +44,17 @@ public final class UserAgent {
         private String model;
     }
 
+    private static final String PREFIX = "((^PowerAuthNetworking)|.*PowerAuth2)/(?<networkVersion>\\d+\\.\\d+\\.\\d+)";
+    private static final Pattern PATTERN_PREFIX = Pattern.compile(PREFIX + ".*");
+
+    private static final String LANGUAGE_AND_CONNECTION = "(\\((?<language>[a-zA-Z]{2}); (?<connection>[a-zA-Z0-9]+)\\) )?";
+    private static final String PRODUCT_AND_VERSION = "((?<product>[a-zA-Z0-9-_.]+)/(?<version>[0-9.]+(-[^ ]*)?) )?";
+    private static final String PLATFORM_OS_VERSION_MODEL = "(\\(((?<platform>[^;]+); )?(?<os>[^/ ]+)[/ ](?<osVersion>[^;,]+)[;,] (?<model>[^)]+)\\))?";
+    private static final Pattern PATTERN_V1 = Pattern.compile(PREFIX + " " + LANGUAGE_AND_CONNECTION + PRODUCT_AND_VERSION + PLATFORM_OS_VERSION_MODEL + ".*");
+
     private UserAgent() {
         throw new IllegalStateException("Should not be instantiated");
     }
-
-    private static final Pattern PATTERN_PREFIX = Pattern.compile("((^PowerAuthNetworking)|.*PowerAuth2)/(?<networkVersion>\\d+\\.\\d+\\.\\d+).*");
-    private static final Pattern PATTERN_V1 = Pattern.compile("((^PowerAuthNetworking)|.*PowerAuth2)/(?<networkVersion>\\d+\\.\\d+\\.\\d+) " +
-            "(\\((?<language>[a-zA-Z]{2}); (?<connection>[a-zA-Z0-9]+)\\) )?" +
-            "((?<product>[a-zA-Z0-9-_.]+)/(?<version>[0-9.]+(-[^ ]*)?) )?" +
-            "(\\(((?<platform>[^;]+); )?(?<os>[^/ ]+)[/ ](?<osVersion>[^;,]+)[;,] (?<model>[^)]+)\\))?.*");
 
     /**
      * Parse client user from the HTTP header value.

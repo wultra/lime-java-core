@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
  * Utility class for processing our standard user agent strings.
  *
  * @author Petr Dvorak, petr@wultra.com
+ * @author Lubos Racansky, lubos.racansky@wultra.com
  */
 @Slf4j
 public final class UserAgent {
@@ -43,14 +44,17 @@ public final class UserAgent {
         private String model;
     }
 
-    private UserAgent() {
-    }
+    private static final String PREFIX = "((^PowerAuthNetworking)|.*PowerAuth2)/(?<networkVersion>\\d+\\.\\d+\\.\\d+)";
+    private static final Pattern PATTERN_PREFIX = Pattern.compile(PREFIX + ".*");
 
-    private static final Pattern patternPrefix = Pattern.compile("^PowerAuthNetworking/(?<networkVersion>[0-9]+\\.[0-9]+\\.[0-9]+).*");
-    private static final Pattern patternV1 = Pattern.compile("^PowerAuthNetworking/(?<networkVersion>[0-9]+\\.[0-9]+\\.[0-9]+) " +
-            "\\((?<language>[a-zA-Z]{2}); (?<connection>[a-zA-Z0-9]+)\\) " +
-            "(?<product>[a-zA-Z0-9-_.]+)/(?<version>[0-9.]+) .*" +
-            "\\((?<platform>[^;]+); (?<os>[^/]+)/(?<osVersion>[^;]+); (?<model>[^)]+)\\)$");
+    private static final String LANGUAGE_AND_CONNECTION = "(\\((?<language>[a-zA-Z]{2}); (?<connection>[a-zA-Z0-9]+)\\) )?";
+    private static final String PRODUCT_AND_VERSION = "((?<product>[a-zA-Z0-9-_.]+)/(?<version>[0-9.]+(-[^ ]*)?) )?";
+    private static final String PLATFORM_OS_VERSION_MODEL = "(\\(((?<platform>[^;]+); )?(?<os>[^/ ]+)[/ ](?<osVersion>[^;,]+)[;,] (?<model>[^)]+)\\))?";
+    private static final Pattern PATTERN_V1 = Pattern.compile(PREFIX + " " + LANGUAGE_AND_CONNECTION + PRODUCT_AND_VERSION + PLATFORM_OS_VERSION_MODEL + ".*");
+
+    private UserAgent() {
+        throw new IllegalStateException("Should not be instantiated");
+    }
 
     /**
      * Parse client user from the HTTP header value.
@@ -61,7 +65,7 @@ public final class UserAgent {
     public static Optional<Device> parse(String userAgent) {
         // Identify if the user agent is ours and in what version
         logger.debug("Parsing user agent value: {}", userAgent);
-        final Matcher matcherPrefix = patternPrefix.matcher(userAgent);
+        final Matcher matcherPrefix = PATTERN_PREFIX.matcher(userAgent);
         if (!matcherPrefix.matches()) {
             return Optional.empty();
         }
@@ -83,7 +87,7 @@ public final class UserAgent {
      * @return Parsed device info, or empty if the user agent header cannot be parsed.
      */
     private static Optional<Device> parseUserAgentV1(String userAgent) {
-        final Matcher matcher = patternV1.matcher(userAgent);
+        final Matcher matcher = PATTERN_V1.matcher(userAgent);
         if (matcher.matches()) {
             final Device device = new Device();
             device.setNetworkVersion(matcher.group("networkVersion"));

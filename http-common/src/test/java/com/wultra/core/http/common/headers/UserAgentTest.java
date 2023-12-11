@@ -15,7 +15,13 @@
  */
 package com.wultra.core.http.common.headers;
 
-import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import java.util.Optional;
 
@@ -23,27 +29,106 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Test for the user agent parser.
+ * Test for {@link UserAgent}.
  *
  * @author Petr Dvorak, petr@wultra.com
+ * @author Lubos Racansky, lubos.racansky@wultra.com
  */
 class UserAgentTest {
 
-    @Test
-    void parse() {
-        final String sample = "PowerAuthNetworking/1.1.7 (en; cellular) com.wultra.app.Mobile-Token.wultra_test/2.0.0 (Apple; iOS/16.6.1; iphone12,3)";
-        final Optional<UserAgent.Device> deviceOptional = UserAgent.parse(sample);
-        assertTrue(deviceOptional.isPresent());
-
-        final UserAgent.Device device = deviceOptional.get();
-        assertEquals("1.1.7", device.getNetworkVersion());
-        assertEquals("en", device.getLanguage());
-        assertEquals("cellular", device.getConnection());
-        assertEquals("com.wultra.app.Mobile-Token.wultra_test", device.getProduct());
-        assertEquals("2.0.0", device.getVersion());
-        assertEquals("Apple", device.getPlatform());
-        assertEquals("iOS", device.getOs());
-        assertEquals("16.6.1", device.getOsVersion());
-        assertEquals("iphone12,3", device.getModel());
+    @ParameterizedTest
+    @MethodSource("provideUserAgents")
+    void testParse(final String userAgent, final UserAgent.Device expectedDevice) {
+        final Optional<UserAgent.Device> deviceOptional = UserAgent.parse(userAgent);
+        assertTrue(deviceOptional.isPresent(), "Unable to parse user-agent: " + userAgent);
+        assertEquals(expectedDevice, deviceOptional.get());
     }
+
+    private static Stream<Arguments> provideUserAgents() throws JsonProcessingException {
+        return Stream.of(
+                Arguments.of("PowerAuthNetworking/1.1.7 (en; cellular) com.wultra.app.Mobile-Token.wultra_test/2.0.0 (Apple; iOS/16.6.1; iphone12,3)", readDevice("""
+                        {
+                            "networkVersion": "1.1.7",
+                            "language": "en",
+                            "connection": "cellular",
+                            "product": "com.wultra.app.Mobile-Token.wultra_test",
+                            "version": "2.0.0",
+                            "platform": "Apple",
+                            "os": "iOS",
+                            "osVersion": "16.6.1",
+                            "model": "iphone12,3"
+                        }
+                        """)),
+                Arguments.of("PowerAuthNetworking/1.2.1 (uk; wifi) com.wultra.android.mtoken.gdnexttest/1.0.0-gdnexttest (samsung; Android/13; SM-A047F)", readDevice("""
+                        {
+                            "networkVersion": "1.2.1",
+                            "language": "uk",
+                            "connection": "wifi",
+                            "product": "com.wultra.android.mtoken.gdnexttest",
+                            "version": "1.0.0-gdnexttest",
+                            "platform": "samsung",
+                            "os": "Android",
+                            "osVersion": "13",
+                            "model": "SM-A047F"
+                        }
+                        """)),
+                Arguments.of("PowerAuthNetworking/1.1.7 (en; unknown) com.wultra.app.MobileToken.wtest/2.0.0 (Apple; iOS/16.6.1; iphone10,6)", readDevice("""
+                        {
+                            "networkVersion": "1.1.7",
+                            "language": "en",
+                            "connection": "unknown",
+                            "product": "com.wultra.app.MobileToken.wtest",
+                            "version": "2.0.0",
+                            "platform": "Apple",
+                            "os": "iOS",
+                            "osVersion": "16.6.1",
+                            "model": "iphone10,6"
+                        }
+                        """)),
+                Arguments.of("PowerAuthNetworking/1.1.7 (en; wifi) com.wultra.app.MobileToken.wtest/2.0.0 (Apple; iOS/16.7.1; iphone10,6)", readDevice("""
+                        {
+                            "networkVersion": "1.1.7",
+                            "language": "en",
+                            "connection": "wifi",
+                            "product": "com.wultra.app.MobileToken.wtest",
+                            "version": "2.0.0",
+                            "platform": "Apple",
+                            "os": "iOS",
+                            "osVersion": "16.7.1",
+                            "model": "iphone10,6"
+                        }
+                        """)),
+                // MainBundle/Version PowerAuth2/Version (iOS Version, deviceString)
+                Arguments.of("PowerAuth2TestsHostApp-ios/1.0 PowerAuth2/1.7.8 (iOS 17.0, simulator)", readDevice("""
+                        {
+                            "networkVersion": "1.7.8",
+                            "os": "iOS",
+                            "osVersion": "17.0",
+                            "model": "simulator"
+                        }
+                        """)),
+                // PowerAuth2/Version (Android Version, Build.MANUFACTURER Build.MODEL)
+                Arguments.of("PowerAuth2/1.7.8 (Android 13, Google Pixel 4)", readDevice("""
+                        {
+                            "networkVersion": "1.7.8",
+                            "os": "Android",
+                            "osVersion": "13",
+                            "model": "Google Pixel 4"
+                        }
+                        """)),
+                Arguments.of("MobileToken/1.2.0 PowerAuth2/1.7.8 (iOS 15.7.9, iPhone9,3)", readDevice("""
+                        {
+                            "networkVersion": "1.7.8",
+                            "os": "iOS",
+                            "osVersion": "15.7.9",
+                            "model": "iPhone9,3"
+                        }
+                        """))
+        );
+    }
+
+    private static UserAgent.Device readDevice(final String json) throws JsonProcessingException {
+        return new ObjectMapper().readValue(json, UserAgent.Device.class);
+    }
+
 }

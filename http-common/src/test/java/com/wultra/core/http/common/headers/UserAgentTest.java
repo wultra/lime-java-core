@@ -21,13 +21,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Test for the user agent parser.
+ * Test for {@link UserAgent}.
  *
  * @author Petr Dvorak, petr@wultra.com
  */
@@ -100,7 +98,6 @@ class UserAgentTest {
             final UserAgent.Device expectedDevice = expectedDevices[i];
             assertEquals(expectedDevice, device);
         }
-        //printCurrentDevices(devices);
     }
 
     private static UserAgent.Device[] readDevices() {
@@ -112,13 +109,4 @@ class UserAgentTest {
         }
     }
 
-    private static void printCurrentDevices(List<UserAgent.Device> devices) {
-        try {
-            final ObjectMapper om = new ObjectMapper();
-            final String s = om.writeValueAsString(devices);
-            System.out.println(s);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

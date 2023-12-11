@@ -39,7 +39,7 @@ class UserAgentTest {
     @MethodSource("provideUserAgents")
     void testParse(final String userAgent, final UserAgent.Device expectedDevice) {
         final Optional<UserAgent.Device> deviceOptional = UserAgent.parse(userAgent);
-        assertTrue(deviceOptional.isPresent());
+        assertTrue(deviceOptional.isPresent(), "Unable to parse user-agent: " + userAgent);
         assertEquals(expectedDevice, deviceOptional.get());
     }
 

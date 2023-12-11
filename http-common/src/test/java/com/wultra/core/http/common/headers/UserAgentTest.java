@@ -98,18 +98,21 @@ class UserAgentTest {
                         }
                         """)),
                 // MainBundle/Version PowerAuth2/Version (iOS Version, deviceString)
-                // TODO Lubos
                 Arguments.of("PowerAuth2TestsHostApp-ios/1.0 PowerAuth2/1.7.8 (iOS 17.0, simulator)", readDevice("""
-                        {}
+                        {
+                            "networkVersion": "1.7.8"
+                        }
                         """)),
                 // PowerAuth2/Version (Android Version, Build.MANUFACTURER Build.MODEL)
-                // TODO Lubos
                 Arguments.of("PowerAuth2/1.7.8 (Android 13, Google Pixel 4)", readDevice("""
-                        {}
+                        {
+                            "networkVersion": "1.7.8"
+                        }
                         """)),
-                // TODO Lubos
                 Arguments.of("MobileToken/1.2.0 PowerAuth2/1.7.8 (iOS 15.7.9, iPhone9,3)", readDevice("""
-                        {}
+                        {
+                            "networkVersion": "1.7.8"
+                        }
                         """))
         );
     }

@@ -100,18 +100,27 @@ class UserAgentTest {
                 // MainBundle/Version PowerAuth2/Version (iOS Version, deviceString)
                 Arguments.of("PowerAuth2TestsHostApp-ios/1.0 PowerAuth2/1.7.8 (iOS 17.0, simulator)", readDevice("""
                         {
-                            "networkVersion": "1.7.8"
+                            "networkVersion": "1.7.8",
+                            "os": "iOS",
+                            "osVersion": "17.0",
+                            "model": "simulator"
                         }
                         """)),
                 // PowerAuth2/Version (Android Version, Build.MANUFACTURER Build.MODEL)
                 Arguments.of("PowerAuth2/1.7.8 (Android 13, Google Pixel 4)", readDevice("""
                         {
-                            "networkVersion": "1.7.8"
+                            "networkVersion": "1.7.8",
+                            "os": "Android",
+                            "osVersion": "13",
+                            "model": "Google Pixel 4"
                         }
                         """)),
                 Arguments.of("MobileToken/1.2.0 PowerAuth2/1.7.8 (iOS 15.7.9, iPhone9,3)", readDevice("""
                         {
-                            "networkVersion": "1.7.8"
+                            "networkVersion": "1.7.8",
+                            "os": "iOS",
+                            "osVersion": "15.7.9",
+                            "model": "iPhone9,3"
                         }
                         """))
         );

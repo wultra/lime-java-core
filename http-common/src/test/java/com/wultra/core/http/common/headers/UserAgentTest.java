@@ -35,7 +35,12 @@ class UserAgentTest {
             "PowerAuthNetworking/1.1.7 (en; cellular) com.wultra.app.Mobile-Token.wultra_test/2.0.0 (Apple; iOS/16.6.1; iphone12,3)",
             "PowerAuthNetworking/1.2.1 (uk; wifi) com.wultra.android.mtoken.gdnexttest/1.0.0-gdnexttest (samsung; Android/13; SM-A047F)",
             "PowerAuthNetworking/1.1.7 (en; unknown) com.wultra.app.MobileToken.wtest/2.0.0 (Apple; iOS/16.6.1; iphone10,6)",
-            "PowerAuthNetworking/1.1.7 (en; wifi) com.wultra.app.MobileToken.wtest/2.0.0 (Apple; iOS/16.7.1; iphone10,6)"
+            "PowerAuthNetworking/1.1.7 (en; wifi) com.wultra.app.MobileToken.wtest/2.0.0 (Apple; iOS/16.7.1; iphone10,6)",
+            // MainBundle/Version PowerAuth2/Version (iOS Version, deviceString)
+            "PowerAuth2TestsHostApp-ios/1.0 PowerAuth2/1.7.8 (iOS 17.0, simulator)",
+            // PowerAuth2/Version (Android Version, Build.MANUFACTURER Build.MODEL)
+            "PowerAuth2/1.7.8 (Android 13, Google Pixel 4)",
+            "MobileToken/1.2.0 PowerAuth2/1.7.8 (iOS 15.7.9, iPhone9,3)"
     };
 
     private static final String DEVICES = """
@@ -88,25 +93,20 @@ class UserAgentTest {
             """;
 
     @Test
-    void parse() {
+    void testParse() throws Exception {
         final UserAgent.Device[] expectedDevices = readDevices();
         for (int i = 0; i < USER_AGENTS.length; i++) {
             final Optional<UserAgent.Device> deviceOptional = UserAgent.parse(USER_AGENTS[i]);
             assertTrue(deviceOptional.isPresent());
 
-        final UserAgent.Device device = deviceOptional.get();
             final UserAgent.Device expectedDevice = expectedDevices[i];
-            assertEquals(expectedDevice, device);
+            assertEquals(expectedDevice, deviceOptional.get());
         }
     }
 
-    private static UserAgent.Device[] readDevices() {
-        try {
-            final ObjectMapper om = new ObjectMapper();
-            return om.readValue(UserAgentTest.DEVICES, UserAgent.Device[].class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    private static UserAgent.Device[] readDevices() throws JsonProcessingException {
+        final ObjectMapper om = new ObjectMapper();
+        return om.readValue(UserAgentTest.DEVICES, UserAgent.Device[].class);
     }
 
 }

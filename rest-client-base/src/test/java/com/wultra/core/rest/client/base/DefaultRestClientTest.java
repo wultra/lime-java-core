@@ -814,6 +814,19 @@ class DefaultRestClientTest {
         assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
     }
 
+    @Test
+    void testBasicAuthNullPassword() throws Exception {
+        final RestClientConfiguration config = new RestClientConfiguration();
+        config.setHttpBasicAuthEnabled(true);
+        config.setHttpBasicAuthUsername("john");
+        config.setHttpBasicAuthPassword(null);
+        config.setBaseUrl("https://localhost:" + port);
+
+        final DefaultRestClient result = new DefaultRestClient(config);
+
+        assertNotNull(result);
+    }
+
     private static Object getField(final Object parentBean, String path) {
         final String[] pathParts = path.split("\\.");
         final String fieldName = pathParts[0];

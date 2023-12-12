@@ -178,10 +178,14 @@ public class DefaultRestClient implements RestClient {
                 .build();
         builder.exchangeStrategies(exchangeStrategies);
 
-        if (config.isHttpBasicAuthEnabled() && config.getHttpBasicAuthUsername() != null) {
-            logger.info("Configuring HTTP Basic Authentication");
-            builder.filter(ExchangeFilterFunctions
-                    .basicAuthentication(config.getHttpBasicAuthUsername(), config.getHttpBasicAuthPassword()));
+        if (config.isHttpBasicAuthEnabled()) {
+            if (config.getHttpBasicAuthUsername() != null && config.getHttpBasicAuthPassword() != null) {
+                logger.info("Configuring HTTP Basic Authentication");
+                builder.filter(ExchangeFilterFunctions
+                        .basicAuthentication(config.getHttpBasicAuthUsername(), config.getHttpBasicAuthPassword()));
+            } else {
+                logger.warn("HTTP Basic Authentication is enabled but username or password is null, baseUrl: {}", config.getBaseUrl());
+            }
         }
         if (config.isHttpDigestAuthEnabled() && config.getHttpDigestAuthUsername() != null) {
             logger.info("Configuring HTTP Digest Authentication");

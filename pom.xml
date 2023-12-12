@@ -8,7 +8,7 @@
 	<description>Wultra - Core Java Libraries</description>
 	<groupId>io.getlime.core</groupId>
 	<artifactId>lime-java-core-parent</artifactId>
-	<version>1.7.0</version>
+	<version>1.8.0</version>
 	<packaging>pom</packaging>
 
 	<inceptionYear>2017</inceptionYear>
@@ -45,6 +45,7 @@
 	<modules>
 		<module>annotations</module>
 		<module>audit-base</module>
+		<module>bom</module>
 		<module>http-common</module>
 		<module>rest-model-base</module>
 		<module>rest-client-base</module>
@@ -54,9 +55,12 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
+		<maven-surefire-plugin.version>3.2.2</maven-surefire-plugin.version>
 
 		<!-- Dependencies -->
-		<spring-boot.version>3.1.2</spring-boot.version>
+		<spring-boot.version>3.1.6</spring-boot.version>
+		<!--  TODO (racansky, 2023-12-08) temporarily override the version 1.4.11 from spring boot version because of CVE  -->
+		<logback.version>1.4.14</logback.version>
 		<findbugs-annotations.version>3.0.1</findbugs-annotations.version>
 	</properties>
 
@@ -68,6 +72,18 @@
 				<version>${spring-boot.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+
+			<!--  TODO (racansky, 2023-12-08) temporarily override the version 1.4.11 from spring boot version because of CVE  -->
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-core</artifactId>
+				<version>${logback.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -81,6 +97,16 @@
 	</dependencies>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${maven-surefire-plugin.version}</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -99,7 +125,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.3</version>
 				<configuration>
 					<failOnError>false</failOnError>
 				</configuration>

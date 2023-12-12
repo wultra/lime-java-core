@@ -21,13 +21,13 @@ import com.wultra.core.rest.client.base.model.error.RestException;
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -82,6 +82,12 @@ public class PublicTestRestController {
     @PostMapping(value = "/multipart-request-response", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ObjectResponse<TestResponse> testPostWithMultipartRequestAndResponse(@RequestPart TestRequest request) {
         TestResponse testResponse = new TestResponse(request.getRequest());
+        return new ObjectResponse<>(testResponse);
+    }
+
+    @PostMapping(value = "/octet-stream", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ObjectResponse<TestResponse> testPostOctetStream(@RequestBody byte[] request) {
+        final TestResponse testResponse = new TestResponse("length: " + request.length);
         return new ObjectResponse<>(testResponse);
     }
 

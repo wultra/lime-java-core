@@ -663,6 +663,23 @@ class DefaultRestClientTest {
     }
 
     @Test
+    void testPostOctetStream() throws Exception {
+        final byte[] request = {1, 2};
+
+        final HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity =
+                restClient.post("/octet-stream", request, null, headers, new ParameterizedTypeReference<>(){});
+
+        assertNotNull(responseEntity);
+        assertNotNull(responseEntity.getBody());
+        assertNotNull(responseEntity.getBody().getResponseObject());
+        assertEquals("OK", responseEntity.getBody().getStatus());
+        assertEquals("length: 2", responseEntity.getBody().getResponseObject().getResponse());
+    }
+
+    @Test
     void testPostWithLargeServerResponse() {
         final Logger defaultRestClientLogger = (Logger) LoggerFactory.getLogger(DefaultRestClient.class);
         final ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
@@ -795,6 +812,19 @@ class DefaultRestClientTest {
                 () -> restClient.get("/response", new ParameterizedTypeReference<Response>() {}));
 
         assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+    }
+
+    @Test
+    void testBasicAuthNullPassword() throws Exception {
+        final RestClientConfiguration config = new RestClientConfiguration();
+        config.setHttpBasicAuthEnabled(true);
+        config.setHttpBasicAuthUsername("john");
+        config.setHttpBasicAuthPassword(null);
+        config.setBaseUrl("https://localhost:" + port);
+
+        final DefaultRestClient result = new DefaultRestClient(config);
+
+        assertNotNull(result);
     }
 
     private static Object getField(final Object parentBean, String path) {

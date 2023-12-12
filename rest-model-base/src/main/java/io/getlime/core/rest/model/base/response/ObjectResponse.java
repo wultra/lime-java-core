@@ -18,6 +18,8 @@ package io.getlime.core.rest.model.base.response;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Generic response with status and object of a custom class.
@@ -26,6 +28,8 @@ import jakarta.validation.constraints.NotNull;
  *
  * @param <T> Type of the response object
  */
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 public class ObjectResponse<T> extends Response {
 
     @Valid
@@ -36,7 +40,7 @@ public class ObjectResponse<T> extends Response {
      * Default constructor
      */
     public ObjectResponse() {
-        this.status = Status.OK;
+        super(Status.OK);
     }
 
     /**
@@ -45,7 +49,7 @@ public class ObjectResponse<T> extends Response {
      * @param responseObject Response object.
      */
     public ObjectResponse(T responseObject) {
-        this.status = Status.OK;
+        super(Status.OK);
         this.responseObject = responseObject;
     }
 
@@ -56,26 +60,8 @@ public class ObjectResponse<T> extends Response {
      * @param responseObject Response object.
      */
     public ObjectResponse(String status, T responseObject) {
-        this.status = status;
+        super(status);
         this.responseObject = responseObject;
-    }
-
-    /**
-     * Get response status.
-     *
-     * @return Response status.
-     */
-    public String getStatus() {
-        return status;
-    }
-
-    /**
-     * Set response status.
-     *
-     * @param status Response status.
-     */
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     /**

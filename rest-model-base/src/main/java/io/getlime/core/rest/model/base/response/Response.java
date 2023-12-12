@@ -17,12 +17,16 @@ package io.getlime.core.rest.model.base.response;
 
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Simple status only response object.
  *
  * @author Petr Dvorak, petr@wultra.com
  */
+@EqualsAndHashCode
+@ToString
 public class Response {
 
     /**
@@ -46,7 +50,7 @@ public class Response {
      * Response status.
      */
     @NotBlank
-    protected String status;
+    private String status;
 
     /**
      * Default constructor.

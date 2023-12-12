@@ -17,12 +17,16 @@ package io.getlime.core.rest.model.base.entity;
 
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Transport object for RESTful API representing an error instance.
  *
  * @author Petr Dvorak, petr@wultra.com
  */
+@ToString
+@EqualsAndHashCode
 public class Error {
 
     /**

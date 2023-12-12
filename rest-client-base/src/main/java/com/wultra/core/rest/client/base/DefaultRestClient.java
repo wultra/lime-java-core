@@ -178,10 +178,14 @@ public class DefaultRestClient implements RestClient {
                 .build();
         builder.exchangeStrategies(exchangeStrategies);
 
-        if (config.isHttpBasicAuthEnabled() && config.getHttpBasicAuthUsername() != null) {
-            logger.info("Configuring HTTP Basic Authentication");
-            builder.filter(ExchangeFilterFunctions
-                    .basicAuthentication(config.getHttpBasicAuthUsername(), config.getHttpBasicAuthPassword()));
+        if (config.isHttpBasicAuthEnabled()) {
+            if (config.getHttpBasicAuthUsername() != null && config.getHttpBasicAuthPassword() != null) {
+                logger.info("Configuring HTTP Basic Authentication");
+                builder.filter(ExchangeFilterFunctions
+                        .basicAuthentication(config.getHttpBasicAuthUsername(), config.getHttpBasicAuthPassword()));
+            } else {
+                logger.warn("HTTP Basic Authentication is enabled but username or password is null, baseUrl: {}", config.getBaseUrl());
+            }
         }
         if (config.isHttpDigestAuthEnabled() && config.getHttpDigestAuthUsername() != null) {
             logger.info("Configuring HTTP Digest Authentication");
@@ -363,7 +367,7 @@ public class DefaultRestClient implements RestClient {
                             h.addAll(headers);
                         }
                     })
-                    .contentType(config.getContentType())
+                    .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
             return buildRequest(spec, request)
                     .exchangeToMono(rs -> handleResponse(rs, responseType))
@@ -398,7 +402,7 @@ public class DefaultRestClient implements RestClient {
                             h.addAll(headers);
                         }
                     })
-                    .contentType(config.getContentType())
+                    .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
             buildRequest(spec, request)
                     .exchangeToMono(rs -> handleResponse(rs, responseType))
@@ -444,7 +448,7 @@ public class DefaultRestClient implements RestClient {
                             h.addAll(headers);
                         }
                     })
-                    .contentType(config.getContentType())
+                    .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
             return buildRequest(spec, request)
                     .exchangeToMono(rs -> handleResponse(rs, responseType))
@@ -472,7 +476,7 @@ public class DefaultRestClient implements RestClient {
                             h.addAll(headers);
                         }
                     })
-                    .contentType(config.getContentType())
+                    .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
             buildRequest(spec, request)
                     .exchangeToMono(rs -> handleResponse(rs, responseType))
@@ -586,7 +590,7 @@ public class DefaultRestClient implements RestClient {
                             h.addAll(headers);
                         }
                     })
-                    .contentType(config.getContentType())
+                    .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
             return buildRequest(spec, request)
                     .exchangeToMono(rs -> handleResponse(rs, responseType))
@@ -614,7 +618,7 @@ public class DefaultRestClient implements RestClient {
                             h.addAll(headers);
                         }
                     })
-                    .contentType(config.getContentType())
+                    .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
             buildRequest(spec, request)
                     .exchangeToMono(rs -> handleResponse(rs, responseType))
@@ -768,6 +772,15 @@ public class DefaultRestClient implements RestClient {
             }
             return Mono.error(new RestClientException("HTTP error occurred: " + response.statusCode(), response.statusCode(), rawResponse, rawResponseHeaders));
         });
+    }
+
+    private static MediaType resolveContentType(final RestClientConfiguration config, final MultiValueMap<String, String> headers) {
+        if (headers != null && headers.containsKey(HttpHeaders.CONTENT_TYPE)) {
+            final MediaType contentType = MediaType.valueOf(headers.getFirst(HttpHeaders.CONTENT_TYPE));
+            logger.debug("Overriding content type {} from config by {} from the given headers", config.getContentType(), contentType);
+            return contentType;
+        }
+        return config.getContentType();
     }
 
     /**

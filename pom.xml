@@ -53,8 +53,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
+		<java.version>17</java.version>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
 		<maven-surefire-plugin.version>3.2.2</maven-surefire-plugin.version>
 
 		<!-- Dependencies -->

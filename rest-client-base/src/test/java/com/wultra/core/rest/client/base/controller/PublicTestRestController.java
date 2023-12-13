@@ -80,7 +80,7 @@ public class PublicTestRestController {
     }
 
     @PostMapping(value = "/multipart-request-response", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ObjectResponse<TestResponse> testPostWithMultipartRequestAndResponse(@RequestPart TestRequest request) {
+    public ObjectResponse<TestResponse> testPostWithMultipartRequestAndResponse(@RequestPart("request") TestRequest request) {
         TestResponse testResponse = new TestResponse(request.getRequest());
         return new ObjectResponse<>(testResponse);
     }

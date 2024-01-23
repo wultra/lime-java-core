@@ -41,6 +41,7 @@ public class RestClientConfiguration {
     private String baseUrl;
     private MediaType contentType = MediaType.APPLICATION_JSON;
     private MediaType acceptType = MediaType.APPLICATION_JSON;
+    protected static final String TRACEPARENT_HEADER_KEY = "traceparent";
 
     // HTTP proxy settings
     private boolean proxyEnabled = false;

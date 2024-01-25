@@ -28,13 +28,10 @@ import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.TraceFlags;
 import jdk.net.ExtendedSocketOptions;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.opentelemetry.api.trace.Span;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferLimitException;
@@ -215,35 +212,10 @@ public class DefaultRestClient implements RestClient {
                         });
             });
         }
+        builder.filter(TraceparentFilterFunction.handleTraceparentContext());
 
         final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
-    }
-
-    /**
-     * Injects a traceparent header into the provided HttpHeaders object.
-     * The header is composed of the trace ID and span ID obtained from the current SpanContext.
-     * The header is only added if both trace ID and span ID are present.
-     *
-     * @param headers The HttpHeaders object where the traceparent header will be added.
-     *                This object is expected to be non-null.
-     */
-    private static void injectTraceparentHeader(final HttpHeaders headers) {
-        final Optional<SpanContext> spanContext = Optional.ofNullable(Span.current().getSpanContext());
-
-        if (spanContext.isPresent() && headers != null) {
-            final String traceId = spanContext.map(SpanContext::getTraceId).orElse(null);
-            final String spanId = spanContext.map(SpanContext::getSpanId).orElse(null);
-            final TraceFlags traceFlags = spanContext.map(SpanContext::getTraceFlags).orElse(null);
-
-            if (traceId != null && spanId != null && traceFlags != null) {
-                final String headerValue = String.format("00-%s-%s-%s",
-                        traceId,
-                        spanId,
-                        traceFlags.asHex());
-                headers.add(RestClientConfiguration.TRACEPARENT_HEADER_KEY, headerValue);
-            }
-        }
     }
 
     private static HttpClient configureKeepAlive(final HttpClient httpClient, final RestClientConfiguration config) throws RestClientException {
@@ -326,7 +298,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .exchangeToMono(rs -> handleResponse(rs, responseType))
                     .block();
@@ -352,7 +323,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .accept(config.getAcceptType())
                     .exchangeToMono(rs -> handleResponse(rs, responseType))
@@ -397,7 +367,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
@@ -433,7 +402,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
@@ -480,7 +448,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
@@ -509,7 +476,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
@@ -556,7 +522,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .exchangeToMono(rs -> handleResponse(rs, responseType))
                     .block();
@@ -582,7 +547,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .accept(config.getAcceptType())
                     .exchangeToMono(rs -> handleResponse(rs, responseType))
@@ -626,7 +590,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
@@ -655,7 +618,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .contentType(resolveContentType(config, headers))
                     .accept(config.getAcceptType());
@@ -702,7 +664,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .exchangeToMono(rs -> handleResponse(rs, responseType))
                     .defaultIfEmpty(new ResponseEntity<>(HttpStatus.ACCEPTED))
@@ -729,7 +690,6 @@ public class DefaultRestClient implements RestClient {
                         if (headers != null) {
                             h.addAll(headers);
                         }
-                        injectTraceparentHeader(h);
                     })
                     .accept(config.getAcceptType())
                     .exchangeToMono(rs -> handleResponse(rs, responseType))

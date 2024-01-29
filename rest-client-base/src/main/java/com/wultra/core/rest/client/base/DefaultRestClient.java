@@ -212,7 +212,10 @@ public class DefaultRestClient implements RestClient {
                         });
             });
         }
-        builder.filter(TraceparentFilterFunction.handleTraceparentContext());
+
+        if (config.isTraceparentHeaderEnabled()) {
+            builder.filter(TraceparentFilterFunction.handleTraceparentContext());
+        }
 
         final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();
@@ -1080,6 +1083,16 @@ public class DefaultRestClient implements RestClient {
          */
         public Builder modules(Collection<Module> modules) {
             modules.addAll(modules);
+            return this;
+        }
+
+        /**
+         * Configure Traceparent header injection.
+         * @param traceParentHeaderEnabled Traceparent header enabled.
+         * @return Builder.
+         */
+        public Builder setTraceparentHeaderEnabled(final boolean traceParentHeaderEnabled) {
+            config.setTraceparentHeadersEnabled(traceParentHeaderEnabled);
             return this;
         }
 

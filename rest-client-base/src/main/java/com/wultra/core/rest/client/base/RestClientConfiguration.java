@@ -118,6 +118,11 @@ public class RestClientConfiguration {
     private boolean logErrorResponsesAsWarnings = true;
 
     /**
+     * Enables/disables injection of traceable header to HTTP requests.
+     */
+    private boolean traceparentHeaderEnabled = true;
+
+    /**
      * Get base URL.
      * @return Base URL.
      */
@@ -809,6 +814,24 @@ public class RestClientConfiguration {
      */
     public void setLogErrorResponsesAsWarnings(boolean logErrorResponsesAsWarnings) {
         this.logErrorResponsesAsWarnings = logErrorResponsesAsWarnings;
+    }
+
+    /**
+     * Gets the status of traceparent header injection.
+     *
+     * @return true if traceparent header injection is enabled, false otherwise.
+     */
+    public boolean isTraceparentHeaderEnabled() {
+        return traceparentHeaderEnabled;
+    }
+
+    /**
+     * Sets the status of traceparent header injection.
+     *
+     * @param traceparentHeaderEnabled true to enable traceparent header injection, false to disable.
+     */
+    public void setTraceparentHeadersEnabled(final boolean traceparentHeaderEnabled) {
+        this.traceparentHeaderEnabled = traceparentHeaderEnabled;
     }
 
     @Getter

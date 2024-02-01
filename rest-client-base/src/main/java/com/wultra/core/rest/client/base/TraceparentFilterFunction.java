@@ -18,13 +18,11 @@ package com.wultra.core.rest.client.base;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
-import org.slf4j.MDC;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import reactor.core.publisher.Mono;
-import reactor.util.context.Context;
 
 /**
  * An ExchangeFilterFunction for adding traceparent header to WebClient requests.
@@ -45,21 +43,7 @@ public class TraceparentFilterFunction implements ExchangeFilterFunction {
      */
     @Override
     public Mono<ClientResponse> filter(final ClientRequest request, final ExchangeFunction next) {
-        return next.exchange(addTraceparentHeader(request)).contextWrite(
-                context ->
-                {
-                    final Span currentSpan = Span.current();
-                    if (currentSpan != null) {
-                        final SpanContext spanContext = currentSpan.getSpanContext();
-                        if (spanContext != null) {
-                            final Context contextTmp = context.put("traceId", spanContext.getTraceId());
-                            MDC.put("traceId", spanContext.getTraceId());
-                            return contextTmp;
-                        }
-                    }
-                    return context;
-                }
-        );
+        return next.exchange(addTraceparentHeader(request));
     }
 
     /**
@@ -74,12 +58,13 @@ public class TraceparentFilterFunction implements ExchangeFilterFunction {
             final SpanContext spanContext = currentSpan.getSpanContext();
             if (spanContext != null) {
                 final String traceId = spanContext.getTraceId();
-                final String spanId = spanContext.getSpanId();
+                /* The parentId of the next server Span will be the current spanId */
+                final String parentId = spanContext.getSpanId();
                 final TraceFlags traceFlags = spanContext.getTraceFlags();
-                if (traceId != null && spanId != null && traceFlags != null) {
+                if (traceId != null && parentId != null && traceFlags != null) {
                     final String headerValue = String.format("00-%s-%s-%s",
                             traceId,
-                            spanId,
+                            parentId,
                             traceFlags.asHex());
                     return ClientRequest.from(request)
                             .headers(headers -> headers.set(TRACEPARENT_HEADER_KEY, headerValue))

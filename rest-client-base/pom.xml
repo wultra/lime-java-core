@@ -61,6 +61,12 @@
             <artifactId>netty-http-authenticator</artifactId>
             <version>1.5</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

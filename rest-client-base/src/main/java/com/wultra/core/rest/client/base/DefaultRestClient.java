@@ -212,6 +212,7 @@ public class DefaultRestClient implements RestClient {
                         });
             });
         }
+        builder.filter(TraceparentFilterFunction.handleTraceparentContext());
 
         final ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         webClient = builder.baseUrl(config.getBaseUrl()).clientConnector(connector).build();

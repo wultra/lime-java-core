@@ -15,11 +15,14 @@
  */
 package com.wultra.core.rest.client.base.model;
 
+import lombok.ToString;
+
 /**
  * Test request.
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
+@ToString
 public class TestRequest {
 
     private String request;

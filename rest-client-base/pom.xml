@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.getlime.core</groupId>
         <artifactId>lime-java-core-parent</artifactId>
-        <version>1.8.0</version>
+        <version>1.9.0</version>
     </parent>
 
     <artifactId>rest-client-base</artifactId>
@@ -61,6 +61,12 @@
             <artifactId>netty-http-authenticator</artifactId>
             <version>1.5</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -8,7 +8,7 @@
 	<description>Wultra - Core Java Libraries</description>
 	<groupId>io.getlime.core</groupId>
 	<artifactId>lime-java-core-parent</artifactId>
-	<version>1.8.0</version>
+	<version>1.9.0</version>
 	<packaging>pom</packaging>
 
 	<inceptionYear>2017</inceptionYear>
@@ -53,14 +53,14 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
-		<maven-surefire-plugin.version>3.2.2</maven-surefire-plugin.version>
+		<java.version>17</java.version>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
+
+		<maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+		<maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
 
 		<!-- Dependencies -->
-		<spring-boot.version>3.1.6</spring-boot.version>
-		<!--  TODO (racansky, 2023-12-08) temporarily override the version 1.4.11 from spring boot version because of CVE  -->
-		<logback.version>1.4.14</logback.version>
+		<spring-boot.version>3.2.3</spring-boot.version>
 		<findbugs-annotations.version>3.0.1</findbugs-annotations.version>
 	</properties>
 
@@ -72,18 +72,6 @@
 				<version>${spring-boot.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
-
-			<!--  TODO (racansky, 2023-12-08) temporarily override the version 1.4.11 from spring boot version because of CVE  -->
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-core</artifactId>
-				<version>${logback.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -99,6 +87,12 @@
 	<build>
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${maven-compiler-plugin.version}</version>
+				</plugin>
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>

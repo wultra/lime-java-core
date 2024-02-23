@@ -60,7 +60,7 @@
 		<maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
 
 		<!-- Dependencies -->
-		<spring-boot.version>3.2.2</spring-boot.version>
+		<spring-boot.version>3.2.3</spring-boot.version>
 		<findbugs-annotations.version>3.0.1</findbugs-annotations.version>
 	</properties>
 

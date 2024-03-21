@@ -274,7 +274,7 @@ public class DatabaseAuditWriter implements AuditWriter {
     /**
      * Scheduled flush of persistence of audit data.
      */
-    @Scheduled(fixedDelayString = "${audit.flush.delay.fixed:1000}", initialDelayString = "${powerauth.audit.flush.delay.initial:1000}")
+    @Scheduled(fixedDelayString = "${audit.flush.delay.fixed:1000}", initialDelayString = "${audit.flush.delay.initial:1000}")
     public void scheduledFlush() {
         logger.debug("Scheduled audit log flush called");
         flush();
@@ -283,7 +283,7 @@ public class DatabaseAuditWriter implements AuditWriter {
     /**
      * Scheduled cleanup of audit data in database.
      */
-    @Scheduled(fixedDelayString = "${audit.cleanup.delay.fixed:3600000}", initialDelayString = "${powerauth.audit.cleanup.delay.initial:1000}")
+    @Scheduled(fixedDelayString = "${audit.cleanup.delay.fixed:3600000}", initialDelayString = "${audit.cleanup.delay.initial:1000}")
     public void scheduledCleanup() {
         logger.debug("Scheduled audit log cleanup called");
         cleanup();

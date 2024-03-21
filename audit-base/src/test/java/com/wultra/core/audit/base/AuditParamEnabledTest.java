@@ -17,6 +17,7 @@ package com.wultra.core.audit.base;
 
 import com.wultra.core.audit.base.model.AuditDetail;
 import com.wultra.core.audit.base.util.JsonUtil;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,7 +35,10 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = TestApplication.class, properties = {"audit.db.table.param.enabled=true"})
+@SpringBootTest(classes = TestApplication.class, properties = {
+        "audit.db.table.param.enabled=true",
+        "audit.db.cleanup.days=-1" // time shift to the future to enable cleanup test
+})
 @Sql(scripts = "/db_schema.sql")
 class AuditParamEnabledTest {
 
@@ -120,6 +125,49 @@ class AuditParamEnabledTest {
         assertTrue(rs3.next());
         assertNotNull(rs3.getString("audit_log_id"));
         assertEquals(new JsonUtil().serializeObject(timestamp), rs3.getString("param_value"));
+    }
+
+    @Test
+    void testAuditCleanup() {
+        final Audit audit = auditFactory.getAudit();
+        audit.info("test message", AuditDetail.builder().param("my_id", "test_id").build());
+        audit.flush();
+
+        assertEquals(1, countAuditLogs());
+        assertEquals(1, countAuditParams());
+
+        audit.cleanup();
+
+        assertEquals(0, countAuditLogs());
+        assertEquals(0, countAuditParams());
+    }
+
+    @Test
+    void testAuditScheduledCleanup() {
+        final Audit audit = auditFactory.getAudit();
+        audit.info("test message", AuditDetail.builder().param("my_id", "test_id").build());
+        audit.flush();
+
+        assertEquals(1, countAuditLogs());
+        assertEquals(1, countAuditParams());
+
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> countAuditLogs() == 0 && countAuditParams() == 0);
+    }
+
+    private int countAuditLogs() {
+        return count("audit_log");
+    }
+
+    private int countAuditParams() {
+        return count("audit_param");
+    }
+
+    private int count(final String tableName) {
+        final SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT COUNT(*) FROM " + tableName);
+        assertTrue(rs.next());
+        return rs.getInt(1);
     }
 
 }

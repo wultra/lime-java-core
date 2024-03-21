@@ -17,6 +17,7 @@ package com.wultra.core.audit.base;
 
 import com.wultra.core.audit.base.model.AuditDetail;
 import com.wultra.core.audit.base.model.AuditLevel;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.sql.Timestamp;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -218,5 +220,15 @@ class AuditTest {
         final SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT COUNT(*) FROM audit_log");
         assertTrue(rs.next());
         assertEquals(0, rs.getInt(1));
+    }
+
+    @Test
+    void testScheduledFlush() {
+        Audit audit = auditFactory.getAudit();
+        audit.info("test message");
+
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> jdbcTemplate.queryForRowSet("SELECT * FROM audit_log").next());
     }
 }

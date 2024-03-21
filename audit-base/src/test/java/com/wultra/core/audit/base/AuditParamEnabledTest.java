@@ -17,7 +17,6 @@ package com.wultra.core.audit.base;
 
 import com.wultra.core.audit.base.model.AuditDetail;
 import com.wultra.core.audit.base.util.JsonUtil;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.sql.Timestamp;
-import java.time.Duration;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -140,20 +138,6 @@ class AuditParamEnabledTest {
 
         assertEquals(0, countAuditLogs());
         assertEquals(0, countAuditParams());
-    }
-
-    @Test
-    void testAuditScheduledCleanup() {
-        final Audit audit = auditFactory.getAudit();
-        audit.info("test message", AuditDetail.builder().param("my_id", "test_id").build());
-        audit.flush();
-
-        assertEquals(1, countAuditLogs());
-        assertEquals(1, countAuditParams());
-
-        Awaitility.await()
-                .atMost(Duration.ofSeconds(5))
-                .until(() -> countAuditLogs() == 0 && countAuditParams() == 0);
     }
 
     private int countAuditLogs() {

@@ -35,7 +35,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = TestApplication.class, properties = {
         "audit.db.table.param.enabled=true",
-        "audit.db.cleanup.days=-1" // time shift to the future to enable cleanup test
+        "audit.db.cleanup.days=-1", // time shift to the future to enable cleanup test
+        "powerauth.audit.cleanup.delay.initial=60000" // delay the job due for slow builds
 })
 @Sql(scripts = "/db_schema.sql")
 class AuditParamEnabledTest {

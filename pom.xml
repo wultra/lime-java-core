@@ -62,7 +62,6 @@
 
 		<!-- Dependencies -->
 		<spring-boot.version>3.2.4</spring-boot.version>
-		<findbugs-annotations.version>3.0.1</findbugs-annotations.version>
 	</properties>
 
 	<dependencyManagement>

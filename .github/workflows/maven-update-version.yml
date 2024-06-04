@@ -23,9 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
+      - name: Create a branch
+        run: |
+          git checkout -b issues/temp
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -43,3 +46,7 @@ jobs:
             echo "Not supported type: ${{ inputs.update_type }}"
             exit 1
           fi
+      - name: create pull request
+        run: gh pr create --base develop --title 'Merge test' --body 'Created by Github action'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

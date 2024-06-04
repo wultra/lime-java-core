@@ -1,9 +1,4 @@
 name: Update version with Maven
-# - validate that there is no dependency on snapshot
-# - update version to non-snapshot
-# - commit and tag
-# - update version to snapshot
-# - push changes
 
 on:
   workflow_dispatch:
@@ -23,23 +18,36 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
+      - name: Create a branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b issues/prepare-release-${{ github.run_number }}
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: 21
           distribution: 'temurin'
           cache: maven
-      - name: Run Maven release:prepare
+      - name: Run Maven release:prepare # https://maven.apache.org/maven-release/maven-release-plugin/prepare-mojo.html
         run: |
           echo ${{ inputs.update_type }}
           if [ ${{ inputs.update_type }} == "minor" ]; then
-            mvn -B -U -DdryRun=true release:prepare -DtagNameFormat=@{project.version} -DprojectVersionPolicyId=SemVerVersionPolicy
+            mvn -B -U release:prepare -DtagNameFormat=@{project.version} -DprojectVersionPolicyId=SemVerVersionPolicy
           elif [ ${{ inputs.update_type }} == "bugfix" ]; then
-            mvn -B -U -DdryRun=true release:prepare -DtagNameFormat=@{project.version}
+            mvn -B -U release:prepare -DtagNameFormat=@{project.version}
           else
             echo "Not supported type: ${{ inputs.update_type }}"
             exit 1
           fi
+      - name: Push changes
+        run: |
+          git push origin issues/prepare-release-${{ github.run_number }}
+      - name: Create pull request
+        run: |
+          gh pr create --base ${{ github.ref_name }} --fill-first
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

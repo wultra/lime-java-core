@@ -36,9 +36,9 @@ jobs:
         run: |
           echo ${{ inputs.update_type }}
           if [ ${{ inputs.update_type }} == "minor" ]; then
-            mvn -B -U release:prepare -DtagNameFormat=@{project.version} -DprojectVersionPolicyId=SemVerVersionPolicy
+            mvn -B -U -DdryRun=true release:prepare -DtagNameFormat=@{project.version} -DprojectVersionPolicyId=SemVerVersionPolicy
           elif [ ${{ inputs.update_type }} == "bugfix" ]; then
-            mvn -B -U release:prepare -DtagNameFormat=@{project.version}
+            mvn -B -U -DdryRun=true release:prepare -DtagNameFormat=@{project.version}
           else
             echo "Not supported type: ${{ inputs.update_type }}"
             exit 1

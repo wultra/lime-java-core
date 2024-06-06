@@ -36,17 +36,17 @@ jobs:
           java-version: 21
           distribution: 'temurin'
           cache: maven
-      - name: Run Maven release:prepare
-        run: |
-          echo ${{ inputs.update_type }}
-          if [ ${{ inputs.update_type }} == "minor" ]; then
-            mvn -B -U -DdryRun=true release:prepare -DtagNameFormat=@{project.version} -DprojectVersionPolicyId=SemVerVersionPolicy
-          elif [ ${{ inputs.update_type }} == "bugfix" ]; then
-            mvn -B -U -DdryRun=true release:prepare -DtagNameFormat=@{project.version}
-          else
-            echo "Not supported type: ${{ inputs.update_type }}"
-            exit 1
-          fi
+#      - name: Run Maven release:prepare
+#        run: |
+#          echo ${{ inputs.update_type }}
+#          if [ ${{ inputs.update_type }} == "minor" ]; then
+#            mvn -B -U -DdryRun=true release:prepare -DtagNameFormat=@{project.version} -DprojectVersionPolicyId=SemVerVersionPolicy
+#          elif [ ${{ inputs.update_type }} == "bugfix" ]; then
+#            mvn -B -U -DdryRun=true release:prepare -DtagNameFormat=@{project.version}
+#          else
+#            echo "Not supported type: ${{ inputs.update_type }}"
+#            exit 1
+#          fi
       - name: create pull request
         run: gh pr create --base develop --title 'Merge test' --body 'Created by Github action'
         env:

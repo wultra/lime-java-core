@@ -35,7 +35,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit --allow-empty -m "This is testing title" -m "Some expected body"
-          git push
+          git push --set-upstream origin issues/prepare-release-${{ github.run_number }}
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:

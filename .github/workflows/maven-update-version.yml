@@ -28,8 +28,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Create a branch
         run: |
-          git checkout -b issues/temp
-          git push origin issues/temp
+          git checkout -b issues/prepare-release-${{ github.run_number }}
+          git push origin issues/prepare-release-${{ github.run_number }}
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:

@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.getlime.core</groupId>
         <artifactId>lime-java-core-parent</artifactId>
-        <version>1.10.0</version>
+        <version>1.10.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>rest-client-base</artifactId>

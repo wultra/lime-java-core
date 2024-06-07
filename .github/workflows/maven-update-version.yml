@@ -48,6 +48,6 @@ jobs:
 #            exit 1
 #          fi
       - name: create pull request
-        run: gh pr create --base ${{ github.ref_name }} --title 'Merge test' --fill-verbose
+        run: gh pr create --base ${{ github.ref_name }} --title 'Merge test' --body 'Created by Github action'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

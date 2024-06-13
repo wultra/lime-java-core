@@ -31,6 +31,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
@@ -159,6 +160,7 @@ public class DatabaseAuditWriter implements AuditWriter {
         }
 
         synchronized (FLUSH_LOCK) {
+            transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
             transactionTemplate.executeWithoutResult(status -> {
                 while (!queue.isEmpty()) {
                     try {

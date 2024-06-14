@@ -48,6 +48,7 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.resources.ConnectionProvider;
 import reactor.netty.tcp.SslProvider;
+import reactor.netty.tcp.TcpResources;
 import reactor.netty.transport.ProxyProvider;
 import reactor.netty.transport.logging.AdvancedByteBufFormat;
 
@@ -69,10 +70,10 @@ public class DefaultRestClient implements RestClient {
     private static final Logger logger = LoggerFactory.getLogger(DefaultRestClient.class);
 
     /**
-     * The maximum number of registered connection requests for acquire to keep in a pending queue.
-     * As same value as in {@link ConnectionProvider#create(String)} to avoid default to {@code 2 * max connections} only.
+     * Default max connections.
+     * As same value as in {@link TcpResources#get()} avoid default to {@code 2 * available number of processors} only.
      */
-    private static final int DEFAULT_PENDING_ACQUIRE_MAX_COUNT = 500;
+    private static final int DEFAULT_POOL_MAX_CONNECTIONS = 500;
 
     private WebClient webClient;
     private final RestClientConfiguration config;
@@ -252,7 +253,8 @@ public class DefaultRestClient implements RestClient {
      */
     private static HttpClient createHttpClient(final RestClientConfiguration config) {
         final ConnectionProvider.Builder providerBuilder = ConnectionProvider.builder("custom")
-                .pendingAcquireMaxCount(DEFAULT_PENDING_ACQUIRE_MAX_COUNT);
+                .maxConnections(DEFAULT_POOL_MAX_CONNECTIONS)
+                .pendingAcquireTimeout(Duration.ofMillis(ConnectionProvider.DEFAULT_POOL_ACQUIRE_TIMEOUT));
 
         final Duration maxIdleTime = config.getMaxIdleTime();
         final Duration maxLifeTime = config.getMaxLifeTime();

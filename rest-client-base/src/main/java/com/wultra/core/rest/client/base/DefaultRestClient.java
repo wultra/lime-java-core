@@ -48,7 +48,6 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.resources.ConnectionProvider;
 import reactor.netty.tcp.SslProvider;
-import reactor.netty.tcp.TcpResources;
 import reactor.netty.transport.ProxyProvider;
 import reactor.netty.transport.logging.AdvancedByteBufFormat;
 
@@ -71,7 +70,7 @@ public class DefaultRestClient implements RestClient {
 
     /**
      * Default max connections.
-     * As same value as in {@link TcpResources#get()} avoid default to {@code 2 * available number of processors} only.
+     * As same value as in {@link reactor.netty.tcp.TcpResources#get()} avoid default to {@code 2 * available number of processors} only.
      */
     private static final int DEFAULT_POOL_MAX_CONNECTIONS = 500;
 

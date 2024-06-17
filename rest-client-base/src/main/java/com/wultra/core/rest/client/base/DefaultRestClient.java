@@ -68,6 +68,12 @@ public class DefaultRestClient implements RestClient {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultRestClient.class);
 
+    /**
+     * Default max connections.
+     * As same value as in {@link reactor.netty.tcp.TcpResources#get()} avoid default to {@code 2 * available number of processors} only.
+     */
+    private static final int DEFAULT_POOL_MAX_CONNECTIONS = 500;
+
     private WebClient webClient;
     private final RestClientConfiguration config;
     private final Collection<Module> modules;
@@ -240,26 +246,27 @@ public class DefaultRestClient implements RestClient {
     }
 
     /**
-     * Create HttpClient with default HttpConnectionProvider or custom one, if specified in the given config.
-     * @param config Config to create connection provider if specified.
+     * Create HttpClient with custom ConnectionProvider with options specified in the given config.
+     * @param config Config to create connection provider.
      * @return Http client.
      */
     private static HttpClient createHttpClient(final RestClientConfiguration config) {
+        final ConnectionProvider.Builder providerBuilder = ConnectionProvider.builder("custom")
+                .maxConnections(DEFAULT_POOL_MAX_CONNECTIONS)
+                .pendingAcquireTimeout(Duration.ofMillis(ConnectionProvider.DEFAULT_POOL_ACQUIRE_TIMEOUT));
+
         final Duration maxIdleTime = config.getMaxIdleTime();
         final Duration maxLifeTime = config.getMaxLifeTime();
         if (maxIdleTime != null || maxLifeTime != null) {
             logger.info("Configuring custom connection provider, maxIdleTime={}, maxLifeTime={}", maxIdleTime, maxLifeTime);
-            final ConnectionProvider.Builder providerBuilder = ConnectionProvider.builder("custom");
             if (maxIdleTime != null) {
                 providerBuilder.maxIdleTime(maxIdleTime);
             }
             if (maxLifeTime != null) {
                 providerBuilder.maxLifeTime(maxLifeTime);
             }
-            return HttpClient.create(providerBuilder.build());
-        } else {
-            return HttpClient.create();
         }
+        return HttpClient.create(providerBuilder.build());
     }
 
     private static Optional<ObjectMapper> createObjectMapper(final RestClientConfiguration config, Collection<Module> modules) {

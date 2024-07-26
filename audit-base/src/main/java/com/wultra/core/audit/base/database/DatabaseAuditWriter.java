@@ -31,6 +31,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
@@ -159,6 +160,7 @@ public class DatabaseAuditWriter implements AuditWriter {
         }
 
         synchronized (FLUSH_LOCK) {
+            transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
             transactionTemplate.executeWithoutResult(status -> {
                 while (!queue.isEmpty()) {
                     try {
@@ -258,11 +260,11 @@ public class DatabaseAuditWriter implements AuditWriter {
         final LocalDateTime cleanupLimit = LocalDateTime.now().minusDays(cleanupDays);
         synchronized (CLEANUP_LOCK) {
             transactionTemplate.executeWithoutResult(status -> {
-                jdbcTemplate.execute("DELETE FROM " + tableNameAudit + " WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
+                jdbcTemplate.execute("DELETE FROM " + tableNameParam + " WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
                     ps.setTimestamp(1, Timestamp.valueOf(cleanupLimit));
                     return ps.execute();
                 });
-                jdbcTemplate.execute("DELETE FROM " + tableNameParam + " WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
+                jdbcTemplate.execute("DELETE FROM " + tableNameAudit + " WHERE timestamp_created < ?", (PreparedStatementCallback<Boolean>) ps -> {
                     ps.setTimestamp(1, Timestamp.valueOf(cleanupLimit));
                     return ps.execute();
                 });
@@ -274,7 +276,7 @@ public class DatabaseAuditWriter implements AuditWriter {
     /**
      * Scheduled flush of persistence of audit data.
      */
-    @Scheduled(fixedDelayString = "${audit.flush.delay.fixed:1000}", initialDelayString = "${powerauth.audit.flush.delay.initial:1000}")
+    @Scheduled(fixedDelayString = "${audit.flush.delay.fixed:1000}", initialDelayString = "${audit.flush.delay.initial:1000}")
     public void scheduledFlush() {
         logger.debug("Scheduled audit log flush called");
         flush();
@@ -283,7 +285,7 @@ public class DatabaseAuditWriter implements AuditWriter {
     /**
      * Scheduled cleanup of audit data in database.
      */
-    @Scheduled(fixedDelayString = "${audit.cleanup.delay.fixed:3600000}", initialDelayString = "${powerauth.audit.cleanup.delay.initial:1000}")
+    @Scheduled(fixedDelayString = "${audit.cleanup.delay.fixed:3600000}", initialDelayString = "${audit.cleanup.delay.initial:1000}")
     public void scheduledCleanup() {
         logger.debug("Scheduled audit log cleanup called");
         cleanup();

@@ -54,16 +54,14 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
+        return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(e -> e.authenticationEntryPoint(authenticationEntryPoint()))
                 .addFilter(digestAuthenticationFilter())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/private/**").authenticated()
                         .anyRequest().permitAll()
-                );
-
-        return http.build();
+                ).build();
     }
 
     @Bean

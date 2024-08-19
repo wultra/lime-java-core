@@ -31,6 +31,9 @@ import java.util.regex.Pattern;
 @Slf4j
 public final class UserAgent {
 
+    /**
+     * Device information.
+     */
     @Data
     public static class Device {
         private String networkVersion;

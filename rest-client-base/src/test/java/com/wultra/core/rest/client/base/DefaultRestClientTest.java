@@ -42,6 +42,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.ResourceUtils;
 import reactor.core.publisher.Flux;
 
@@ -660,6 +662,26 @@ class DefaultRestClientTest {
         assertNotNull(responseEntity.getBody().getResponseObject());
         assertEquals("OK", responseEntity.getBody().getStatus());
         assertEquals(requestData, responseEntity.getBody().getResponseObject().getResponse());
+    }
+
+    @Test
+    void testPostFormData() throws Exception {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        final MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("grant_type", "authorization_code");
+        map.add("client_id", "wultra");
+        map.add("client_secret", "top-secret");
+
+        final ResponseEntity<ObjectResponse<TestResponse>> responseEntity =
+                restClient.post("/form-data-request-response", map, null, headers, new ParameterizedTypeReference<>(){});
+
+        assertNotNull(responseEntity);
+        assertNotNull(responseEntity.getBody());
+        assertNotNull(responseEntity.getBody().getResponseObject());
+        assertEquals("OK", responseEntity.getBody().getStatus());
+        assertEquals("form-data: [authorization_code, wultra, top-secret]", responseEntity.getBody().getResponseObject().getResponse());
     }
 
     @Test

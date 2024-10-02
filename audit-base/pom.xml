@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.getlime.core</groupId>
         <artifactId>lime-java-core-parent</artifactId>
-        <version>1.10.0</version>
+        <version>1.11.0</version>
     </parent>
 
     <artifactId>audit-base</artifactId>

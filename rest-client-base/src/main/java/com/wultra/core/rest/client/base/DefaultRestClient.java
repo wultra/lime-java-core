@@ -57,6 +57,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -839,7 +840,17 @@ public class DefaultRestClient implements RestClient {
     private WebClient.RequestHeadersSpec<?> buildRequest(WebClient.RequestBodySpec requestSpec, Object request) {
         if (request != null) {
             if (request instanceof MultiValueMap) {
-                return requestSpec.body(BodyInserters.fromMultipartData(((MultiValueMap<String, ?>) request)));
+                final AtomicReference<MediaType> contentTypeReference = new AtomicReference<>();
+                requestSpec.headers(httpHeaders -> contentTypeReference.set(httpHeaders.getContentType()));
+                final MediaType contentType = contentTypeReference.get();
+
+                if (MediaType.APPLICATION_FORM_URLENCODED.equals(contentType)) {
+                    return requestSpec.body(BodyInserters.fromFormData((MultiValueMap<String, String>) request));
+                } else if (MediaType.MULTIPART_FORM_DATA.equals(contentType)) {
+                    return requestSpec.body(BodyInserters.fromMultipartData(((MultiValueMap<String, ?>) request)));
+                } else {
+                    throw new IllegalArgumentException("Unsupported content type: %s for request type of MultiValueMap".formatted(contentType));
+                }
             } else if (request instanceof Publisher) {
                 return requestSpec.body(BodyInserters.fromDataBuffers((Publisher<DataBuffer>) request));
             }

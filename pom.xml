@@ -8,7 +8,7 @@
 	<description>Wultra - Core Java Libraries</description>
 	<groupId>io.getlime.core</groupId>
 	<artifactId>lime-java-core-parent</artifactId>
-	<version>1.10.0</version>
+	<version>1.11.0</version>
 	<packaging>pom</packaging>
 
 	<inceptionYear>2017</inceptionYear>
@@ -57,11 +57,11 @@
 		<maven.compiler.release>${java.version}</maven.compiler.release>
 
 		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-		<maven-surefire-plugin.version>3.3.1</maven-surefire-plugin.version>
+		<maven-surefire-plugin.version>3.5.0</maven-surefire-plugin.version>
 		<maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
 
 		<!-- Dependencies -->
-		<spring-boot.version>3.3.2</spring-boot.version>
+		<spring-boot.version>3.3.4</spring-boot.version>
 	</properties>
 
 	<dependencyManagement>
@@ -119,7 +119,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.8.0</version>
+				<version>3.10.0</version>
 				<configuration>
 					<failOnError>false</failOnError>
 				</configuration>
@@ -135,7 +135,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
-				<version>3.1.2</version>
+				<version>3.1.3</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

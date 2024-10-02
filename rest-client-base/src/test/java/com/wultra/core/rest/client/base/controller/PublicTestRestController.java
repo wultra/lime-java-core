@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  * Rest controller for tests.
@@ -83,6 +84,11 @@ public class PublicTestRestController {
     public ObjectResponse<TestResponse> testPostWithMultipartRequestAndResponse(@RequestPart("request") TestRequest request) {
         TestResponse testResponse = new TestResponse(request.getRequest());
         return new ObjectResponse<>(testResponse);
+    }
+
+    @PostMapping(value = "/form-data-request-response", consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE })
+    public ObjectResponse<TestResponse> testPostFormDataRequestAndResponse(@RequestParam("grant_type") final String grantType, @RequestParam("client_id") final String clientId, @RequestParam("client_secret") final String clientSecret) {
+        return new ObjectResponse<>(new TestResponse("form-data: " + List.of(grantType, clientId, clientSecret)));
     }
 
     @PostMapping(value = "/octet-stream", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
